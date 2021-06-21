@@ -5,3 +5,6 @@ A file description modeled after the ROOT analysis toolkit and common use-cases 
 __version__ = "0.1.0"
 
 __all__ = ("__version__",)
+
+from hepfile.read import *
+from hepfile.write import *
