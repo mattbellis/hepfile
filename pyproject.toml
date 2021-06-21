@@ -1,0 +1,74 @@
+[build-system]
+requires = ["flit_core >=2,<4"]
+build-backend = "flit_core.buildapi"
+
+
+[tool.flit.metadata]
+module = "hepfile"
+author = "Matt Bellis"
+author-email = "matthew.bellis@gmail.com"
+home-page = "https://github.com/mattbellis/hepfile"
+maintainer = "Matt Bellis"
+maintainer-email = "matthew.bellis@gmail.com"
+description-file = "README.md"
+
+classifiers = [
+  "License :: OSI Approved :: BSD License",
+  "Topic :: Scientific/Engineering",
+  "Intended Audience :: Science/Research",
+  "Intended Audience :: Developers",
+  "Operating System :: OS Independent",
+  "License :: OSI Approved :: BSD License",
+  "Programming Language :: Python",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.6",
+  "Programming Language :: Python :: 3.7",
+  "Programming Language :: Python :: 3.8",
+  "Programming Language :: Python :: 3.9",
+  "Development Status :: 1 - Planning",
+]
+
+requires-python = ">=3.6"
+
+requires = [
+  "numpy >=1.13.3",
+  "typing; python_version<'3.5'",
+]
+
+[tool.flit.metadata.requires-extra]
+test = [
+    "pytest >=6",
+]
+dev = [
+  "pytest >=6",
+]
+docs = [
+  "Sphinx >=3.0.0",
+  "myst_parser>=0.13",
+  "sphinx-book-theme>=0.0.33",
+  "sphinx_copybutton",
+]
+
+[tool.pytest.ini_options]
+addopts = "-ra -Wd"
+testpaths = ["tests"]
+
+
+[tool.mypy]
+files = "src"
+python_version = "3.6"
+warn_unused_configs = true
+
+disallow_any_generics = true
+disallow_subclassing_any = true
+disallow_untyped_calls = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+disallow_untyped_decorators = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_return_any = true
+no_implicit_reexport = true
+strict_equality = true
