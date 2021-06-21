@@ -31,4 +31,7 @@
 [rtd-link]:                 https://hepfile.readthedocs.io/en/latest/?badge=latest
 [sk-badge]:                 https://scikit-hep.org/assets/images/Scikit--HEP-Project-blue.svg
 
-This is a test edit. 
+For local builds for testing. 
+```
+/home/bellis/.local/bin/flit install
+```
