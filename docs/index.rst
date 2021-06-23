@@ -22,3 +22,11 @@ Indices and tables
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
+
+Blah Blah
+==============
+
+hepfile\.read module
+
+.. automodule:: hepfile.read
+   :members:
