@@ -13,6 +13,8 @@ This should be updated!
    :titlesonly:
    :caption: Contents
    :glob:
+    
+   usage
 
 
 
