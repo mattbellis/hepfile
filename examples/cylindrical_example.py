@@ -73,7 +73,7 @@ hdfile = hepfile.write_to_file(filename,data,comp_type='gzip',comp_opts=9)
 # Read from file
 ################
 data,event = hepfile.load(filename)
-nevents = data['nevents']
+nevents = data['nentries']
 #print(data)
 #print("nevents: ",nevents)
 
