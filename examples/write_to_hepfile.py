@@ -1,6 +1,6 @@
 import numpy as np
 import sys
-sys.path.append('../h5hep')
+sys.path.append('../hepfile')
 #from write import *
 import hepfile
 
