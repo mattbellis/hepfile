@@ -2,8 +2,6 @@ import numpy as np
 import h5py as h5
 import hepfile 
 
-import matplotlib.pylab as plt
-
 import time
 
 import sys
