@@ -87,6 +87,11 @@ def test_create_dataset():
     assert data['datasets_and_counters']['jet/e'] == 'jet/njet'
 
 
+def test_write_file_metadata():
+
+    ##### NEED TO WRITE THIS #####
+    assert 1==1
+
 
 
 

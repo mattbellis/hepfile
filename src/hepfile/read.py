@@ -213,3 +213,89 @@ def get_nentries(filename):
         print('\nFile does not contain the attribute, "nentries"\n')
         f.close()
         return None
+
+
+################################################################################
+def get_file_metadata(filename):
+
+    """ Get the file metadata and return it as a dictionary
+
+    """
+
+    f = h5.File(filename, "r+")
+
+    a = f.attrs
+
+    if len(a)<1:
+        print(f"No metadata in file {filename}!")
+        print(f"File has no attributes.\n")
+        f.close()
+        return None
+
+    metadata = {}
+
+    for key in a.keys():
+        metadata[key] = a[key]
+    
+    f.close()
+
+    return metadata
+
+
+################################################################################
+ 
+################################################################################
+def print_file_metadata(filename):
+
+    """ Pretty print the file metadata 
+
+    """
+
+    metadata = get_file_metadata(filename)
+
+    if metadata is None:
+        return None
+
+
+    output = ""
+
+    keys = list(metadata.keys())
+
+    first_keys_to_print = ['date','nentries']
+
+    keys_already_printed = []
+
+    # Print the basics first
+    for key in first_keys_to_print:
+        if key in keys:
+            val = metadata[key]
+            output += f"{key:<20s} : {val}\n"
+            keys_already_printed.append(key)
+
+    # Print the versions next
+    for key in keys:
+        if key in keys_already_printed:
+            continue
+
+        if key.find('version')>=0:
+            val = metadata[key]
+            output += f"{key:<20s} : {val}\n"
+            keys_already_printed.append(key)
+
+    # Print the read of the metadata
+    for key in keys:
+        if key in keys_already_printed:
+            continue
+
+        val = metadata[key]
+        output += f"{key:<20s} : {val}\n"
+        keys_already_printed.append(key)
+
+    print(output)
+
+    return output
+
+
+
+################################################################################
+ 
