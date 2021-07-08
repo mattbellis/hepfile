@@ -1,7 +1,7 @@
 import numpy as np
 import h5py as h5
 import datetime
-import __init__
+#import __init__
 import sys
 
 
@@ -358,7 +358,7 @@ def convert_dict_to_string_data(dictionary):
 # This function writes default attributes and metadata to a file.
 ################################################################################
 def write_file_metadata(
-    filename, mydict, write_default_values=True, append=True
+    filename, mydict = {}, write_default_values=True, append=True
 ):
     """ Writes file metadata in the attributes of an HDF5 file
 
@@ -389,14 +389,14 @@ def write_file_metadata(
                 del hdoutfile.attrs[key]
     
     if write_default_values:
-        hdoutfile.attrs["date"] = datetime.datetime.now()
-        hdoutfile.attrs["hepfile_version"] = __init__.__version___
+        hdoutfile.attrs["date"] = datetime.datetime.now().strftime("%m/%d/%Y, %H:%M:%S")
+        #hdoutfile.attrs["hepfile_version"] = __init__.__version___
         hdoutfile.attrs["numpy_version"] = np.__version__
         hdoutfile.attrs["h5py_version"] = h5.__version__
         hdoutfile.attrs["python_version"] = sys.version
 
     for key in mydict:
-        hdoutfile[key] = mydict[key]
+        hdoutfile.attrs[key] = mydict[key]
 
     hdoutfile.close()
     print("Metadata written")
@@ -496,7 +496,6 @@ def write_to_file(
     for i, countername in enumerate(counters):
         ncounter = len(data[countername])
         print("%-32s has %-12d entries" % (countername, ncounter))
-        print("NOTICE ME")
         if i > 0 and ncounter != nentries:
             print("-------- WARNING -----------")
             print(
@@ -512,10 +511,9 @@ def write_to_file(
         prevcounter = countername
 
 
-    print("NOTICE ME")
     hdoutfile.attrs["nentries"] = nentries
     hdoutfile.close()
 
-    write_file_metadata(filename, {"author: Matt Dreyer"})
+    write_file_metadata(filename)
 
     return hdoutfile
