@@ -2,6 +2,7 @@ import numpy as np
 import h5py as h5
 import datetime
 import sys
+import hepfile
 
 
 ################################################################################
@@ -389,7 +390,7 @@ def write_file_metadata(
     
     if write_default_values:
         hdoutfile.attrs["date"] = datetime.datetime.now().strftime("%m/%d/%Y, %H:%M:%S")
-        #hdoutfile.attrs["hepfile_version"] = __init__.__version___
+        hdoutfile.attrs["hepfile_version"] = hepfile.__version__
         hdoutfile.attrs["numpy_version"] = np.__version__
         hdoutfile.attrs["h5py_version"] = h5.__version__
         hdoutfile.attrs["python_version"] = sys.version
@@ -398,7 +399,7 @@ def write_file_metadata(
         hdoutfile.attrs[key] = mydict[key]
 
     hdoutfile.close()
-    print("Metadata written")
+    print("Metadata added")
     return hdoutfile
 
 

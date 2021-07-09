@@ -1,25 +1,26 @@
 import numpy as np
 import sys
+import hepfile
 
-#sys.path.append("../h5hep")
-from hepfile import *
+sys.path.append("../hepfile")
+
 
 
 def write_h5hep_file_for_unit_tests():
-    data = initialize()
+    data = hepfile.initialize()
 
-    create_group(data, "jet", counter="njet")
-    create_dataset(data, ["e", "px", "py", "pz"], group="jet", dtype=float)
+    hepfile.create_group(data, "jet", counter="njet")
+    hepfile.create_dataset(data, ["e", "px", "py", "pz"], group="jet", dtype=float)
 
-    create_group(data, "muons", counter="nmuon")
-    create_dataset(data, ["e", "px", "py", "pz"], group="muons", dtype=float)
+    hepfile.create_group(data, "muons", counter="nmuon")
+    hepfile.create_dataset(data, ["e", "px", "py", "pz"], group="muons", dtype=float)
 
-    event = create_single_event(data)
+    event = hepfile.create_single_event(data)
 
     #'''
     for i in range(0, 10):
 
-        clear_event(event)
+        hepfile.clear_event(event)
 
         njet = 5
         event["jet/njet"] = njet
@@ -30,11 +31,11 @@ def write_h5hep_file_for_unit_tests():
             event["jet/py"].append(np.random.random())
             event["jet/pz"].append(np.random.random())
 
-        pack(data, event)
+        hepfile.pack(data, event)
 
     print("Writing the file...")
     # hdfile = write_to_file('output.hdf5',data)
-    hdfile = write_to_file("FOR_TESTS.hdf5", data, comp_type="gzip", comp_opts=9)
+    hdfile = hepfile.write_to_file("FOR_TESTS.hdf5", data, comp_type="gzip", comp_opts=9)
     #'''
 
 
