@@ -38,7 +38,7 @@ def test_clear_event():
 	
     # This assumes you run nosetests from the h5hep directory and not 
     # the tests directory.
-    filename = "./test_data/FOR_TESTS.hdf5"
+    filename = "FOR_TESTS.hdf5"
     desired_datasets = ['jet','muon']
     subset = 1000
 
@@ -89,8 +89,34 @@ def test_create_dataset():
 
 def test_write_file_metadata():
 
-    ##### NEED TO WRITE THIS #####
-    assert 1==1
+    filename = "FOR_TESTS.hdf5"
+    file = h5.File(filename, "r")
+
+    #Check default attribute existence
+    assert 'date' in file.attrs.keys()
+    assert 'hepfile_version' in file.attrs.keys()
+    assert 'h5py_version' in file.attrs.keys()
+    assert 'numpy_version' in file.attrs.keys()
+    assert 'python_version' in file.attrs.keys()
+
+    #Check default attributes are strings
+    assert isinstance(file.attrs['date'],str)
+    assert isinstance(file.attrs['hepfile_version'],str)
+    assert isinstance(file.attrs['h5py_version'],str)
+    assert isinstance(file.attrs['numpy_version'],str)
+    assert isinstance(file.attrs['python_version'],str)
+
+    file.close()
+
+    #Adding a new attribute
+    hepfile.write_file_metadata(filename, {'author':'John Doe'})
+    file = h5.File(filename, "r")
+
+    assert 'author' in file.attrs.keys()
+    assert file.attrs['author'] == 'John Doe'
+
+    file.close()
+    
 
 
 

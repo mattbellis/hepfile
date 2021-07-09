@@ -30,7 +30,7 @@ def test_load():
 
     # This assumes you run nosetests from the h5hep directory and not 
     # the tests directory.
-    filename = "./test_data/FOR_TESTS.hdf5"
+    filename = "FOR_TESTS.hdf5"
     desired_datasets = ['jet','muon']
     subset = 1000
 
@@ -46,7 +46,7 @@ def test_unpack():
 	
     # This assumes you run nosetests from the h5hep directory and not 
     # the tests directory.
-    filename = "./test_data/FOR_TESTS.hdf5"
+    filename = "FOR_TESTS.hdf5"
     desired_datasets = ['jet','muon']
     subset = 1000
 
@@ -61,11 +61,31 @@ def test_get_nentries():
 	
     # This assumes you run nosetests from the h5hep directory and not 
     # the tests directory.
-    filename = "./test_data/FOR_TESTS.hdf5"
+    filename = "FOR_TESTS.hdf5"
 
     nentries = hepfile.get_nentries(filename)
 
     assert nentries == 10
+
+def test_get_file_metadata():
+
+    filename = "FOR_TESTS.hdf5"
+
+    metadata = hepfile.get_file_metadata(filename)
+
+    assert 'date' in metadata
+    assert 'hepfile_version' in metadata
+    assert 'h5py_version' in metadata
+    assert 'numpy_version' in metadata
+    assert 'python_version' in metadata
+
+    #Check default attributes are strings
+    assert isinstance(metadata['date'],str)
+    assert isinstance(metadata['hepfile_version'],str)
+    assert isinstance(metadata['h5py_version'],str)
+    assert isinstance(metadata['numpy_version'],str)
+    assert isinstance(metadata['python_version'],str)
+
 
 
 
