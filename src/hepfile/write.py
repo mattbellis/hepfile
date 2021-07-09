@@ -389,7 +389,7 @@ def write_file_metadata(
                 del hdoutfile.attrs[key]
     
     if write_default_values:
-        hdoutfile.attrs["date"] = datetime.datetime.now().strftime("%m/%d/%Y, %H:%M:%S")
+        hdoutfile.attrs["date"] = datetime.datetime.now().isoformat(sep=' ')
         hdoutfile.attrs["hepfile_version"] = hepfile.__version__
         hdoutfile.attrs["numpy_version"] = np.__version__
         hdoutfile.attrs["h5py_version"] = h5.__version__
