@@ -2,11 +2,10 @@ import numpy as np
 import sys
 import hepfile
 
-sys.path.append("../hepfile")
+#sys.path.append("../hepfile")
 
 
-
-def write_h5hep_file_for_unit_tests():
+def write_file_for_unit_tests():
     data = hepfile.initialize()
 
     hepfile.create_group(data, "jet", counter="njet")
@@ -40,4 +39,4 @@ def write_h5hep_file_for_unit_tests():
 
 
 if __name__ == "__main__":
-    write_h5hep_file_for_unit_tests()
+    write_file_for_unit_tests()

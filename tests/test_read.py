@@ -4,9 +4,11 @@ import hepfile
 
 import time
 
-import sys
-sys.path.append('./scripts')
+#import sys
+#sys.path.append('./scripts')
 #from write_h5hep_file_for_unit_tests import write_h5hep_file_for_unit_tests
+
+from write_file_for_unit_tests import write_file_for_unit_tests
 
 def isEmpty(dictionary):
     test = True
@@ -26,7 +28,7 @@ def isEmpty(dictionary):
 
 def test_load():
 
-    #write_h5hep_file_for_unit_tests()
+    write_file_for_unit_tests()
 
     # This assumes you run nosetests from the h5hep directory and not 
     # the tests directory.
