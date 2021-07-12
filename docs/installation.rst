@@ -1,6 +1,6 @@
-=========
+=============
 Installation
-=========
+=============
 
 You can install ``hepfile`` one of two different ways: using ``pip`` or ``flit``.
 

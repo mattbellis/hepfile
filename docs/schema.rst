@@ -3,7 +3,7 @@ Schema
 =======
 
 Heterogenous Data 
-----------------
+-------------------
 
 We assume that data that we collect is composed of (insert some term for particle, 
 chair, etc.) each carrying a certain number of attributes. Each ___ is associated 

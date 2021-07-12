@@ -1,6 +1,6 @@
-========
+============
 Background
-========
+============
 
 In high energy physics, experiments require file formats that can accomodate 
 heterogeneity (each collection event can have differing amounts of data collected)
