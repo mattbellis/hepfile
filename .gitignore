@@ -138,7 +138,10 @@ dmypy.json
 cython_debug/
 
 # Builds of docs
-docs/build
+docs/build/
+
+# dist directory with .tar.gz file
+dist/
 
 # Accidental datafiles
 .hdf5
