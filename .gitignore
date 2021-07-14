@@ -137,6 +137,9 @@ dmypy.json
 # Cython debug symbols
 cython_debug/
 
+# Builds of docs
+docs/build
+
 # Accidental datafiles
 .hdf5
 .h5
