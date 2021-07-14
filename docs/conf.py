@@ -8,13 +8,14 @@
 # package first.
 
 from typing import List
-import hepfile
 
 # -- Project information -----------------------------------------------------
 
 project = "hepfile"
 copyright = "2021, Matt Bellis"
 author = "Matt Bellis"
+version = "0.1.0"
+release = "0.1.0"
 
 
 # -- General configuration ---------------------------------------------------
@@ -46,7 +47,7 @@ exclude_patterns = ["_build", "**.ipynb_checkpoints", "Thumbs.db", ".DS_Store", 
 #
 html_theme = "sphinx_book_theme"
 
-html_title = f"hepfile {hepfile.__version__}"
+html_title = f"hepfile {version}"
 #html_title = f"hepfile 0.09"
 
 html_baseurl = "https://hepfile.readthedocs.io/en/latest/"
