@@ -4,7 +4,7 @@ import numpy as np
 ################################################################################
 def load(filename=None, verbose=False, desired_datasets=None, subset=None):
 
-    """ Reads all, or a subset of the data, from the HDF5 file to fill a data dictionary.
+    ''' Reads all, or a subset of the data, from the HDF5 file to fill a data dictionary.
     Returns an empty dictionary to be filled later with select events.
 
     Args:
@@ -21,7 +21,7 @@ def load(filename=None, verbose=False, desired_datasets=None, subset=None):
 	
 	**event** (dict): An empty event dictionary to be filled by individual events
 
-    """
+    '''
 
     f = None
     if filename != None:
