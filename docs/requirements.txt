@@ -1,3 +1,4 @@
 myst-parser
 sphinx-copybutton
 sphinx-book-theme
+sphinx-autodoc
