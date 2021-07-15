@@ -25,6 +25,8 @@ author = "Matt Bellis"
 version = "0.1.0"
 release = "0.1.0"
 
+# The master toctree document.
+master_doc = 'index'
 
 # -- General configuration ---------------------------------------------------
 
