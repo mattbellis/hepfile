@@ -15,13 +15,14 @@ We begin with a file, and load it into an empty data dictionary::
 
 *data* is a dictionary containing counters, indices, and data for all the
 features we care about. *event* is an empty dictionary waiting to be filled by
-data from some specific event.::
+data from some specific event.
 
     
 
 
 Writing Data
 ------------
+
 
 
 

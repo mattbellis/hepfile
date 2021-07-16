@@ -8,14 +8,25 @@
 # package first.
 
 from typing import List
-import hepfile
+
+
+import sys
+import os
+sys.path.append(os.path.abspath(os.pardir))
+sys.path.insert(0, os.path.abspath("."))
+sys.path.insert(0, os.path.abspath("../"))
+
 
 # -- Project information -----------------------------------------------------
 
 project = "hepfile"
 copyright = "2021, Matt Bellis"
 author = "Matt Bellis"
+version = "0.1.0"
+release = "0.1.0"
 
+# The master toctree document.
+master_doc = 'index'
 
 # -- General configuration ---------------------------------------------------
 
@@ -46,7 +57,7 @@ exclude_patterns = ["_build", "**.ipynb_checkpoints", "Thumbs.db", ".DS_Store", 
 #
 html_theme = "sphinx_book_theme"
 
-html_title = f"hepfile {hepfile.__version__}"
+html_title = f"hepfile {version}"
 #html_title = f"hepfile 0.09"
 
 html_baseurl = "https://hepfile.readthedocs.io/en/latest/"
