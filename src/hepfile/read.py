@@ -226,7 +226,7 @@ def get_file_metadata(filename):
 
     a = f.attrs
 
-    if len(a)<1:
+    if len(a) < 1:
         print(f"No metadata in file {filename}!")
         print(f"File has no attributes.\n")
         f.close()
@@ -236,14 +236,14 @@ def get_file_metadata(filename):
 
     for key in a.keys():
         metadata[key] = a[key]
-    
+
     f.close()
 
     return metadata
 
 
 ################################################################################
- 
+
 ################################################################################
 def print_file_metadata(filename):
 
@@ -256,12 +256,11 @@ def print_file_metadata(filename):
     if metadata is None:
         return None
 
-
     output = ""
 
     keys = list(metadata.keys())
 
-    first_keys_to_print = ['date','nentries']
+    first_keys_to_print = ["date", "nentries"]
 
     keys_already_printed = []
 
@@ -277,7 +276,7 @@ def print_file_metadata(filename):
         if key in keys_already_printed:
             continue
 
-        if key.find('version')>=0:
+        if key.find("version") >= 0:
             val = metadata[key]
             output += f"{key:<20s} : {val}\n"
             keys_already_printed.append(key)
@@ -296,6 +295,4 @@ def print_file_metadata(filename):
     return output
 
 
-
 ################################################################################
- 

@@ -354,12 +354,11 @@ def convert_dict_to_string_data(dictionary):
 
     return mydataset
 
+
 ################################################################################
 # This function writes default attributes and metadata to a file.
 ################################################################################
-def write_file_metadata(
-    filename, mydict = {}, write_default_values=True, append=True
-):
+def write_file_metadata(filename, mydict={}, write_default_values=True, append=True):
     """ Writes file metadata in the attributes of an HDF5 file
 
     Args:
@@ -380,16 +379,16 @@ def write_file_metadata(
     """
 
     hdoutfile = h5.File(filename, "a")
-    
+
     non_metadata = ["nentries"]
 
     if not append:
         for key in hdoutfile.attr.keys():
             if key not in non_metadata:
                 del hdoutfile.attrs[key]
-    
+
     if write_default_values:
-        hdoutfile.attrs["date"] = datetime.datetime.now().isoformat(sep=' ')
+        hdoutfile.attrs["date"] = datetime.datetime.now().isoformat(sep=" ")
         hdoutfile.attrs["hepfile_version"] = hepfile.__version__
         hdoutfile.attrs["numpy_version"] = np.__version__
         hdoutfile.attrs["h5py_version"] = h5.__version__
@@ -509,7 +508,6 @@ def write_to_file(
             nentries = ncounter
 
         prevcounter = countername
-
 
     hdoutfile.attrs["nentries"] = nentries
     hdoutfile.close()
