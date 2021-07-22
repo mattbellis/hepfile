@@ -24,7 +24,7 @@ def fill_event_group(event, i, groupname, cols, counters, data):
     for j in range(len(counters)):
         if counters[j] == i:
             for k in range(len(cols)):
-                event[f'{groupname}/{cols[k]}'].append(data[k])
+                event[f'{groupname}/{cols[k]}'].append(data[k][j])
 
 
 p_cols, p_data, p_ID = sep_cols_data_ids('sheet1.csv')
@@ -46,4 +46,4 @@ for i in range(min_ID, max_ID+1):
     fill_event_group(bucket, i, 'houses', h_cols, h_ID, h_data)
     hep.pack(town, bucket)
 
-hep.write_to_file("town_hep.hdf5", bucket)
+hep.write_to_file("town_hep.hdf5", bucket, force_single_precision=False)
