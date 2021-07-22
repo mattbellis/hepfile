@@ -30,25 +30,27 @@ def initialize():
 
 
 ################################################################################
-def clear_event(data):
+def clear_event(event):
 
-    """ Clears the data from the data dictionary - should the name of the function change?
+    """ Clears the data from the event dictionary - should the name of the function change?
 
     Args:
-	**data** (dict): The dictionary to be cleared
+	**event** (dict): The dictionary to be cleared. This is designed to clear the data from
+                      the lists in the **event** dictionary, but theoretically, it would
+                      clear out the lists from any dictionary. 
 
     """
 
-    for key in data.keys():
-        if type(data[key]) == list:
-            data[key].clear()
+    for key in event.keys():
+        if type(event[key]) == list:
+            event[key].clear()
 
         #'''
         # Is this the right thing to do here?????
-        elif type(data[key]) == int:
-            data[key] = 0
-        elif type(data[key]) == float:
-            data[key] = 0.0
+        elif type(event[key]) == int:
+            event[key] = 0
+        elif type(event[key]) == float:
+            event[key] = 0.0
         #'''
 
 
@@ -72,6 +74,7 @@ def create_single_event(data):
     event = {}
 
     for k in data.keys():
+        ### IS THIS FIRST ONE DEPRECATED FOR SOME EARLIER DEV CYCLE???
         if k[-5:] == "index":
             event[k] = data[k]
         elif k in data["groups"]["_SINGLETON_"]:
@@ -146,8 +149,10 @@ def create_group(data, groupname, counter=None):
 
 
 ################################################################################
-# This adds a group in the dictionary, similar to
+# This adds a dataset to the dictionary, similar to
 # a la CreateBranch in ROOT
+# 
+# This can also add a dataset that is not associate with a group
 ################################################################################
 def create_dataset(data, datasets, group=None, dtype=None):
 
@@ -354,12 +359,11 @@ def convert_dict_to_string_data(dictionary):
 
     return mydataset
 
+
 ################################################################################
 # This function writes default attributes and metadata to a file.
 ################################################################################
-def write_file_metadata(
-    filename, mydict = {}, write_default_values=True, append=True
-):
+def write_file_metadata(filename, mydict={}, write_default_values=True, append=True):
     """ Writes file metadata in the attributes of an HDF5 file
 
     Args:
@@ -380,16 +384,16 @@ def write_file_metadata(
     """
 
     hdoutfile = h5.File(filename, "a")
-    
+
     non_metadata = ["nentries"]
 
     if not append:
         for key in hdoutfile.attr.keys():
             if key not in non_metadata:
                 del hdoutfile.attrs[key]
-    
+
     if write_default_values:
-        hdoutfile.attrs["date"] = datetime.datetime.now().isoformat(sep=' ')
+        hdoutfile.attrs["date"] = datetime.datetime.now().isoformat(sep=" ")
         hdoutfile.attrs["hepfile_version"] = hepfile.__version__
         hdoutfile.attrs["numpy_version"] = np.__version__
         hdoutfile.attrs["h5py_version"] = h5.__version__
@@ -509,7 +513,6 @@ def write_to_file(
             nentries = ncounter
 
         prevcounter = countername
-
 
     hdoutfile.attrs["nentries"] = nentries
     hdoutfile.close()
