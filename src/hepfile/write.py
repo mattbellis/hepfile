@@ -270,7 +270,7 @@ def pack(data, event, EMPTY_OUT_EVENT_BUCKET=True):
 
 	**event** (dict): Event to be packed into data.
 
-    **EMPTY_OUT_EVENT_BUCKET** (bool): If this is `True` then empty out the `event`
+	**EMPTY_OUT_EVENT_BUCKET** (bool): If this is `True` then empty out the `event`
     container in preparation for the next iteration. We used to ask the users to do
     this "by hand" but now do it automatically by default. We allow the user to 
     not do this, if they are running some sort of debugging. 
