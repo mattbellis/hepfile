@@ -23,8 +23,6 @@ rando_words = ["hi", "bye", "ciao", "aloha"]
 #'''
 for i in range(0,10000):
 
-    hepfile.clear_event(event)
-
     njet = 5
     event['jet/njet'] = njet
 

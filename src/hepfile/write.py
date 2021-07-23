@@ -259,7 +259,7 @@ def create_dataset(data, datasets, group=None, dtype=None):
 
 
 ################################################################################
-def pack(data, event):
+def pack(data, event, EMPTY_OUT_EVENT_BUCKET=True):
 
     """ Takes the data from an event and packs it into the data dictionary, 
     intelligently, so that it can be stored and extracted efficiently. 
@@ -269,6 +269,11 @@ def pack(data, event):
 	**data** (dict): Data dictionary to hold the entire dataset.
 
 	**event** (dict): Event to be packed into data.
+
+    **EMPTY_OUT_EVENT_BUCKET** (bool): If this is `True` then empty out the `event`
+    container in preparation for the next iteration. We used to ask the users to do
+    this "by hand" but now do it automatically by default. We allow the user to 
+    not do this, if they are running some sort of debugging. 
 
     """
 
@@ -318,6 +323,9 @@ def pack(data, event):
             else:
                 data[key].append(event[key])
 
+    # Clear out the event after it's been packed if that's what we want
+    if EMPTY_OUT_EVENT_BUCKET:
+        clear_event(event)
 
 ################################################################################
 def convert_list_and_key_to_string_data(datalist, key):
