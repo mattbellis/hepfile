@@ -25,7 +25,18 @@ def initialize():
     data["groups"]["_SINGLETON_"] = ["INDEX"]
     data["datasets_and_counters"]["_SINGLETON_"] = "_SINGLETON_/INDEX"
     data["list_of_counters"].append("_SINGLETON_/INDEX")
+
     data["_SINGLETON_/INDEX"] = []
+    data["dataset_data_types"] = {}
+    data["dataset_data_types"]["_SINGLETON_/INDEX"] = int
+
+    data["_PROTECTED_NAMES_"] = ["_PROTCTED_NAMES_", \
+            "groups", \
+            "datasets_and_counters", \
+            "list_of_counters", \
+            "_SINGLETON_/INDEX", \
+            "dataset_data_types"]
+
     return data
 
 
@@ -134,6 +145,7 @@ def create_group(data, groupname, counter=None):
             name = "%s/%s" % (groupname, counter)
             # data['datasets_and_counters'][groupname] = counter
             data["datasets_and_counters"][groupname] = name
+            data["dataset_data_types"][name] = int
             if name not in data["list_of_counters"]:
                 data["list_of_counters"].append(name)
             data[name] = []
@@ -200,6 +212,8 @@ def create_dataset(data, datasets, group=None, dtype=None):
                 # counter_name = "%s/%s" % (group,counter)
                 data["datasets_and_counters"][dataset] = "_SINGLETON_/INDEX"
 
+                data["dataset_data_types"][dataset] = dtype
+
         return 0
 
     # Put the counter in the dictionary first.
@@ -239,6 +253,8 @@ def create_dataset(data, datasets, group=None, dtype=None):
             # counter_name = "%s/%s" % (group,counter)
             data["datasets_and_counters"][name] = counter
 
+            data["dataset_data_types"][name] = dtype
+
     return 0
 
 
@@ -265,6 +281,7 @@ def pack(data, event):
             key == "datasets_and_counters"
             or key == "groups"
             or key == "list_of_counters"
+            or key == "dataset_data_types"
         ):
             continue
 
@@ -411,7 +428,7 @@ def write_file_metadata(filename, mydict={}, write_default_values=True, append=T
 
 ################################################################################
 def write_to_file(
-    filename, data, comp_type=None, comp_opts=None, force_single_precision=True
+    filename, data, comp_type=None, comp_opts=None, force_single_precision=True,  verbose=False
 ):
 
     """ Writes the selected data to an HDF5 file
@@ -451,6 +468,7 @@ def write_to_file(
     mydataset = convert_list_and_key_to_string_data(
         data["groups"]["_SINGLETON_"], "_SINGLETONGROUP_"
     )
+    print(mydataset)
     dset = hdoutfile.create_dataset(
         "_SINGLETONGROUP_",
         data=mydataset,
@@ -481,6 +499,11 @@ def write_to_file(
                 name = "%s/%s" % (group, dataset)
 
             x = data[name]
+
+            dataset_dtype = data['dataset_data_types'][name]
+            #print(dataset_dtype)
+
+
             if type(x) == list:
                 x = np.array(x)
 
@@ -488,10 +511,38 @@ def write_to_file(
             if force_single_precision == True:
                 if x.dtype == np.float64:
                     x = x.astype(np.float32)
+                    dataset_dtype = np.float32
 
-            hdoutfile.create_dataset(
-                name, data=x, compression=comp_type, compression_opts=comp_opts
-            )
+            if dataset_dtype is not str:
+                hdoutfile.create_dataset(
+                    name, data=x, compression=comp_type, compression_opts=comp_opts, dtype=dataset_dtype
+                )
+            else:
+                #print(x)
+                #print(dataset_dtype)
+                #print(type(x[0]))
+                #x = x.astype(bytes)
+                #print(type(x[0]))
+                #dataset_dtype = h5.string_dtype(encoding='utf-8')
+                dataset_dtype = h5.string_dtype(encoding='ascii')
+                #dataset_dtype = h5.special_dtype(vlen=str)
+                #dataset_dtype = h5.vlen_dtype(np.dtype(str))
+                #dataset_dtype = 'S'
+                print(f"Writing strings to file for dataset {name}...this could take a while")
+                #print(x)
+                #df = hdoutfile.create_dataset(name, data=x, dtype='S256',  compression=comp_type, compression_opts=comp_opts)
+                df = hdoutfile.create_dataset(name, (len(x),1), dtype=dataset_dtype,  compression=comp_type, compression_opts=comp_opts)
+                #df = hdoutfile.create_dataset(name, (len(x),1), dtype=dataset_dtype,  data=x)
+                #df = hdoutfile.create_dataset(name, dtype=dataset_dtype,  data=x)
+                #df = x
+                for idx,value in enumerate(x):
+                    df[idx] = value
+
+
+
+            if (verbose):
+                print(f"Writing to file {name} as type {str(dataset_dtype)}")
+                   
 
     # Get the number of events
     counters = data["list_of_counters"]
