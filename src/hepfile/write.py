@@ -468,7 +468,6 @@ def write_to_file(
     mydataset = convert_list_and_key_to_string_data(
         data["groups"]["_SINGLETON_"], "_SINGLETONGROUP_"
     )
-    print(mydataset)
     dset = hdoutfile.create_dataset(
         "_SINGLETONGROUP_",
         data=mydataset,
@@ -518,26 +517,15 @@ def write_to_file(
                     name, data=x, compression=comp_type, compression_opts=comp_opts, dtype=dataset_dtype
                 )
             else:
-                #print(x)
-                #print(dataset_dtype)
-                #print(type(x[0]))
-                #x = x.astype(bytes)
-                #print(type(x[0]))
-                #dataset_dtype = h5.string_dtype(encoding='utf-8')
-                dataset_dtype = h5.string_dtype(encoding='ascii')
-                #dataset_dtype = h5.special_dtype(vlen=str)
-                #dataset_dtype = h5.vlen_dtype(np.dtype(str))
-                #dataset_dtype = 'S'
-                print(f"Writing strings to file for dataset {name}...this could take a while")
-                #print(x)
-                #df = hdoutfile.create_dataset(name, data=x, dtype='S256',  compression=comp_type, compression_opts=comp_opts)
-                df = hdoutfile.create_dataset(name, (len(x),1), dtype=dataset_dtype,  compression=comp_type, compression_opts=comp_opts)
-                #df = hdoutfile.create_dataset(name, (len(x),1), dtype=dataset_dtype,  data=x)
-                #df = hdoutfile.create_dataset(name, dtype=dataset_dtype,  data=x)
-                #df = x
-                for idx,value in enumerate(x):
-                    df[idx] = value
-
+                # For writing strings, we need to make sure our strings are ascii and not Unicode
+                # 
+                # See my question on StackOverflow and the super-helpful response!
+                #
+                # https://stackoverflow.com/questions/68500454/can-i-use-h5py-to-write-strings-to-an-hdf5-file-in-one-line-rather-than-looping
+                dataset_dtype = h5.special_dtype(vlen=str)
+                longest_word = len(max(x, key=len))
+                arr = np.array(x,dtype='S'+str(longest_word))
+                hdoutfile.create_dataset(name, data=arr, dtype=dataset_dtype,  compression=comp_type, compression_opts=comp_opts)
 
 
             if (verbose):
