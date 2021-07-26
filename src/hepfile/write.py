@@ -266,7 +266,7 @@ def pack(data, event, EMPTY_OUT_EVENT_BUCKET=True):
     (This is analagous to the ROOT TTree::Fill() member function).
 
     Args:
-	**data** (dict): Data dictionary to hold the entire dataset.
+	**data** (dict): Data dictionary to hold the entire dataset EDIT.
 
 	**event** (dict): Event to be packed into data.
 
