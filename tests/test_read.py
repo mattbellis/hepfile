@@ -36,12 +36,12 @@ def test_load():
     desired_datasets = ['jet','muon']
     subset = 1000
 
-    test_data,test_event = hepfile.load(filename, False, desired_datasets, subset)
+    test_data,test_bucket = hepfile.load(filename, False, desired_datasets, subset)
 
     assert isinstance(test_data, dict)
-    assert isinstance(test_event, dict)
+    assert isinstance(test_bucket, dict)
 
-    assert isEmpty(test_event) == True
+    assert isEmpty(test_bucket) == True
     assert isEmpty(test_data) == False
 
 def test_unpack():
@@ -52,11 +52,11 @@ def test_unpack():
     desired_datasets = ['jet','muon']
     subset = 1000
 
-    event, data = hepfile.load(filename, False, desired_datasets, subset)
+    bucket, data = hepfile.load(filename, False, desired_datasets, subset)
 
-    hepfile.unpack(data, event)
+    hepfile.unpack(data, bucket)
 
-    assert isEmpty(event) == False
+    assert isEmpty(bucket) == False
 
 
 def test_get_nbuckets():

@@ -45,7 +45,7 @@ town = hep.initialize()
 setup_group(town, 'people', 'ID', p_cols)
 setup_group(town, 'vehicles', 'ID', v_cols)
 setup_group(town, 'houses', 'ID', h_cols)
-bucket = hep.create_single_event(town)
+bucket = hep.create_single_bucket(town)
 
 for i in range(min_ID, max_ID+1):
     fill_event_group(bucket, i, 'people', p_cols, p_ID, p_data)

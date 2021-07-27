@@ -6,7 +6,7 @@ def load(filename=None, verbose=False, desired_datasets=None, subset=None):
 
     '''
     Reads all, or a subset of the data, from the HDF5 file to fill a data dictionary.
-    Returns an empty dictionary to be filled later with select events.
+    Returns an empty dictionary to be filled later with data from individual buckets.
 
     Args:
 	**filename** (string): Name of the input file
@@ -15,12 +15,12 @@ def load(filename=None, verbose=False, desired_datasets=None, subset=None):
 
 	**desired_datasets** (list): Datasets to be read from input file
 
-	**subset** (int): Number of events to be read from input file
+	**subset** (int): Number of buckets to be read from input file
 
     Returns:
 	**ourdata** (dict): Selected data from HDF5 file
 	
-	**event** (dict): An empty event dictionary to be filled by individual events
+	**bucket** (dict): An empty bucket dictionary to be filled by data from select buckets
 
     '''
 
@@ -43,7 +43,7 @@ def load(filename=None, verbose=False, desired_datasets=None, subset=None):
             subset = (0, subset)
         ourdata["_NUMBER_OF_BUCKETS_"] = subset[1] - subset[0]
 
-    event = {}
+    bucket = {}
 
     # Get the datasets and counters
     dc = f["_MAP_DATASETS_TO_COUNTERS_"]
@@ -108,6 +108,8 @@ def load(filename=None, verbose=False, desired_datasets=None, subset=None):
     # Pull out the counters first and build the indices
     print("Building the indices...")
     for name in ourdata["_LIST_OF_COUNTERS_"]:
+
+        # If we passed in subset, grab that slice of the data from the file
         if subset is not None:
             ourdata[name] = f[name][subset[0] : subset[1]]
         else:
@@ -146,33 +148,33 @@ def load(filename=None, verbose=False, desired_datasets=None, subset=None):
             else:
                 ourdata[datasetname] = data[:]
 
-            event[datasetname] = None  # This will be filled for individual events
+            bucket[datasetname] = None  # This will be filled for individual bucket
             if verbose == True:
                 print(data)
 
     f.close()
     print("Data is read in and input file is closed.")
 
-    return ourdata, event
+    return ourdata, bucket
 
 
 ################################################################################
 
 
 ################################################################################
-def unpack(event, data, n=0):
+def unpack(bucket, data, n=0):
 
-    """ Fills the event dictionary with selected events.
+    """ Fills the bucket dictionary with selected rows from the data dictionary.
 
     Args:
 
-	**event** (dict): Event dictionary to be filled
+	**bucket** (dict): bucket dictionary to be filled
 
-	**data** (dict): Data dictionary used to fill the event dictionary
+	**data** (dict): Data dictionary used to fill the bucket dictionary
 
     """
 
-    keys = event.keys()
+    keys = bucket.keys()
 
     for key in keys:
 
@@ -181,7 +183,7 @@ def unpack(event, data, n=0):
         # print(data['_LIST_OF_COUNTERS_'],key)
         if key in data["_LIST_OF_COUNTERS_"] or key in data["_SINGLETONS_GROUP_"]:
             # print("here! ",key)
-            event[key] = data[key][n]
+            bucket[key] = data[key][n]
 
         elif "INDEX" not in key:  # and 'Jets' in key:
             indexkey = data["_MAP_DATASETS_TO_INDEX_"][key]
@@ -192,7 +194,7 @@ def unpack(event, data, n=0):
 
             if len(data[numkey]) > 0:
                 nobjs = data[numkey][n]
-                event[key] = data[key][index : index + nobjs]
+                bucket[key] = data[key][index : index + nobjs]
 
 
 ################################################################################

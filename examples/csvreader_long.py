@@ -37,7 +37,7 @@ hep.create_dataset(town, ['houses/# of bedrooms', 'houses/Square footage','house
                             'houses/Estimate'], dtype = int)
 hep.create_dataset(town, 'houses/# of bathrooms', dtype = float)
 
-bucket = hep.create_single_event(town)
+bucket = hep.create_single_bucket(town)
 
 for i in range(0,4):
     for j in range(len(people_ID)):

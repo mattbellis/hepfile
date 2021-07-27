@@ -18,12 +18,12 @@ def write_file_for_unit_tests():
 
     hepfile.create_dataset(data, ["METpx", "METpy"], dtype=float)
 
-    event = hepfile.create_single_event(data)
+    event = hepfile.create_single_bucket(data)
 
     #'''
     for i in range(0, 10):
 
-        #hepfile.clear_event(event)
+        #hepfile.clear_bucket(event)
 
         njet = 5
         event["jet/njet"] = njet

@@ -21,7 +21,7 @@ def initialize():
     data["_MAP_DATASETS_TO_COUNTERS_"] = {}
     data["_LIST_OF_COUNTERS_"] = []
 
-    # For singleton entries, variables with only one entry per event.
+    # For singleton entries, variables with only one entry per bucket.
     data["_GROUPS_"]["_SINGLETONS_GROUP_"] = ["COUNTER"]
     data["_MAP_DATASETS_TO_COUNTERS_"]["_SINGLETONS_GROUP_"] = "_SINGLETONS_GROUP_/COUNTER"
     data["_LIST_OF_COUNTERS_"].append("_SINGLETONS_GROUP_/COUNTER")
@@ -42,61 +42,61 @@ def initialize():
 
 
 ################################################################################
-def clear_event(event):
+def clear_bucket(bucket):
 
-    """ Clears the data from the event dictionary - should the name of the function change?
+    """ Clears the data from the bucket dictionary - should the name of the function change?
 
     Args:
-	**event** (dict): The dictionary to be cleared. This is designed to clear the data from
-                      the lists in the **event** dictionary, but theoretically, it would
+	**bucket** (dict): The dictionary to be cleared. This is designed to clear the data from
+                      the lists in the **bucket** dictionary, but theoretically, it would
                       clear out the lists from any dictionary. 
 
     """
 
-    for key in event.keys():
-        if type(event[key]) == list:
-            event[key].clear()
+    for key in bucket.keys():
+        if type(bucket[key]) == list:
+            bucket[key].clear()
 
         #'''
         # Is this the right thing to do here?????
-        elif type(event[key]) == int:
-            event[key] = 0
-        elif type(event[key]) == float:
-            event[key] = 0.0
+        elif type(bucket[key]) == int:
+            bucket[key] = 0
+        elif type(bucket[key]) == float:
+            bucket[key] = 0.0
         #'''
 
 
 ################################################################################
-# Create a single event (dictionary) that will eventually be used to fill
+# Create a single bucket (dictionary) that will eventually be used to fill
 # the overall dataset
 ################################################################################
-def create_single_event(data):
+def create_single_bucket(data):
 
-    """ Creates an event dictionary that will be used to collect data and then
+    """ Creates an bucket dictionary that will be used to collect data and then
     packed into the the master data dictionary.
 
     Args:
-	**data** (dict): Data dictionary that will hold all the data from the events.
+	**data** (dict): Data dictionary that will hold all the data from the bucket.
 
     Returns:
-	**event** (dict): The new event dictionary with keys and no event information
+	**bucket** (dict): The new bucket dictionary with keys and no bucket information
 
     """
 
-    event = {}
+    bucket = {}
 
     for k in data.keys():
         ### IS THIS FIRST ONE DEPRECATED FOR SOME EARLIER DEV CYCLE???
         if k[-5:] == "index":
-            event[k] = data[k]
+            bucket[k] = data[k]
         elif k in data["_GROUPS_"]["_SINGLETONS_GROUP_"]:
-            event[k] = None
+            bucket[k] = None
         elif k in data["_LIST_OF_COUNTERS_"]:
-            event[k] = 0
+            bucket[k] = 0
         else:
-            event[k] = data[k].copy()
+            bucket[k] = data[k].copy()
 
-    return event
+    return bucket
 
 
 ################################################################################
@@ -260,25 +260,25 @@ def create_dataset(data, datasets, group=None, dtype=None):
 
 
 ################################################################################
-def pack(data, event, EMPTY_OUT_BUCKET=True):
+def pack(data, bucket, EMPTY_OUT_BUCKET=True):
 
-    """ Takes the data from an event and packs it into the data dictionary, 
+    """ Takes the data from an bucket and packs it into the data dictionary, 
     intelligently, so that it can be stored and extracted efficiently. 
     (This is analagous to the ROOT TTree::Fill() member function).
 
     Args:
 	**data** (dict): Data dictionary to hold the entire dataset EDIT.
 
-	**event** (dict): Event to be packed into data.
+	**bucket** (dict): bucket to be packed into data.
 
-	**EMPTY_OUT_BUCKET** (bool): If this is `True` then empty out the `event`
+	**EMPTY_OUT_BUCKET** (bool): If this is `True` then empty out the `bucket`
 				container in preparation for the next iteration. We used to ask the users to do
 				this "by hand" but now do it automatically by default. We allow the user to 
 				not do this, if they are running some sort of debugging. 
 
     """
 
-    keys = list(event.keys())
+    keys = list(bucket.keys())
 
     for key in keys:
         # print(key)
@@ -291,20 +291,20 @@ def pack(data, event, EMPTY_OUT_BUCKET=True):
         ):
             continue
 
-        # The singletons will only have 1 entry per event
+        # The singletons will only have 1 entry per bucket
         if key == "_SINGLETONS_GROUP_/COUNTER":
             data[key].append(1)
             continue
 
         # if key[-5:] == 'counter':
         # continue
-        if type(event[key]) == list:
-            value = event[key]
+        if type(bucket[key]) == list:
+            value = bucket[key]
             if len(value) > 0:
                 data[key] += value
             """
             else:
-                # No entries for this event
+                # No entries for this bucket
                 #print(key)
                 counter = data['_MAP_DATASETS_TO_COUNTERS_'][key]
                 data[counter].append(0)
@@ -314,23 +314,23 @@ def pack(data, event, EMPTY_OUT_BUCKET=True):
         else:
             # This is for counters and SINGLETONS
             if key in data["_GROUPS_"]["_SINGLETONS_GROUP_"]:
-                if event[key] == None:
+                if bucket[key] == None:
                     print(
-                        "\n\033[1m%s\033[0m is part of the SINGLETON group and is expected to have a value for each event."
+                        "\n\033[1m%s\033[0m is part of the SINGLETON group and is expected to have a value for each bucket."
                         % (key)
                     )
                     print("However it is None...exiting.\n")
                     exit()
                 # Append the single value from the singletons
                 else:
-                    data[key].append(event[key])
+                    data[key].append(bucket[key])
             # Append the values to the counters
             else:
-                data[key].append(event[key])
+                data[key].append(bucket[key])
 
-    # Clear out the event after it's been packed if that's what we want
+    # Clear out the bucket after it's been packed if that's what we want
     if EMPTY_OUT_BUCKET:
-        clear_event(event)
+        clear_bucket(bucket)
 
 ################################################################################
 def convert_list_and_key_to_string_data(datalist, key):
@@ -545,7 +545,7 @@ def write_to_file(
                 print(f"Writing to file {name} as type {str(dataset_dtype)}")
                    
 
-    # Get the number of events
+    # Get the number of buckets
     counters = data["_LIST_OF_COUNTERS_"]
     _NUMBER_OF_BUCKETS_ = -1
     prevcounter = None

@@ -18,12 +18,12 @@ hepfile.create_dataset(data,['e','px','py','pz'],group='muons',dtype=float)
 
 hepfile.create_dataset(data,['METpx','METpy'],dtype=float)
 
-event = hepfile.create_single_event(data)
+event = hepfile.create_single_bucket(data)
 
 rando_words = ["hi", "bye", "ciao", "aloha"]
 
 #'''
-for i in range(0,10):
+for i in range(0,10000):
 
     #hepfile.clear_event(event)
 
