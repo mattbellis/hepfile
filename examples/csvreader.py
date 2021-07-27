@@ -15,7 +15,7 @@ def sep_cols_data_ids(filename):
                      delimiter=",", comments = '$')
 
     data_ID = data[0][1:].astype(np.int32)
-    cols = data[1:, 0]
+    cols = data[1:, 0].tolist()
     data = data[1:, 1:]
     return cols, data, data_ID
 
