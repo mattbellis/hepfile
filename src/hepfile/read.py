@@ -13,7 +13,8 @@ def load(filename=None, verbose=False, desired_datasets=None, subset=None):
 	
 	**verbose** (boolean): True if debug output is required
 
-	**desired_datasets** (list): Datasets to be read from input file
+	**desired_datasets** (list): Datasets to be read from input file, THIS IS REALLY
+    STRING MATCHING SO THE USER COULD PASS IN A GROUP NAME. IS THIS RIGHT?
 
 	**subset** (int): Number of buckets to be read from input file
 
@@ -87,6 +88,8 @@ def load(filename=None, verbose=False, desired_datasets=None, subset=None):
             entry = entries[i]
 
             is_dropped = True
+            # This is looking to see if the string is anywhere in the name
+            # of the dataset
             for desdat in desired_datasets:
                 if desdat in entry:
                     is_dropped = False
@@ -109,6 +112,7 @@ def load(filename=None, verbose=False, desired_datasets=None, subset=None):
     print("Building the indices...")
     for name in ourdata["_LIST_OF_COUNTERS_"]:
 
+        ################# THIS IS NOT GETTING THE RIGHT INDEX!!!!!!!!
         # If we passed in subset, grab that slice of the data from the file
         if subset is not None:
             ourdata[name] = f[name][subset[0] : subset[1]]
