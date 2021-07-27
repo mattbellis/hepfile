@@ -4,20 +4,26 @@ import hepfile as hep
 
 def sep_cols_data_ids(filename):
 
-    with open(filename) as input:
-        cols = input.read().split('\n', 1)[0].split(",")[1:]
+    #with open(filename) as input:
+    #    cols = input.read().split('\n', 1)[0].split(",")[1:]
 
+    #data = np.loadtxt(filename, unpack=True, dtype=str,
+    #                  delimiter=",", skiprows=1)
+    #data_ID = data[0].astype(np.int32)
+    #data = data[1:]
     data = np.loadtxt(filename, unpack=True, dtype=str,
-                      delimiter=",", skiprows=1)
-    data_ID = data[0].astype(np.int32)
-    data = data[1:]
+                     delimiter=",", comments = '$')
+
+    data_ID = data[0][1:].astype(np.int32)
+    cols = data[1:, 0]
+    data = data[1:, 1:]
     return cols, data, data_ID
 
 
 def setup_group(data, groupname, counter, datasets):
     hep.create_group(data, groupname=groupname, counter=counter)
-    for dset in datasets:
-        hep.create_dataset(data, dset, group=groupname, dtype = str)
+    #for dset in datasets:
+    hep.create_dataset(data, datasets, group=groupname, dtype = str)
 
 
 def fill_event_group(event, i, groupname, cols, counters, data):
