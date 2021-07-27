@@ -32,47 +32,47 @@ def load(filename=None, verbose=False, desired_datasets=None, subset=None):
         return None
 
     ourdata = {}
-    ourdata["datasets_and_counters"] = {}
-    ourdata["datasets_and_indices"] = {}
-    ourdata["list_of_counters"] = []
-    ourdata["all_datasets"] = []
+    ourdata["_MAP_DATASETS_TO_COUNTERS_"] = {}
+    ourdata["_MAP_DATASETS_TO_INDEX_"] = {}
+    ourdata["_LIST_OF_COUNTERS_"] = []
+    ourdata["_LIST_OF_DATASETS_"] = []
 
-    ourdata["nentries"] = f.attrs["nentries"]
+    ourdata["_NUMBER_OF_BUCKETS_"] = f.attrs["_NUMBER_OF_BUCKETS_"]
     if subset is not None:
         if type(subset) == int:
             subset = (0, subset)
-        ourdata["nentries"] = subset[1] - subset[0]
+        ourdata["_NUMBER_OF_BUCKETS_"] = subset[1] - subset[0]
 
     event = {}
 
     # Get the datasets and counters
-    dc = f["datasets_and_counters"]
+    dc = f["_MAP_DATASETS_TO_COUNTERS_"]
     for vals in dc:
         # The decode is there because vals were stored as numpy.bytes
         counter = vals[1].decode()
         index = "%s_INDEX" % (counter)
-        ourdata["datasets_and_counters"][vals[0].decode()] = counter
-        ourdata["datasets_and_indices"][vals[0].decode()] = index
-        ourdata["list_of_counters"].append(vals[1].decode())
-        ourdata["all_datasets"].append(vals[0].decode())
-        ourdata["all_datasets"].append(vals[1].decode())  # Get the counters as well
+        ourdata["_MAP_DATASETS_TO_COUNTERS_"][vals[0].decode()] = counter
+        ourdata["_MAP_DATASETS_TO_INDEX_"][vals[0].decode()] = index
+        ourdata["_LIST_OF_COUNTERS_"].append(vals[1].decode())
+        ourdata["_LIST_OF_DATASETS_"].append(vals[0].decode())
+        ourdata["_LIST_OF_DATASETS_"].append(vals[1].decode())  # Get the counters as well
 
     # We may have added some strings (like counters) multiple times.
-    ourdata["list_of_counters"] = np.unique(ourdata["list_of_counters"]).tolist()
-    ourdata["all_datasets"] = np.unique(ourdata["all_datasets"]).tolist()
+    ourdata["_LIST_OF_COUNTERS_"] = np.unique(ourdata["_LIST_OF_COUNTERS_"]).tolist()
+    ourdata["_LIST_OF_DATASETS_"] = np.unique(ourdata["_LIST_OF_DATASETS_"]).tolist()
 
     # Pull out the SINGLETON datasets
     sg = f["_SINGLETONGROUP_"][0]  # This is a numpy array of strings
     decoded_string = sg[1].decode()
 
     vals = decoded_string.split("__:__")
-    vals.remove("INDEX")
+    vals.remove("COUNTER")
 
-    ourdata["_SINGLETON_"] = vals
+    ourdata["_SINGLETONS_GROUP_"] = vals
 
     # Get the list of datasets and groups, but remove the
-    # 'datasets_and_counters', as that is a protected key.
-    entries = ourdata["all_datasets"]
+    # '_MAP_DATASETS_TO_COUNTERS_', as that is a protected key.
+    entries = ourdata["_LIST_OF_DATASETS_"]
 
     ########################################################
     # Only keep select data from file
@@ -101,13 +101,13 @@ def load(filename=None, verbose=False, desired_datasets=None, subset=None):
 
     if verbose == True:
         print("Datasets and counters:")
-        print(ourdata["datasets_and_counters"])
+        print(ourdata["_MAP_DATASETS_TO_COUNTERS_"])
         print("\nDatasets and indices:")
-        print(ourdata["list_of_counters"])
+        print(ourdata["_LIST_OF_COUNTERS_"])
 
     # Pull out the counters first and build the indices
     print("Building the indices...")
-    for name in ourdata["list_of_counters"]:
+    for name in ourdata["_LIST_OF_COUNTERS_"]:
         if subset is not None:
             ourdata[name] = f[name][subset[0] : subset[1]]
         else:
@@ -117,8 +117,8 @@ def load(filename=None, verbose=False, desired_datasets=None, subset=None):
         indexname = "%s_INDEX" % (name)
         index = np.zeros(len(ourdata[name]), dtype=int)
         start = 0
-        nentries = len(index)
-        for i in range(0, nentries):
+        _NUMBER_OF_BUCKETS_ = len(index)
+        for i in range(0, _NUMBER_OF_BUCKETS_):
             index[i] = start
             nobjs = ourdata[name][i]
             start = index[i] + nobjs
@@ -130,8 +130,8 @@ def load(filename=None, verbose=False, desired_datasets=None, subset=None):
 
         # The decode is there because counter is a numpy.bytes object
         counter = None
-        if name not in ourdata["list_of_counters"]:
-            counter = ourdata["datasets_and_counters"][name]
+        if name not in ourdata["_LIST_OF_COUNTERS_"]:
+            counter = ourdata["_MAP_DATASETS_TO_COUNTERS_"][name]
 
         if verbose == True:
             print(f[name])
@@ -178,14 +178,14 @@ def unpack(event, data, n=0):
 
         # if "num" in key:
         # IS THERE A WAY THAT THIS COULD BE FASTER?
-        # print(data['list_of_counters'],key)
-        if key in data["list_of_counters"] or key in data["_SINGLETON_"]:
+        # print(data['_LIST_OF_COUNTERS_'],key)
+        if key in data["_LIST_OF_COUNTERS_"] or key in data["_SINGLETONS_GROUP_"]:
             # print("here! ",key)
             event[key] = data[key][n]
 
         elif "INDEX" not in key:  # and 'Jets' in key:
-            indexkey = data["datasets_and_indices"][key]
-            numkey = data["datasets_and_counters"][key]
+            indexkey = data["_MAP_DATASETS_TO_INDEX_"][key]
+            numkey = data["_MAP_DATASETS_TO_COUNTERS_"][key]
 
             if len(data[indexkey]) > 0:
                 index = data[indexkey][n]
@@ -196,7 +196,7 @@ def unpack(event, data, n=0):
 
 
 ################################################################################
-def get_nentries(filename):
+def get_nbuckets(filename):
 
     """ Get the number of entries in the file.
 
@@ -206,12 +206,12 @@ def get_nentries(filename):
 
     a = f.attrs
 
-    if a.__contains__("nentries"):
-        nentries = a.get("nentries")
+    if a.__contains__("_NUMBER_OF_BUCKETS_"):
+        _NUMBER_OF_BUCKETS_ = a.get("_NUMBER_OF_BUCKETS_")
         f.close()
-        return nentries
+        return _NUMBER_OF_BUCKETS_
     else:
-        print('\nFile does not contain the attribute, "nentries"\n')
+        print('\nFile does not contain the attribute, "_NUMBER_OF_BUCKETS_"\n')
         f.close()
         return None
 
@@ -261,7 +261,7 @@ def print_file_metadata(filename):
 
     keys = list(metadata.keys())
 
-    first_keys_to_print = ["date", "nentries"]
+    first_keys_to_print = ["date", "_NUMBER_OF_BUCKETS_"]
 
     keys_already_printed = []
 

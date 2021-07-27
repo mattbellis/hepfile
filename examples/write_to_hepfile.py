@@ -16,12 +16,16 @@ hepfile.create_dataset(data,['words'],group='jet',dtype=str)
 hepfile.create_group(data,'muons',counter='nmuon')
 hepfile.create_dataset(data,['e','px','py','pz'],group='muons',dtype=float)
 
+hepfile.create_dataset(data,['METpx','METpy'],dtype=float)
+
 event = hepfile.create_single_event(data)
 
 rando_words = ["hi", "bye", "ciao", "aloha"]
 
 #'''
-for i in range(0,10000):
+for i in range(0,10):
+
+    #hepfile.clear_event(event)
 
     njet = 5
     event['jet/njet'] = njet
@@ -36,6 +40,10 @@ for i in range(0,10000):
 
         event['jet/words'].append(np.random.choice(rando_words))
 
+    event['METpx'] = np.random.random()
+    event['METpy'] = np.random.random()
+
+    #hepfile.pack(data,event,EMPTY_OUT_BUCKET=False)
     hepfile.pack(data,event)
 
 print("Writing the file...")

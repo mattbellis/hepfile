@@ -1,12 +1,19 @@
 import numpy as np
-import h5py as h5
 import hepfile 
+import h5py as h5
 
 import time
 
 import sys
 sys.path.append('./scripts')
 #from write_h5hep_file_for_unit_tests import write_h5hep_file_for_unit_tests
+
+#sys.path.append('../src/hepfile')
+#import write as hepfile
+#import read as read
+
+#from write_file_for_unit_tests import write_file_for_unit_tests
+
 
 def isEmpty(dictionary):
     test = True
@@ -27,11 +34,13 @@ def test_initialize():
 
     test_data = hepfile.initialize()
 
+    print(test_data)
+
     assert isinstance(test_data, dict)
-    assert test_data['groups']['_SINGLETON_'] ==  ['INDEX']
-    assert test_data['datasets_and_counters']['_SINGLETON_'] == '_SINGLETON_/INDEX'
-    assert test_data['list_of_counters'] == ['_SINGLETON_/INDEX']
-    assert test_data['_SINGLETON_/INDEX'] == []
+    assert test_data['_GROUPS_']['_SINGLETONS_GROUP_'] ==  ['COUNTER']
+    assert test_data['_MAP_DATASETS_TO_COUNTERS_']['_SINGLETONS_GROUP_'] == '_SINGLETONS_GROUP_/COUNTER'
+    assert test_data['_LIST_OF_COUNTERS_'] == ['_SINGLETONS_GROUP_/COUNTER']
+    assert test_data['_SINGLETONS_GROUP_/COUNTER'] == []
 
 
 def test_clear_event():
@@ -47,6 +56,7 @@ def test_clear_event():
     hepfile.clear_event(event)
 
     assert isEmpty(event) == True
+
 
 def test_create_single_event():
 
@@ -68,7 +78,7 @@ def test_create_group():
     data = hepfile.initialize()
     hepfile.create_group(data,'jet',counter='njet')
 
-    assert isEmpty(data['groups']) == False
+    assert isEmpty(data['_GROUPS_']) == False
     assert 'jet/njet' in data.keys()
 
 
@@ -79,14 +89,15 @@ def test_create_dataset():
     hepfile.create_dataset(data,['e','px','py','pz'],group='jet',dtype=float)
 
 
-    assert isEmpty(data['groups']) == False
+    assert isEmpty(data['_GROUPS_']) == False
     assert 'jet/njet' in data.keys()
     assert 'jet/e' in data.keys()
     assert 'jet/px' in data.keys()
-    assert 'jet/e' in data['datasets_and_counters'].keys()
-    assert data['datasets_and_counters']['jet/e'] == 'jet/njet'
+    assert 'jet/e' in data['_MAP_DATASETS_TO_COUNTERS_'].keys()
+    assert data['_MAP_DATASETS_TO_COUNTERS_']['jet/e'] == 'jet/njet'
 
 
+#'''
 def test_write_file_metadata():
 
     filename = "FOR_TESTS.hdf5"
@@ -116,6 +127,7 @@ def test_write_file_metadata():
     assert file.attrs['author'] == 'John Doe'
 
     file.close()
+#'''
     
 
 

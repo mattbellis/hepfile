@@ -3,6 +3,8 @@ import sys
 import hepfile
 
 #sys.path.append("../hepfile")
+#sys.path.append("../src/hepfile")
+#import write as hepfile
 
 
 def write_file_for_unit_tests():
@@ -14,12 +16,14 @@ def write_file_for_unit_tests():
     hepfile.create_group(data, "muons", counter="nmuon")
     hepfile.create_dataset(data, ["e", "px", "py", "pz"], group="muons", dtype=float)
 
+    hepfile.create_dataset(data, ["METpx", "METpy"], dtype=float)
+
     event = hepfile.create_single_event(data)
 
     #'''
     for i in range(0, 10):
 
-        hepfile.clear_event(event)
+        #hepfile.clear_event(event)
 
         njet = 5
         event["jet/njet"] = njet
@@ -29,6 +33,9 @@ def write_file_for_unit_tests():
             event["jet/px"].append(np.random.random())
             event["jet/py"].append(np.random.random())
             event["jet/pz"].append(np.random.random())
+
+        event['METpx'] = np.random.random()
+        event['METpy'] = np.random.random()
 
         hepfile.pack(data, event)
 

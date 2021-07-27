@@ -59,15 +59,15 @@ def test_unpack():
     assert isEmpty(event) == False
 
 
-def test_get_nentries():
+def test_get_nbuckets():
 	
     # This assumes you run nosetests from the h5hep directory and not 
     # the tests directory.
     filename = "FOR_TESTS.hdf5"
 
-    nentries = hepfile.get_nentries(filename)
+    nbuckets = hepfile.get_nbuckets(filename)
 
-    assert nentries == 10
+    assert nbuckets == 10
 
 def test_get_file_metadata():
 

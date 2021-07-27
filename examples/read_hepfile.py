@@ -1,4 +1,3 @@
-import h5py as h5
 import numpy as np
 import matplotlib.pylab as plt
 import time
@@ -6,6 +5,10 @@ import time
 import hepfile
 
 import sys
+
+#sys.path.append('../src/hepfile')
+#import read as hepfile
+
 
 filename = sys.argv[1]
 
@@ -17,8 +20,8 @@ data,event = hepfile.load(filename,verbose=False)#,subset=10000)
 
 #print(data['list_of_counters'])
 
-nentries = data['nentries']
-print("nentries: ",nentries)
+nbuckets = hepfile.get_nbuckets(filename)
+print("nentries: ",nbuckets)
 
 #print(type(data),type(event))
 
@@ -39,7 +42,7 @@ for key in event.keys():
     print(key)
 '''
 
-for i in range(0,nentries):
+for i in range(0,nbuckets):
 
     if i%10000==0:
         print(i)
