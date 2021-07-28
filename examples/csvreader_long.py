@@ -42,22 +42,22 @@ bucket = hep.create_single_bucket(town)
 for i in range(0,4):
     for j in range(len(people_ID)):
         if people_ID[j] == i:
-            bucket['people/First name'] = people[1, j+1]
-            bucket['people/Last name'] = people[2, j+1]
-            bucket['people/Gender ID'] = people[3, j+1]
-            bucket['people/Age'] = people[4, j+1].astype(np.int32)
-            bucket['people/Height'] = people[5, j+1].astype(np.int32)
-            bucket['people/Yearly Income'] = people[6, j+1].astype(np.int32)
-            bucket['people/Highest degree/grade'] = people[6, j+1]
+            bucket['people/First name'].append(people[1, j+1])
+            bucket['people/Last name'].append(people[2, j+1])
+            bucket['people/Gender ID'].append(people[3, j+1])
+            bucket['people/Age'].append(people[4, j+1].astype(np.int32))
+            bucket['people/Height'].append(people[5, j+1].astype(np.int32))
+            bucket['people/Yearly Income'].append(people[6, j+1].astype(np.int32))
+            bucket['people/Highest degree/grade'].append(people[6, j+1])
             bucket['people/ID'] += 1
     
     for j in range(len(vehicles_ID)):
         if vehicles_ID[j] == i:
-            bucket['vehicles/Type of vehicle'] = vehicles[1, j+1]
-            bucket['vehicles/# of riders'] = vehicles[2, j+1].astype(np.int32)
-            bucket['vehicles/Gas/electric/human powered'] = vehicles[3, j+1]
-            bucket['vehicles/Year'] = vehicles[4, j+1].astype(np.int32)
-            bucket['vehicles/Cost'] = vehicles[5, j+1].astype(np.int32)
+            bucket['vehicles/Type of vehicle'].append(vehicles[1, j+1])
+            bucket['vehicles/# of riders'].append(vehicles[2, j+1].astype(np.int32))
+            bucket['vehicles/Gas/electric/human powered'].append(vehicles[3, j+1])
+            bucket['vehicles/Year'].append(vehicles[4, j+1].astype(np.int32))
+            bucket['vehicles/Cost'].append(vehicles[5, j+1].astype(np.int32))
             bucket['vehicles/ID'] += 1
     
     bucket['houses/House/apartment/condo'] = houses[1, i+1]

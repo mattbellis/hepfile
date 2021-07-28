@@ -87,6 +87,7 @@ def test_create_dataset():
     data = hepfile.initialize()
     hepfile.create_group(data,'jet',counter='njet')
     hepfile.create_dataset(data,['e','px','py','pz'],group='jet',dtype=float)
+    hepfile.create_dataset(data, 'METpx', dtype = int)
 
 
     assert isEmpty(data['_GROUPS_']) == False
@@ -95,6 +96,11 @@ def test_create_dataset():
     assert 'jet/px' in data.keys()
     assert 'jet/e' in data['_MAP_DATASETS_TO_COUNTERS_'].keys()
     assert data['_MAP_DATASETS_TO_COUNTERS_']['jet/e'] == 'jet/njet'
+    assert data["_MAP_DATASETS_TO_DATA_TYPES_"]['jet/e'] == float
+
+    assert 'METpx' in data["_GROUPS_"]["_SINGLETONS_GROUP_"]
+    assert data["_MAP_DATASETS_TO_COUNTERS_"]['METpx'] == "_SINGLETONS_GROUP_/COUNTER"
+    assert data["_MAP_DATASETS_TO_DATA_TYPES_"]['METpx'] == int
 
 
 #'''
