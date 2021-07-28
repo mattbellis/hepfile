@@ -9,7 +9,7 @@ Introduction
 This should be updated!
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 3
    :titlesonly:
    :caption: Contents
    :glob:
@@ -17,10 +17,14 @@ This should be updated!
 .. toctree::
    :maxdepth: 2
 
-   installation 
    background
+   installation 
    schema
+   fundamentals
    usage
+   citations
+   contributors
+
 
 
 
