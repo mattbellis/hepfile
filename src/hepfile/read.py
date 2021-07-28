@@ -56,7 +56,7 @@ def load(filename=None, verbose=False, desired_datasets=None, subset=None):
         if type(subset) is int:
             print("Single subset value of {subset} being interpreted as a high range")
             print(f"subset being set to a range of (0,{subset})\n")
-            subset = (0, subset)
+            subset = [0, subset]
 
         # Make sure the user is not asking for something bigger than the file!
         nbuckets = data["_NUMBER_OF_BUCKETS_"]
