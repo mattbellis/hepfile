@@ -23,7 +23,7 @@ event = hepfile.create_single_bucket(data)
 rando_words = ["hi", "bye", "ciao", "aloha"]
 
 #'''
-for i in range(0,10000):
+for i in range(0,10):
 
     #hepfile.clear_event(event)
 

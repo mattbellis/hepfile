@@ -15,6 +15,7 @@ sys.path.append('./scripts')
 #from write_file_for_unit_tests import write_file_for_unit_tests
 
 
+############################################################################
 def isEmpty(dictionary):
     test = True
     print(dictionary.keys())
@@ -29,7 +30,9 @@ def isEmpty(dictionary):
                 test = False
 
     return test
+################################################################################
 
+################################################################################
 def test_initialize():
 
     test_data = hepfile.initialize()
@@ -41,8 +44,10 @@ def test_initialize():
     assert test_data['_MAP_DATASETS_TO_COUNTERS_']['_SINGLETONS_GROUP_'] == '_SINGLETONS_GROUP_/COUNTER'
     assert test_data['_LIST_OF_COUNTERS_'] == ['_SINGLETONS_GROUP_/COUNTER']
     assert test_data['_SINGLETONS_GROUP_/COUNTER'] == []
+################################################################################
 
 
+################################################################################
 def test_clear_bucket():
 	
     # This assumes you run nosetests from the h5hep directory and not 
@@ -56,8 +61,10 @@ def test_clear_bucket():
     hepfile.clear_bucket(bucket)
 
     assert isEmpty(bucket) == True
+################################################################################
 
 
+################################################################################
 def test_create_single_bucket():
 
     data = hepfile.initialize()
@@ -72,7 +79,9 @@ def test_create_single_bucket():
 
     assert isEmpty(test_bucket) == False
     assert isinstance(test_bucket, dict)
+################################################################################
 
+################################################################################
 def test_create_group():
 
     data = hepfile.initialize()
@@ -80,8 +89,46 @@ def test_create_group():
 
     assert isEmpty(data['_GROUPS_']) == False
     assert 'jet/njet' in data.keys()
+################################################################################
+
+################################################################################
+def test_pack():
+
+    data = hepfile.initialize()
+    hepfile.create_group(data,'obj',counter='nobj')
+    hepfile.create_dataset(data,['myfloat'],group='obj',dtype=float)
+    hepfile.create_dataset(data,['myint'],group='obj',dtype=int)
+    hepfile.create_dataset(data,['mystr'],group='obj',dtype=str)
+
+    bucket = hepfile.create_single_bucket(data)
+
+    for i in range(5):
+        bucket['obj/myfloat'].append(2.0)
+        bucket['obj/myint'].append(2)
+        bucket['obj/mystr'].append('two')
+    bucket['obj/nobj'] = 5
 
 
+    test = hepfile.pack(data,bucket)
+    assert test == 0
+    assert len(data['obj/myfloat']) == 5
+    assert len(data['obj/myint']) == 5
+    assert len(data['obj/mystr']) == 5
+    assert data['obj/nobj'][0] == 5
+
+    assert len(bucket['obj/myfloat']) == 0
+    assert len(bucket['obj/myint']) == 0
+    assert len(bucket['obj/mystr']) == 0
+    assert bucket['obj/nobj'] is 0
+
+    #assert type(data['obj/mystr'][0]) is str
+
+
+
+################################################################################
+
+
+################################################################################
 def test_create_dataset():
 
     data = hepfile.initialize()
@@ -101,9 +148,10 @@ def test_create_dataset():
     assert 'METpx' in data["_GROUPS_"]["_SINGLETONS_GROUP_"]
     assert data["_MAP_DATASETS_TO_COUNTERS_"]['METpx'] == "_SINGLETONS_GROUP_/COUNTER"
     assert data["_MAP_DATASETS_TO_DATA_TYPES_"]['METpx'] == int
+################################################################################
 
 
-#'''
+################################################################################
 def test_write_file_metadata():
 
     filename = "FOR_TESTS.hdf5"
@@ -133,7 +181,7 @@ def test_write_file_metadata():
     assert file.attrs['author'] == 'John Doe'
 
     file.close()
-#'''
+################################################################################
     
 
 

@@ -110,7 +110,7 @@ def load(filename=None, verbose=False, desired_datasets=None, subset=None):
     ############################################################################
     # Pull out the SINGLETON datasets
     ############################################################################
-    sg = infile["_SINGLETONGROUP_"][0]  # This is a numpy array of strings
+    sg = infile["_SINGLETONSGROUPFORSTORAGE_"][0]  # This is a numpy array of strings
     decoded_string = sg[1].decode()
 
     vals = decoded_string.split("__:__")

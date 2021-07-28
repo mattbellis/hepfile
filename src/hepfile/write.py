@@ -54,16 +54,21 @@ def clear_bucket(bucket):
     """
 
     for key in bucket.keys():
+
+        if key == '_LIST_OF_COUNTERS_':
+            continue
+
         if type(bucket[key]) == list:
             bucket[key].clear()
-
-        #'''
-        # Is this the right thing to do here?????
         elif type(bucket[key]) == int:
-            bucket[key] = 0
+            if key in bucket['_LIST_OF_COUNTERS_']:
+                bucket[key] = 0
+            else:
+                bucket[key] = -999
         elif type(bucket[key]) == float:
-            bucket[key] = 0.0
-        #'''
+            bucket[key] = -999.0
+        elif type(bucket[key]) == str:
+            bucket[key] = "-999"
 
 
 ################################################################################
@@ -103,63 +108,64 @@ def create_single_bucket(data):
 # This adds a group in the dictionary, similar to
 # a la CreateBranch in ROOT
 ################################################################################
-def create_group(data, groupname, counter=None):
+def create_group(data, group_name, counter=None):
 
     """ Adds a group in the dictionary
 
     Args:
 	**data** (dict): Dictionary to which the group will be added
 
-	**groupname** (string): Name of the group to be added
+	**group_name** (string): Name of the group to be added
 
 	**counter** (string): Name of the counter key. None by default
 
     """
 
+    # Change name of variable, just to keep code more understandable
+    counter_name = counter
+
     keys = data.keys()
 
-    # Put the counter in the dictionary first.
-    """
-    if counter is not None:
-        data['_MAP_DATASETS_TO_COUNTERS_'][groupname] = counter
-        keyfound = False
-        for k in keys:
-            if counter == k:
-                keyfound = True
-        if keyfound == False:
-            data[counter] = []
-    """
+    # Create a counter_name if the user has not specified one
+    if counter_name is None:
+        print("----------------------------------------------------")
+        print(f"There is no counter to go with group \033[1m{group_name}\033[0m")
+        print("Are you sure that's what you want?")
+        counter_name = f"N_{group_name}"
+        print(f"Creating a counter called \033[1m{counter_name}\033[0m")
+        print("-----------------------------------------------------")
 
     # Then put the group and any datasets in there next.
     keyfound = False
     for k in keys:
-        if groupname == k:
-            print("\033[1m%s\033[0m is already in the dictionary!" % (groupname))
+        if group_name == k:
+            print("\033[1m%s\033[0m is already in the dictionary!" % (group_name))
             keyfound = True
             break
-    if keyfound == False:
-        # data[groupname] = []
-        data["_GROUPS_"][groupname] = []
-        print("Adding group \033[1m%s\033[0m" % (groupname))
-        if counter is not None:
-            data["_GROUPS_"][groupname].append(counter)
-            name = "%s/%s" % (groupname, counter)
-            # data['_MAP_DATASETS_TO_COUNTERS_'][groupname] = counter
-            data["_MAP_DATASETS_TO_COUNTERS_"][groupname] = name
-            data["_MAP_DATASETS_TO_DATA_TYPES_"][name] = int
-            if name not in data["_LIST_OF_COUNTERS_"]:
-                data["_LIST_OF_COUNTERS_"].append(name)
-            data[name] = []
-            print(
-                "Adding a counter for \033[1m%s\033[0m as \033[1m%s\033[0m"
-                % (groupname, counter)
-            )
-        else:
-            print("----------------------------------------------------")
-            print("There is no counter to go with group \033[1m%s\033[0m" % (groupname))
-            print("Are you sure that's what you want?")
-            print("-----------------------------------------------------")
 
+    if keyfound == False:
+        
+        data["_GROUPS_"][group_name] = []
+        print("Adding group \033[1m%s\033[0m" % (group_name))
+
+        data["_GROUPS_"][group_name].append(counter_name)
+        full_counter_name = f"{group_name}/{counter_name}" 
+        
+        data["_MAP_DATASETS_TO_COUNTERS_"][group_name] = full_counter_name
+        data["_MAP_DATASETS_TO_DATA_TYPES_"][full_counter_name] = int
+
+        if full_counter_name not in data["_LIST_OF_COUNTERS_"]:
+            data["_LIST_OF_COUNTERS_"].append(full_counter_name)
+
+        data[full_counter_name] = []
+        print(
+            "Adding a counter for \033[1m%s\033[0m as \033[1m%s\033[0m"
+            % (group_name, counter_name)
+        )
+
+    return 0
+
+################################################################################
 
 ################################################################################
 # This adds a dataset to the dictionary, similar to
@@ -260,7 +266,7 @@ def create_dataset(data, datasets, group=None, dtype=None):
 
 
 ################################################################################
-def pack(data, bucket, EMPTY_OUT_BUCKET=True):
+def pack(data, bucket, EMPTY_OUT_BUCKET=True, STRICT_CHECKING=False):
 
     """ Takes the data from an bucket and packs it into the data dictionary, 
     intelligently, so that it can be stored and extracted efficiently. 
@@ -281,7 +287,6 @@ def pack(data, bucket, EMPTY_OUT_BUCKET=True):
     keys = list(bucket.keys())
 
     for key in keys:
-        # print(key)
 
         if (
             key == "_MAP_DATASETS_TO_COUNTERS_"
@@ -296,21 +301,10 @@ def pack(data, bucket, EMPTY_OUT_BUCKET=True):
             data[key].append(1)
             continue
 
-        # if key[-5:] == 'counter':
-        # continue
         if type(bucket[key]) == list:
             value = bucket[key]
             if len(value) > 0:
                 data[key] += value
-            """
-            else:
-                # No entries for this bucket
-                #print(key)
-                counter = data['_MAP_DATASETS_TO_COUNTERS_'][key]
-                data[counter].append(0)
-                if counter in keys:
-                    keys.remove(counter)
-            """
         else:
             # This is for counters and SINGLETONS
             if key in data["_GROUPS_"]["_SINGLETONS_GROUP_"]:
@@ -331,6 +325,8 @@ def pack(data, bucket, EMPTY_OUT_BUCKET=True):
     # Clear out the bucket after it's been packed if that's what we want
     if EMPTY_OUT_BUCKET:
         clear_bucket(bucket)
+
+    return 0
 
 ################################################################################
 def convert_list_and_key_to_string_data(datalist, key):
@@ -479,10 +475,10 @@ def write_to_file(
     # Convert this to a 2xN array for writing to the hdf5 file.
     # This has the _GROUPS_ and the datasets in them.
     mydataset = convert_list_and_key_to_string_data(
-        data["_GROUPS_"]["_SINGLETONS_GROUP_"], "_SINGLETONGROUP_"
+        data["_GROUPS_"]["_SINGLETONS_GROUP_"], "_SINGLETONSGROUPFORSTORAGE_"
     )
     dset = hdoutfile.create_dataset(
-        "_SINGLETONGROUP_",
+        "_SINGLETONSGROUPFORSTORAGE_",
         data=mydataset,
         dtype="S256",
         compression=comp_type,
