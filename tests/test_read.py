@@ -59,13 +59,13 @@ def test_unpack():
     assert isEmpty(bucket) == False
 
 
-def test_get_nbuckets():
+def test_get_nbuckets_in_file():
 	
     # This assumes you run nosetests from the h5hep directory and not 
     # the tests directory.
     filename = "FOR_TESTS.hdf5"
 
-    nbuckets = hepfile.get_nbuckets(filename)
+    nbuckets = hepfile.get_nbuckets_in_file(filename)
 
     assert nbuckets == 10
 

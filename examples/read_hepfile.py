@@ -2,12 +2,12 @@ import numpy as np
 import matplotlib.pylab as plt
 import time
 
-import hepfile
+#import hepfile
 
 import sys
 
-#sys.path.append('../src/hepfile')
-#import read as hepfile
+sys.path.append('../src/hepfile')
+import read as hepfile
 
 
 filename = sys.argv[1]
@@ -16,11 +16,15 @@ filename = sys.argv[1]
 #data,event = hepfile.load(filename,verbose=False)#,subset=10000)
 #data,event = hepfile.load(filename,desired_datasets=['jet','muon'])
 #data,event = hepfile.load(filename,desired_datasets=['jet'])
-data,event = hepfile.load(filename,desired_datasets=['jet','muon'],subset=(0,100000))
+data,event = hepfile.load(filename,desired_datasets=['jet'],subset=(10,20))
+#data,event = hepfile.load(filename,desired_datasets=['jet','muon'],subset=(0,100000))
 
 #print(data['list_of_counters'])
 
-nbuckets = hepfile.get_nbuckets(filename)
+nbuckets_in_file = hepfile.get_nbuckets_in_file(filename)
+print("nentries in file: ",nbuckets_in_file)
+
+nbuckets = hepfile.get_nbuckets_in_data(data)
 print("nentries: ",nbuckets)
 
 #print(type(data),type(event))
