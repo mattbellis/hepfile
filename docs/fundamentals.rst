@@ -1,6 +1,8 @@
 Fundamentals
 =========================
 
+.. include:: schema.rst
+
 A Toy Example
 ---------------
 
@@ -113,3 +115,5 @@ csvreader.py.
 
 Reading Data with hepfile
 ----------------------------
+
+

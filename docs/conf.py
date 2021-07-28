@@ -55,13 +55,16 @@ exclude_patterns = ["_build", "**.ipynb_checkpoints", "Thumbs.db", ".DS_Store", 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = "sphinx_book_theme"
+#html_theme = "sphinx_book_theme"
+html_theme = "sphinx_rtd_theme"
 
 html_title = f"hepfile {version}"
 #html_title = f"hepfile 0.09"
 
 html_baseurl = "https://hepfile.readthedocs.io/en/latest/"
 
+'''
+# For sphinx-book-theme
 html_theme_options = {
     "home_page_in_toc": True,
     "repository_url": "https://github.com/mattbellis/hepfile",
@@ -69,6 +72,7 @@ html_theme_options = {
     "use_issues_button": True,
     "use_edit_page_button": True,
 }
+'''
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,

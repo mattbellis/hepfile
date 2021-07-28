@@ -1,9 +1,8 @@
-=======
 Schema
-=======
+------
 
 Heterogenous Data 
--------------------
+^^^^^^^^^^^^^^^^^
 
 We assume that data that we collect is composed of (insert some term for particle, 
 chair, etc.) each carrying a certain number of attributes. Each ___ is associated 
@@ -11,7 +10,7 @@ with some increasing counter. In HEP, this counter is events. Each event can
 have an arbitrary number of particles of any type, making this data heterogenous. 
 
 Homogenous File 
----------------
+^^^^^^^^^^^^^^^^^
 
 To make this data homogenous, we can create n by m chunks of data for each type 
 of particle, where n is the total number of this particle in all of the events, 
