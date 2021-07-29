@@ -44,7 +44,9 @@ for i in range(0,10000):
     event['METpy'] = np.random.random()
 
     #hepfile.pack(data,event,EMPTY_OUT_BUCKET=False)
-    hepfile.pack(data,event)
+    return_value = hepfile.pack(data,event,STRICT_CHECKING=True)
+    if return_value != 0:
+        exit()
 
 print("Writing the file...")
 #hdfile = hepfile.write_to_file('output.hdf5',data)

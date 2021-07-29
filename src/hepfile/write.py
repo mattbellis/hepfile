@@ -297,15 +297,46 @@ def pack(data, bucket, EMPTY_OUT_BUCKET=True, STRICT_CHECKING=False, verbose=Fal
         if counter == '_SINGLETONS_GROUP_/COUNTER':
             continue
 
+        # Here we will calculate the values for the counters, based
+        # on the size of the datasets
+        counter_value = None
+
+        # Loop over the datasets
         for d in datasets:
             full_dataset_name = group + "/" + d
+            # Skip any counters
             if counter == full_dataset_name:
                 continue
             else:
-                bucket[counter] = len(bucket[full_dataset_name])
-                break
+                # Grab the size of the first dataset
+                temp_counter_value = len(bucket[full_dataset_name])
+                
+                # If we're not STRICT_CHECKING, then use that value for the 
+                # counter and break the loop over the datasets, moving on
+                # to the next group.
+                if STRICT_CHECKING is False:
+                    bucket[counter] = temp_counter_value
+                    break
+                # Otherwise, we'll check that *all* the datasets have the same
+                # length. 
+                else:
+                    if counter_value is None:
+                        counter_value = temp_counter_value
+                        bucket[counter] = temp_counter_value
+                    elif counter_value != temp_counter_value:
+                        # In this case, we found two groups of different length!
+                        # Print this to help the user identify their error
+                        print(f"Oh no!!!! Two datasets in group {group} have different sizes!")
+                        for tempd in datasets:
+                            temp_full_dataset_name = group + "/" + tempd
+                            # Don't worry about the dataset
+                            if counter == temp_full_dataset_name:
+                                continue
+                            print(f"{tempd}: {len(bucket[temp_full_dataset_name])}")
 
-    #print(bucket)
+                        # Return a value for the external program to catch.
+                        return -1
+    
     # Then pack the bucket into the data
     keys = list(bucket.keys())
 

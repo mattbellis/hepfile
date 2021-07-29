@@ -6,11 +6,44 @@ Fundamentals
 A Toy Example
 ---------------
 
+Let's have an image of a town, with cartoon people here. 
+
 To illustrate how to use hepfile with example, we imagine a researcher conducting 
-a census on a town. Each household in the town has some non-constant number of people
-in it, some non-constant number of vehicles, and only one residence. The people, vehicles,
-and residence all have data associated with them, which we locate in .csv files. 
+a census on a town. Each household in the town has some variable number of people
+in it, some variable number of vehicles, and only one residence. The people, vehicles,
+and residence all have different data associated with them. How would we record 
+these data? Well, to first order, we might decide to record them in multiple spreadsheets or 
+multiple .csv files. 
+
+REFERENCE USING NAMES: https://pypi.org/project/names/
 (PICTURE BELOW)
+
+.. figure:: images/household_example_spreadsheet_00.png 
+    :scale: 30%
+    :alt: Image of spreadsheet
+
+    Click on the image to see a fuller view of the data on the People.
+
+.. figure:: images/household_example_spreadsheet_01.png
+    :scale: 30%
+    :alt: Image of spreadsheet
+
+    Click on the image to see a fuller view of the data on the Vehicles.
+
+.. figure:: images/household_example_spreadsheet_02.png
+    :scale: 30%
+    :alt: Image of spreadsheet
+
+    Click on the image to see a fuller view of the data on the Residences.
+
+
+Note that we also say what the datatype is. 
+
+But the goal is to keep all of this data in one file, so that it is easier for someone to do analysis. 
+For example, someone might want to know the average number of people per bedroom, in the homes. Or
+the average number of vehicles as a function of combined ages of the household residents. If we have
+3 separate files, this is more difficult to work with. What we want is one file and a way to extract information, 
+collected by *household*.
 
 In hepfile, all the data can be grouped into **buckets**, which in this case can be associated with
 households (and the Household ID). *people* and *vehicles* would be separate **groups**, with all their data
