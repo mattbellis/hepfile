@@ -208,6 +208,12 @@ def load(filename=None, verbose=False, desired_datasets=None, subset=None):
             data[counter_name] = infile[counter_name][:]
             index = full_file_index
 
+        if subset[1] <= subset[0]:
+            print("Will not be reading anything in!")
+            print(f"High range of {subset[1]} is less than or equal to low range of {subset[0]}")
+            print("Returning None,None...")
+            return None,None
+
         # Just to make sure the "local" index of the data dictionary starts at 0
         subset_index = index - index[0]
 

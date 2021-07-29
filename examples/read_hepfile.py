@@ -16,8 +16,12 @@ filename = sys.argv[1]
 #data,event = hepfile.load(filename,verbose=False)#,subset=10000)
 #data,event = hepfile.load(filename,desired_datasets=['jet','muon'])
 #data,event = hepfile.load(filename,desired_datasets=['jet'])
-data,event = hepfile.load(filename,desired_datasets=['jet'],subset=(10,20))
+data,event = hepfile.load(filename,desired_datasets=['jet'],subset=(5,10))
 #data,event = hepfile.load(filename,desired_datasets=['jet','muon'],subset=(0,100000))
+
+if data is None:
+    print("Exiting...")
+    exit()
 
 #print(data['list_of_counters'])
 

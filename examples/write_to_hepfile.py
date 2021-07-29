@@ -1,10 +1,10 @@
 import numpy as np
 import sys
-import hepfile
+#import hepfile
 
 # For development
-#sys.path.append('../src/hepfile')
-#import write as hepfile
+sys.path.append('../src/hepfile')
+import write as hepfile
 
 data = hepfile.initialize()
 
@@ -23,11 +23,11 @@ event = hepfile.create_single_bucket(data)
 rando_words = ["hi", "bye", "ciao", "aloha"]
 
 #'''
-for i in range(0,10):
+for i in range(0,10000):
 
     #hepfile.clear_event(event)
 
-    njet = 5
+    njet = 17
     event['jet/njet'] = njet
 
     for n in range(njet):

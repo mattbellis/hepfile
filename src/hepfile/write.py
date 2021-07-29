@@ -266,7 +266,7 @@ def create_dataset(data, datasets, group=None, dtype=None):
 
 
 ################################################################################
-def pack(data, bucket, EMPTY_OUT_BUCKET=True, STRICT_CHECKING=False):
+def pack(data, bucket, EMPTY_OUT_BUCKET=True, STRICT_CHECKING=False, verbose=False):
 
     """ Takes the data from an bucket and packs it into the data dictionary, 
     intelligently, so that it can be stored and extracted efficiently. 
@@ -284,6 +284,29 @@ def pack(data, bucket, EMPTY_OUT_BUCKET=True, STRICT_CHECKING=False):
 
     """
 
+    # Calculate the number of entries for each group and set the 
+    # value of that counter
+    # This is all done in bucket
+    for group in data['_GROUPS_']:
+
+        if verbose:
+            print(f"group: {group}")
+
+        datasets = data['_GROUPS_'][group]
+        counter = data['_MAP_DATASETS_TO_COUNTERS_'][group]
+        if counter == '_SINGLETONS_GROUP_/COUNTER':
+            continue
+
+        for d in datasets:
+            full_dataset_name = group + "/" + d
+            if counter == full_dataset_name:
+                continue
+            else:
+                bucket[counter] = len(bucket[full_dataset_name])
+                break
+
+    #print(bucket)
+    # Then pack the bucket into the data
     keys = list(bucket.keys())
 
     for key in keys:
@@ -321,6 +344,8 @@ def pack(data, bucket, EMPTY_OUT_BUCKET=True, STRICT_CHECKING=False):
             # Append the values to the counters
             else:
                 data[key].append(bucket[key])
+
+
 
     # Clear out the bucket after it's been packed if that's what we want
     if EMPTY_OUT_BUCKET:
