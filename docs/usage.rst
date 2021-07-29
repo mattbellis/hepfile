@@ -8,11 +8,29 @@ Writing data
 Initialize the `data` dictionary
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+To create the `data` dictionary, run ::
+
+    my_data = hepfile.initialize()
+
 Create groups
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+To create groups, run ::
+
+    hepfile.create_group(my_data, 'my_group', counter = 'my_counter')
+
+with whatever name is desired replacing ``'my_group'`` and ``'my_counter'``. Be aware
+that if nothing is set for ``counter =`` , hepfile will set ``'N_' + 'my_group'`` (or its replacement)
+as the counter.
+
+DTYPE .....
+
 Create datasets for those groups
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+To create a dataset inside of ``'my_group'``, run ::
+
+    hepfile.create_groups()
 
 Create a single bucket dictionary
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

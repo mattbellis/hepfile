@@ -94,7 +94,7 @@ def load(filename=None, verbose=False, desired_datasets=None, subset=None):
 
         # The decode is there because vals were stored as numpy.bytes
         counter = vals[1].decode()
-        index = "%s_INDEX" % (counter)
+        index = f"{counter}_INDEX"
         data["_MAP_DATASETS_TO_COUNTERS_"][vals[0].decode()] = counter
         data["_MAP_DATASETS_TO_INDEX_"][vals[0].decode()] = index
         data["_LIST_OF_COUNTERS_"].append(vals[1].decode())
