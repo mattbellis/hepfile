@@ -1,8 +1,6 @@
 Fundamentals
 =========================
 
-.. include:: schema.rst
-
 A Toy Example
 ---------------
 
@@ -44,6 +42,17 @@ For example, someone might want to know the average number of people per bedroom
 the average number of vehicles as a function of combined ages of the household residents. If we have
 3 separate files, this is more difficult to work with. What we want is one file and a way to extract information, 
 collected by *household*.
+
+To do this, we need some way to count the number of people or vehicles in any household, as well as keep 
+track of what data fields will always have one entry per household (e.g. data about the residence itself).
+
+One could imagine building a [`pandas`](https://pandas.pydata.org/]) dataframe to do this and use 
+`.groupby()` approach. But instead, we will take our cue from ROOT and particle physicists, who are used
+to looping over subsets of their data. In this case, we'd like to be able to read in all our data
+on this town, and then loop over each household, performing whatever analysis we want on that household, 
+accumulating the output of that analysis as we go. 
+
+.. include:: schema.rst
 
 In hepfile, all the data can be grouped into **buckets**, which in this case can be associated with
 households (and the Household ID). *people* and *vehicles* would be separate **groups**, with all their data

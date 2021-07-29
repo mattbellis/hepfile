@@ -49,10 +49,3 @@ into the ``hepfile`` directory. From there run the command::
 
     flit install
 
-
-
-
-
-Hello world!
------------------------
-

@@ -2,6 +2,44 @@
 Usage
 ======
 
+Writing data
+------------
+
+Initialize the `data` dictionary
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Create groups
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Create datasets for those groups
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Create a single bucket dictionary
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Loop over data and pack the buckets as you go
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Write the data to file
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+
+
+
+Reading data
+------------
+
+Load in the data
+^^^^^^^^^^^^^^^^
+
+Show how subsets and desired datasets can be used.
+
+Loop over the data and unpack each bucket
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+
+
+
 HEP Example
 -------------
 
