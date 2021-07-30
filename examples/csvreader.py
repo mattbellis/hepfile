@@ -47,5 +47,6 @@ for i in range(min_ID, max_ID+1):
     fill_event_group(bucket, i, 'vehicles', v_cols, v_ID, v_data)
     fill_event_group(bucket, i, 'houses', h_cols, h_ID, h_data)
     hep.pack(town, bucket)
+    hep.clear_event(bucket)
 
 hep.write_to_file("town_hep.hdf5", bucket, force_single_precision=False)
