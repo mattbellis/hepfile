@@ -1,6 +1,6 @@
 import numpy as np
-import h5py as h5
 import hepfile 
+import h5py as h5
 
 import time
 
@@ -8,6 +8,14 @@ import sys
 sys.path.append('./scripts')
 #from write_h5hep_file_for_unit_tests import write_h5hep_file_for_unit_tests
 
+#sys.path.append('../src/hepfile')
+#import write as hepfile
+#import read as read
+
+#from write_file_for_unit_tests import write_file_for_unit_tests
+
+
+############################################################################
 def isEmpty(dictionary):
     test = True
     print(dictionary.keys())
@@ -22,19 +30,25 @@ def isEmpty(dictionary):
                 test = False
 
     return test
+################################################################################
 
+################################################################################
 def test_initialize():
 
     test_data = hepfile.initialize()
 
+    print(test_data)
+
     assert isinstance(test_data, dict)
-    assert test_data['groups']['_SINGLETON_'] ==  ['INDEX']
-    assert test_data['datasets_and_counters']['_SINGLETON_'] == '_SINGLETON_/INDEX'
-    assert test_data['list_of_counters'] == ['_SINGLETON_/INDEX']
-    assert test_data['_SINGLETON_/INDEX'] == []
+    assert test_data['_GROUPS_']['_SINGLETONS_GROUP_'] ==  ['COUNTER']
+    assert test_data['_MAP_DATASETS_TO_COUNTERS_']['_SINGLETONS_GROUP_'] == '_SINGLETONS_GROUP_/COUNTER'
+    assert test_data['_LIST_OF_COUNTERS_'] == ['_SINGLETONS_GROUP_/COUNTER']
+    assert test_data['_SINGLETONS_GROUP_/COUNTER'] == []
+################################################################################
 
 
-def test_clear_event():
+################################################################################
+def test_clear_bucket():
 	
     # This assumes you run nosetests from the h5hep directory and not 
     # the tests directory.
@@ -42,13 +56,16 @@ def test_clear_event():
     desired_datasets = ['jet','muon']
     subset = 1000
 
-    data, event = hepfile.load(filename, False, desired_datasets, subset)
+    data, bucket = hepfile.load(filename, False, desired_datasets, subset)
 
-    hepfile.clear_event(event)
+    hepfile.clear_bucket(bucket)
 
-    assert isEmpty(event) == True
+    assert isEmpty(bucket) == True
+################################################################################
 
-def test_create_single_event():
+
+################################################################################
+def test_create_single_bucket():
 
     data = hepfile.initialize()
 
@@ -58,35 +75,83 @@ def test_create_single_event():
     hepfile.create_group(data,'muons',counter='nmuon')
     hepfile.create_dataset(data,['e','px','py','pz'],group='muons',dtype=float)
 
-    test_event = hepfile.create_single_event(data)
+    test_bucket = hepfile.create_single_bucket(data)
 
-    assert isEmpty(test_event) == False
-    assert isinstance(test_event, dict)
+    assert isEmpty(test_bucket) == False
+    assert isinstance(test_bucket, dict)
+################################################################################
 
+################################################################################
 def test_create_group():
 
     data = hepfile.initialize()
     hepfile.create_group(data,'jet',counter='njet')
 
-    assert isEmpty(data['groups']) == False
+    assert isEmpty(data['_GROUPS_']) == False
     assert 'jet/njet' in data.keys()
+################################################################################
+
+################################################################################
+def test_pack():
+
+    data = hepfile.initialize()
+    hepfile.create_group(data,'obj',counter='nobj')
+    hepfile.create_dataset(data,['myfloat'],group='obj',dtype=float)
+    hepfile.create_dataset(data,['myint'],group='obj',dtype=int)
+    hepfile.create_dataset(data,['mystr'],group='obj',dtype=str)
+
+    bucket = hepfile.create_single_bucket(data)
+
+    for i in range(5):
+        bucket['obj/myfloat'].append(2.0)
+        bucket['obj/myint'].append(2)
+        bucket['obj/mystr'].append('two')
+    bucket['obj/nobj'] = 5
 
 
+    test = hepfile.pack(data,bucket)
+    assert test == 0
+    assert len(data['obj/myfloat']) == 5
+    assert len(data['obj/myint']) == 5
+    assert len(data['obj/mystr']) == 5
+    assert data['obj/nobj'][0] == 5
+
+    assert len(bucket['obj/myfloat']) == 0
+    assert len(bucket['obj/myint']) == 0
+    assert len(bucket['obj/mystr']) == 0
+    assert bucket['obj/nobj'] is 0
+
+    #assert type(data['obj/mystr'][0]) is str
+
+
+
+################################################################################
+
+
+################################################################################
 def test_create_dataset():
 
     data = hepfile.initialize()
     hepfile.create_group(data,'jet',counter='njet')
     hepfile.create_dataset(data,['e','px','py','pz'],group='jet',dtype=float)
+    hepfile.create_dataset(data, 'METpx', dtype = int)
 
 
-    assert isEmpty(data['groups']) == False
+    assert isEmpty(data['_GROUPS_']) == False
     assert 'jet/njet' in data.keys()
     assert 'jet/e' in data.keys()
     assert 'jet/px' in data.keys()
-    assert 'jet/e' in data['datasets_and_counters'].keys()
-    assert data['datasets_and_counters']['jet/e'] == 'jet/njet'
+    assert 'jet/e' in data['_MAP_DATASETS_TO_COUNTERS_'].keys()
+    assert data['_MAP_DATASETS_TO_COUNTERS_']['jet/e'] == 'jet/njet'
+    assert data["_MAP_DATASETS_TO_DATA_TYPES_"]['jet/e'] == float
+
+    assert 'METpx' in data["_GROUPS_"]["_SINGLETONS_GROUP_"]
+    assert data["_MAP_DATASETS_TO_COUNTERS_"]['METpx'] == "_SINGLETONS_GROUP_/COUNTER"
+    assert data["_MAP_DATASETS_TO_DATA_TYPES_"]['METpx'] == int
+################################################################################
 
 
+################################################################################
 def test_write_file_metadata():
 
     filename = "FOR_TESTS.hdf5"
@@ -116,6 +181,7 @@ def test_write_file_metadata():
     assert file.attrs['author'] == 'John Doe'
 
     file.close()
+################################################################################
     
 
 

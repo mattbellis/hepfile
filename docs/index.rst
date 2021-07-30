@@ -1,26 +1,20 @@
+hepfile
+=======
 
-Welcome to documentation!
-=========================
+**Heterogeneous Entries in Parallel File (format)**
 
-
-Introduction
-------------
-
-This should be updated!
+.. include:: introduction.rst
 
 .. toctree::
-   :maxdepth: 2
-   :titlesonly:
-   :caption: Contents
-   :glob:
+   :hidden: 
 
-.. toctree::
-   :maxdepth: 2
-
-   installation 
-   background
-   schema
+   introduction
+   fundamentals
    usage
+   examples
+   citations
+   contributors
+
 
 
 
