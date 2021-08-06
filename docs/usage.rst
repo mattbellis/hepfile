@@ -35,7 +35,7 @@ _SINGLETONS_GROUP_, as shown below ::
 
     hepfile.create_dataset(my_data, 'my_unique', dtype = int)
 
- If nothing is set for ``dtype =``, then it will be assumed that
+If nothing is set for ``dtype =``, then it will be assumed that
 the dataset is storing floats. This will cause problems when writing the data to the
 HDF5 file, so make sure to set the dataset type correctly. Dataset types cannot be
 changed after the fact.
@@ -117,7 +117,43 @@ unless ``AUTO_SET_COUNTER`` is left untouched or is set to ``True``.
 Write the data to file
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+To write the data dictionary to a file, run ::
 
+    hepfile.write_to_file('my_file.hdf5', my_data)
+
+Note that the data dictionary must be complete, as you cannot edit the file
+once it has been created.
+
+MORE FLAGS?
+
+Write metadata to file
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+On execution of ``write_to_file``, some metadata will automatically be
+be written to the file. This will include the date the file is created and
+the version numbers of hepfile, numpy, h5py, and python used while creating
+the file. If more metadata is needed, it can be added with the following
+line of code: ::
+
+    hepfile.write_file_metadata('my_file.hdf5', mydict = {'author':'John Doe'})
+
+Due to limitations placed on hepfile by h5py, only 60k bytes of metadata
+can be added into the attributes of a HDF5 file.
+
+If you do not want hepfile to rewrite the default metadata while adding your
+own, you can set the flag ``write_default_values`` to ``False`` like so: ::
+
+    hepfile.write_file_metadata('my_file.hdf5', mydict = {'author': 'John Doe'},
+                                write_default_values = False)
+
+If you want to delete all existing metadata from an HDF5 file, you can set the
+flag ``append`` to ``False``. Note that this will delete the default metadata
+as well, so it must be added again. This can be done by passing in nothing
+for ``mydict`` and either setting ``write_default_values`` to ``True`` or leaving
+it unchanged. An example is shown below: ::
+
+    hepfile.write_file_metadata('my_file.hdf5', mydict = {'author': 'John Doe'}, append = False)
+    hepfile.write_file_metadata('my_file.hdf5')
 
 
 Reading data
@@ -126,7 +162,39 @@ Reading data
 Load in the data
 ^^^^^^^^^^^^^^^^
 
-Show how subsets and desired datasets can be used.
+To load the data in from the file ``my_file.hdf5``, run ::
+
+    data, bucket = hepfile.load('my_file.hdf5')
+
+``data`` is a dictionary with all the data from the file (organized in 
+the hepfile schema), and ``bucket`` is an empty dictionary with the same
+structure ready to be filled with specific buckets from ``data``.
+
+Let's say you want to only see the datasets *my_unique* and *data1*.
+We can limit memory use by only pulling in these datasets from the file
+using the ``desired_datasets`` variable. Simply call ::
+
+    data, bucket = hepfile.load('my_file.hdf5', desired_datasets = ['my_unique', 'data1'])
+
+``data`` and ``bucket`` will contain the datasets (empty or not) *'my_unique'* and
+*'my_group/data1'*. Note that desired_datasets works on the basis of string matching:
+only putting in 'data' would extract both *'my_group/data1'* and *'my_group/data2'*.
+To extract some specific group, putting in the group name will work, since
+``'my_group' in 'my_group/my_dataset' == True``, as well as any other dataset in it.
+
+
+Additionally, the file may contain more expansive ranges of data than you want to
+analyze. In this case, simply set the subset variable equal to the range of bucket
+counters you want to study. For example, if you cared about buckets 2-5, you would run ::
+
+    data, bucket = hepfile.load('my_file.hdf5', subset = [2,5])
+
+Additionally, if you want to load in the first *N* buckets, you could run ::
+
+    data, bucket = hepfile.load('my_file.hdf5', subset = N)
+
+If *N* is greater than the total number of buckets, the upper range will be set at
+the last bucket in the data file. 
 
 Loop over the data and unpack each bucket
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

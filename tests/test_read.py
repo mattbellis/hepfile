@@ -1,14 +1,15 @@
 import numpy as np
 import h5py as h5
-import hepfile 
+import hepfile
 
 import time
 
 #import sys
-#sys.path.append('./scripts')
+# sys.path.append('./scripts')
 #from write_h5hep_file_for_unit_tests import write_h5hep_file_for_unit_tests
 
 from write_file_for_unit_tests import write_file_for_unit_tests
+
 
 def isEmpty(dictionary):
     test = True
@@ -19,7 +20,7 @@ def isEmpty(dictionary):
         print(type(dictionary[key]))
         if dictionary[key] is None:
             test = True
-        elif type(dictionary[key])==list or type(dictionary[key])==np.ndarray:
+        elif type(dictionary[key]) == list or type(dictionary[key]) == np.ndarray:
             if len(dictionary[key]) > 0:
                 test = False
 
@@ -30,13 +31,14 @@ def test_load():
 
     write_file_for_unit_tests()
 
-    # This assumes you run nosetests from the h5hep directory and not 
+    # This assumes you run nosetests from the h5hep directory and not
     # the tests directory.
     filename = "FOR_TESTS.hdf5"
-    desired_datasets = ['jet','muon']
-    subset = 1000
+    desired_datasets = ['jet', 'muon']
+    subset = 5
 
-    test_data,test_bucket = hepfile.load(filename, False, desired_datasets, subset)
+    test_data, test_bucket = hepfile.load(
+        filename, False, desired_datasets, subset)
 
     assert isinstance(test_data, dict)
     assert isinstance(test_bucket, dict)
@@ -44,12 +46,27 @@ def test_load():
     assert isEmpty(test_bucket) == True
     assert isEmpty(test_data) == False
 
+    # Testing desired_datasets
+    assert "jet/e" in test_data.keys()
+    assert "jet/e" in test_data.keys()
+    assert "METpx" not in test_data.keys()
+    assert "METpx" not in test_data.keys()
+
+    # Testing subsets
+    assert len(test_data["jet/njet"]) == 5
+
+    test_data, test_bucket = hepfile.load(
+        filename, False, desired_datasets, 1000)
+
+    assert len(test_data["jet/njet"]) == 10
+
+
 def test_unpack():
-	
-    # This assumes you run nosetests from the h5hep directory and not 
+
+    # This assumes you run nosetests from the h5hep directory and not
     # the tests directory.
     filename = "FOR_TESTS.hdf5"
-    desired_datasets = ['jet','muon']
+    desired_datasets = ['jet', 'muon']
     subset = 1000
 
     bucket, data = hepfile.load(filename, False, desired_datasets, subset)
@@ -60,14 +77,15 @@ def test_unpack():
 
 
 def test_get_nbuckets_in_file():
-	
-    # This assumes you run nosetests from the h5hep directory and not 
+
+    # This assumes you run nosetests from the h5hep directory and not
     # the tests directory.
     filename = "FOR_TESTS.hdf5"
 
     nbuckets = hepfile.get_nbuckets_in_file(filename)
 
     assert nbuckets == 10
+
 
 def test_get_file_metadata():
 
@@ -81,14 +99,9 @@ def test_get_file_metadata():
     assert 'numpy_version' in metadata
     assert 'python_version' in metadata
 
-    #Check default attributes are strings
-    assert isinstance(metadata['date'],str)
-    assert isinstance(metadata['hepfile_version'],str)
-    assert isinstance(metadata['h5py_version'],str)
-    assert isinstance(metadata['numpy_version'],str)
-    assert isinstance(metadata['python_version'],str)
-
-
-
-
-
+    # Check default attributes are strings
+    assert isinstance(metadata['date'], str)
+    assert isinstance(metadata['hepfile_version'], str)
+    assert isinstance(metadata['h5py_version'], str)
+    assert isinstance(metadata['numpy_version'], str)
+    assert isinstance(metadata['python_version'], str)
