@@ -117,8 +117,28 @@ def create_group(data, group_name, counter=None):
 
     """
 
+    # Check for slashes in the group name. We can't have them.
+    if group_name.find('/')>=0:
+        new_group_name = group_name.replace('/','-')
+        print("----------------------------------------------------")
+        print(f"Slashes / are not allowed in group names")
+        print(f"Replacing / with - in group name {group_name}")
+        print(f"The new name will be {new_group_name}")
+        print("----------------------------------------------------")
+        group_name = new_group_name 
+
     # Change name of variable, just to keep code more understandable
     counter_name = counter
+
+    # Check for slashes in the counter name. We can't have them.
+    if counter_name.find('/')>=0:
+        new_counter_name = counter_name.replace('/','-')
+        print("----------------------------------------------------")
+        print(f"Slashes / are not allowed in counter names")
+        print(f"Replacing / with - in counter name {counter_name}")
+        print(f"The new name will be {new_counter_name}")
+        print("----------------------------------------------------")
+        counter_name = new_counter_name 
 
     keys = data.keys()
 
@@ -201,6 +221,18 @@ def create_dataset(data, datasets, group=None, dtype=float):
 
         if type(datasets) != list:
             datasets = [datasets]
+
+        # Check for slashes in the group name. We can't have them.
+        for i in range(len(datasets)):
+            tempname = datasets[i]
+            if tempname.find('/')>=0:
+                new_dataset_name = tempname.replace('/','-')
+                print("----------------------------------------------------")
+                print(f"Slashes / are not allowed in dataset names")
+                print(f"Replacing / with - in dataset name {tempname}")
+                print(f"The new name will be {new_dataset_name}")
+                print("----------------------------------------------------")
+                tempname[i] = new_dataset_name 
 
         for dataset in datasets:
             keyfound = False

@@ -95,6 +95,12 @@ def test_create_group():
 
     assert isEmpty(data['_GROUPS_']) == False
     assert 'jet/njet' in data.keys()
+
+    hepfile.create_group(data,"test/slash",counter='ntest/slash')
+
+    assert 'test-slash' in data['_GROUPS_']
+    assert 'test-slash/ntest-slash' in data.keys()
+
 ################################################################################
 
 ################################################################################
