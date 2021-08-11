@@ -156,15 +156,14 @@ def create_group(data, group_name, counter=None):
     keyfound = False
     for k in keys:
         if group_name == k:
-            print("\033[1m%s\033[0m is already in the dictionary!" %
-                  (group_name))
+            print(f"\033[1m{group_name}\033[0m is already in the dictionary!")
             keyfound = True
             break
 
     if keyfound == False:
 
         data["_GROUPS_"][group_name] = []
-        print("Adding group \033[1m%s\033[0m" % (group_name))
+        print(f"Adding group \033[1m{group_name}\033[0m")
 
         data["_GROUPS_"][group_name].append(counter_name)
         full_counter_name = f"{group_name}/{counter_name}"
@@ -176,10 +175,7 @@ def create_group(data, group_name, counter=None):
             data["_LIST_OF_COUNTERS_"].append(full_counter_name)
 
         data[full_counter_name] = []
-        print(
-            "Adding a counter for \033[1m%s\033[0m as \033[1m%s\033[0m"
-            % (group_name, counter_name)
-        )
+        print(f"Adding a counter for \033[1m{group_name}\033[0m as \033[1m{counter_name}\033[0m")
 
     return 0
 
@@ -191,8 +187,6 @@ def create_group(data, group_name, counter=None):
 #
 # This can also add a dataset that is not associate with a group
 ################################################################################
-
-
 def create_dataset(data, datasets, group=None, dtype=float):
     """ Adds a dataset to a group in a dictionary. If the group does not exist, it will be created.
 
@@ -211,44 +205,36 @@ def create_dataset(data, datasets, group=None, dtype=float):
 
     """
 
+    if type(datasets) != list:
+        datasets = [datasets]
+
+    # Check for slashes in the group name. We can't have them.
+    for i in range(len(datasets)):
+        tempname = datasets[i]
+        if tempname.find('/')>=0:
+            new_dataset_name = tempname.replace('/','-')
+            print("----------------------------------------------------")
+            print(f"Slashes / are not allowed in dataset names")
+            print(f"Replacing / with - in dataset name {tempname}")
+            print(f"The new name will be {new_dataset_name}")
+            print("----------------------------------------------------")
+            datasets[i] = new_dataset_name 
+
     keys = data.keys()
 
+    # These will be entries for the SINGLETON_GROUP, if there is no group passed in
     if group is None:
-        # print("-----------------------------------------------")
-        #print("You need to assign this dataset(s) to a group!")
-        #print("_GROUPS_ are not added")
-        # print("-----------------------------------------------")
-
-        if type(datasets) != list:
-            datasets = [datasets]
-
-        # Check for slashes in the group name. We can't have them.
-        for i in range(len(datasets)):
-            tempname = datasets[i]
-            if tempname.find('/')>=0:
-                new_dataset_name = tempname.replace('/','-')
-                print("----------------------------------------------------")
-                print(f"Slashes / are not allowed in dataset names")
-                print(f"Replacing / with - in dataset name {tempname}")
-                print(f"The new name will be {new_dataset_name}")
-                print("----------------------------------------------------")
-                tempname[i] = new_dataset_name 
 
         for dataset in datasets:
             keyfound = False
             for k in data["_GROUPS_"]["_SINGLETONS_GROUP_"]:
                 if dataset == k:
-                    print(
-                        "\033[1m%s\033[0m is already in the dictionary!" % (dataset))
+                    print(f"\033[1m{dataset}\033[0m is already in the dictionary!")
                     keyfound = True
             if keyfound == False:
-                print(
-                    "Adding dataset \033[1m%s\033[0m to the dictionary as a SINGLETON."
-                    % (dataset)
-                )
+                print(f"Adding dataset \033[1m{dataset}\033[0m to the dictionary as a SINGLETON.")
                 data["_GROUPS_"]["_SINGLETONS_GROUP_"].append(dataset)
                 data[dataset] = []
-                # counter_name = "%s/%s" % (group,counter)
                 data["_MAP_DATASETS_TO_COUNTERS_"][dataset] = "_SINGLETONS_GROUP_/COUNTER"
 
                 data["_MAP_DATASETS_TO_DATA_TYPES_"][dataset] = dtype
@@ -263,11 +249,9 @@ def create_dataset(data, datasets, group=None, dtype=float):
 
     # NEED TO FIX THIS PART SO THAT IT FINDS THE RIGHT COUNTER FROM THE GROUP
     if keyfound == False:
-        print(
-            "Your group, \033[1m%s\033[0m is not in the dictionary yet!" % (group))
-        counter = "n%s" % (group)
-        print(
-            "Adding it, along with a counter of \033[1m%s\033[0m" % (counter))
+        print(f"Your group, \033[1m{group}\033[0m is not in the dictionary yet!")
+        counter = f"N_{group}"
+        print(f"Adding it, along with a counter of \033[1m{counter}\033[0m")
         create_group(data, group, counter=counter)
 
     # Then put the datasets into the group in there next.
@@ -279,13 +263,10 @@ def create_dataset(data, datasets, group=None, dtype=float):
         name = "%s/%s" % (group, dataset)
         for k in keys:
             if name == k:
-                print("\033[1m%s\033[0m is already in the dictionary!" % (name))
+                print(f"\033[1m{name}\033[0m is already in the dictionary!")
                 keyfound = True
         if keyfound == False:
-            print(
-                "Adding dataset \033[1m%s\033[0m to the dictionary under group \033[1m%s\033[0m."
-                % (dataset, group)
-            )
+            print(f"Adding dataset \033[1m{dataset}\033[0m to the dictionary under group \033[1m{group}\033[0m.")
             data[name] = []
             data["_GROUPS_"][group].append(dataset)
 
@@ -399,10 +380,7 @@ def pack(data, bucket, AUTO_SET_COUNTER=True, EMPTY_OUT_BUCKET=True, STRICT_CHEC
             # This is for counters and SINGLETONS
             if key in data["_GROUPS_"]["_SINGLETONS_GROUP_"]:
                 if bucket[key] == None:
-                    print(
-                        "\n\033[1m%s\033[0m is part of the SINGLETON group and is expected to have a value for each bucket."
-                        % (key)
-                    )
+                    print(f"\n\033[1m{key}\033[0m is part of the SINGLETON group and is expected to have a value for each bucket.")
                     print("However it is None...exiting.\n")
                     exit()
                 # Append the single value from the singletons
@@ -439,7 +417,6 @@ def convert_list_and_key_to_string_data(datalist, key):
     b = np.string_("")
     nvals = len(datalist)
     for i, val in enumerate(datalist):
-        # print(val,type(val))
         b += np.string_(val)
         if i < nvals - 1:
             b += np.string_("__:__")
@@ -468,7 +445,6 @@ def convert_dict_to_string_data(dictionary):
 
     mydataset = []
     for i, key in enumerate(keys):
-        # print(i,key,dictionary[key])
         a = np.string_(key)
         b = np.string_(dictionary[key])
         mydataset.append([a, b])
@@ -576,16 +552,12 @@ def write_to_file(
 
     for group in _GROUPS_:
 
-        # print(group)
-
         hdoutfile.create_group(group)
         hdoutfile[group].attrs["counter"] = np.string_(
             data["_MAP_DATASETS_TO_COUNTERS_"][group]
         )
 
         datasets = data["_GROUPS_"][group]
-
-        # print(datasets)
 
         for dataset in datasets:
 
@@ -598,7 +570,6 @@ def write_to_file(
             x = data[name]
 
             dataset_dtype = data['_MAP_DATASETS_TO_DATA_TYPES_'][name]
-            # print(dataset_dtype)
 
             if type(x) == list:
                 x = np.array(x)
@@ -634,13 +605,11 @@ def write_to_file(
     prevcounter = None
     for i, countername in enumerate(counters):
         ncounter = len(data[countername])
-        print("%-32s has %-12d entries" % (countername, ncounter))
+        #print("%-32s has %-12d entries" % (countername, ncounter))
+        print(f"{countername:<32s} has {ncounter:<12d} entries")
         if i > 0 and ncounter != _NUMBER_OF_BUCKETS_:
             print("-------- WARNING -----------")
-            print(
-                "%s and %s have differing numbers of entries!"
-                % (countername, prevcounter)
-            )
+            print(f"{countername} and {prevcounter} have differing numbers of entries!")
             print("-------- WARNING -----------")
             # SHOULD WE EXIT ON THIS?
 

@@ -64,7 +64,7 @@ def load(filename=None, verbose=False, desired_datasets=None, subset=None):
         if subset[0] > nbuckets:
             print("Range for subset starts greater tha number of buckets in file!")
             print(f"{subset[0]} > {nbuckets}")
-            print(f"Not sure how to handle this so the file will not be opened.")
+            print(f"I'm not sure how to handle this so the file will not be opened.")
             print(f"Returning None,None")
             infile.close()
             return None,None
@@ -149,7 +149,7 @@ def load(filename=None, verbose=False, desired_datasets=None, subset=None):
                     break
 
             if is_dropped == True:
-                print("Not reading out %s from the file...." % (entry))
+                print(f"Not reading out {entry} from the file....")
                 all_datasets.remove(entry)
 
             i -= 1
@@ -241,7 +241,6 @@ def load(filename=None, verbose=False, desired_datasets=None, subset=None):
 
         if verbose == True:
             print(f"------ {name}")
-            #print(f"counter_name: {counter_name}")
             print(f"index_name: {index_name}\n")
 
         dataset = infile[name]
@@ -310,7 +309,6 @@ def unpack(bucket, data, n=0):
         # IS THERE A WAY THAT THIS COULD BE FASTER?
         # print(data['_LIST_OF_COUNTERS_'],key)
         if key in data["_LIST_OF_COUNTERS_"] or key in data["_SINGLETONS_GROUP_"]:
-            # print("here! ",key)
             bucket[key] = data[key][n]
 
         elif "INDEX" not in key:  # and 'Jets' in key:
@@ -342,7 +340,6 @@ def get_nbuckets_in_file(filename):
     with h5.File(filename, "r+") as f:
         a = f.attrs
 
-        print(a)
         if a.__contains__("_NUMBER_OF_BUCKETS_"):
             _NUMBER_OF_BUCKETS_ = a.get("_NUMBER_OF_BUCKETS_")
             f.close()
