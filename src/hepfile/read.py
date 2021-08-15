@@ -58,6 +58,14 @@ def load(filename=None, verbose=False, desired_datasets=None, subset=None):
             print(f"subset being set to a range of (0,{subset})\n")
             subset = [0, subset]
 
+        # If the user has specified `subset` incorrectly, then let's return
+        # an empty data and bucket
+        if subset[1]-subset[0]<=0:
+            print("The range in subset is either 0 or negative!")
+            print(f"{subset[1]} - {subset[0]} = {subset[1] - subset[0]}")
+            print("Returning an empty data and bucket dictionary!\n")
+            return data,bucket
+
         # Make sure the user is not asking for something bigger than the file!
         nbuckets = data["_NUMBER_OF_BUCKETS_"]
 
