@@ -22,8 +22,7 @@ for nfiles in range(0,30):
     '''
 
     nentries = data['nentries']
-    print("nentries: ",nentries)
-    print(type(data),type(event))
+    print(f"nentries: {nentries}")
 
     energies += data['jet/e'].tolist()
 

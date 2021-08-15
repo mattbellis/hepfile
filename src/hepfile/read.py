@@ -70,7 +70,7 @@ def load(filename=None, verbose=False, desired_datasets=None, subset=None):
         nbuckets = data["_NUMBER_OF_BUCKETS_"]
 
         if subset[0] > nbuckets:
-            print("Range for subset starts greater tha number of buckets in file!")
+            print("Range for subset starts greater than number of buckets in file!")
             print(f"{subset[0]} > {nbuckets}")
             print(f"I'm not sure how to handle this so the file will not be opened.")
             print(f"Returning None,None")
@@ -78,7 +78,7 @@ def load(filename=None, verbose=False, desired_datasets=None, subset=None):
             return None,None
 
         if subset[1] > nbuckets:
-            print("Range for subset is greater tha number of buckets in file!")
+            print("Range for subset is greater than number of buckets in file!")
             print(f"{subset[1]} > {nbuckets}")
             print(f"High range of subset will be set to {nbuckets}\n")
             subset[1] = nbuckets

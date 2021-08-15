@@ -69,7 +69,7 @@ hdfile = hepfile.write_to_file(filename,data,comp_type='gzip',comp_opts=9)
 data,event = hepfile.load(filename)
 nevents = data['nentries']
 print(data)
-print("nevents: ",nevents)
+print(f"nevents: {nevents}")
 #nevents = data['nevents']
 fig = plt.figure(figsize=(10,10))
 for i in range(0,nevents):
