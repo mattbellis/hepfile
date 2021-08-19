@@ -42,13 +42,15 @@ test = [
 ]
 dev = [
   "pytest >=6",
-  "awkward >= 1.4",
 ]
 docs = [
   "Sphinx >=3.0.0",
   "myst_parser>=0.13",
   "sphinx-book-theme>=0.0.33",
   "sphinx_copybutton",
+]
+awkward = [
+  "awkward >= 1.4",
 ]
 
 [tool.pytest.ini_options]
