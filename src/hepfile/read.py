@@ -207,7 +207,13 @@ def load(filename=None, verbose=False, desired_datasets=None, subset=None):
             print(f"full file index: {full_file_index}\n")
 
         # If we passed in subset, grab that slice of the data from the file
-        if subset is not None:
+        if subset is not None and subset[1] <= subset[0]:
+            print("Will not be reading anything in!")
+            print(f"High range of {subset[1]} is less than or equal to low range of {subset[0]}")
+            print("Returning None,None...")
+            return None,None
+
+        elif subset is not None:
             # We tack on +1 to the high range of subset when we pull out the counters
             # and index because we want to get all of the entries for the last entry.
             data[counter_name] = infile[counter_name][subset[0] : subset[1]+1]
@@ -215,12 +221,6 @@ def load(filename=None, verbose=False, desired_datasets=None, subset=None):
         else:
             data[counter_name] = infile[counter_name][:]
             index = full_file_index
-
-        if subset[1] <= subset[0]:
-            print("Will not be reading anything in!")
-            print(f"High range of {subset[1]} is less than or equal to low range of {subset[0]}")
-            print("Returning None,None...")
-            return None,None
 
         # Just to make sure the "local" index of the data dictionary starts at 0
         subset_index = index - index[0]

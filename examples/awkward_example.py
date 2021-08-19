@@ -1,21 +1,25 @@
 import numpy as np
-import awkward1 as ak
-import uproot4 as uproot
+import awkward as ak
+import uproot as uproot
 
 import sys
 
-from coffea.nanoevents import NanoEventsFactory, NanoAODSchema
+#from coffea.nanoevents import NanoEventsFactory, NanoAODSchema
 
-import h5hep as hp
+import hepfile as hp
 
 
 infilename = sys.argv[1]
 
-print("Reading in {0}".format(infilename))
+#print("Reading in {0}".format(infilename))
 
-events = NanoEventsFactory.from_root(infilename, schemaclass=NanoAODSchema).events()
-print(len(events))
+#events = NanoEventsFactory.from_root(infilename, schemaclass=NanoAODSchema).events()
+#print(len(events))
 
-:wq
+#:wq
+
+data,event = hp.load(infilename)
+x = hp.unpack_awkward_arrays(data,['jet'])
+
 
 
