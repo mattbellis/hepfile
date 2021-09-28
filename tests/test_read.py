@@ -60,6 +60,24 @@ def test_load():
 
     assert len(test_data["jet/njet"]) == 10
 
+    # Test for poor uses of subset
+    test_data, test_bucket = hepfile.load(
+        filename, False, desired_datasets, [0,0])
+    
+    assert len(test_data['_LIST_OF_DATASETS_']) == 0
+    assert len(test_bucket.keys()) == 0
+
+    test_data, test_bucket = hepfile.load(
+        filename, False, desired_datasets, [10,0])
+    
+    assert len(test_data['_LIST_OF_DATASETS_']) == 0
+    assert len(test_bucket.keys()) == 0
+
+    test_data, test_bucket = hepfile.load(
+        filename, False, desired_datasets, subset=0)
+    
+    assert len(test_data['_LIST_OF_DATASETS_']) == 0
+    assert len(test_bucket.keys()) == 0
 
 def test_unpack():
 

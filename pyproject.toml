@@ -49,6 +49,9 @@ docs = [
   "sphinx-book-theme>=0.0.33",
   "sphinx_copybutton",
 ]
+awkward = [
+  "awkward >= 1.4",
+]
 
 [tool.pytest.ini_options]
 addopts = "-ra -Wd"
@@ -73,4 +76,5 @@ warn_unused_ignores = true
 warn_return_any = true
 no_implicit_reexport = true
 strict_equality = true
+
 

@@ -26,29 +26,13 @@ if data is None:
 #print(data['list_of_counters'])
 
 nbuckets_in_file = hepfile.get_nbuckets_in_file(filename)
-print("nentries in file: ",nbuckets_in_file)
+print(f"nentries in file: {nbuckets_in_file}")
 
 nbuckets = hepfile.get_nbuckets_in_data(data)
-print("nentries: ",nbuckets)
+print(f"nentries: {nbuckets}")
 
-#print(type(data),type(event))
 
 energies = []
-
-#print("A")
-#print(data.keys())
-#print(data)
-#
-#print("B")
-#print(event.keys())
-#print(event)
-#x = data['jet/e']
-
-# Print out what has been read in from the files.
-'''
-for key in event.keys():
-    print(key)
-'''
 
 for i in range(0,nbuckets):
 
@@ -56,8 +40,6 @@ for i in range(0,nbuckets):
         print(i)
 
     hepfile.unpack(event,data,n=i)
-
-    #print(event['jet/njet'])
 
     energy = event['jet/e']
 

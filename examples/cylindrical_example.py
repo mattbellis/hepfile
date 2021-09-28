@@ -74,8 +74,6 @@ hdfile = hepfile.write_to_file(filename,data,comp_type='gzip',comp_opts=9)
 ################
 data,event = hepfile.load(filename)
 nevents = data['nentries']
-#print(data)
-#print("nevents: ",nevents)
 
 fig = plt.figure(figsize=(10,10))
 

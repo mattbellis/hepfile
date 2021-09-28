@@ -47,10 +47,13 @@ setup_group(town, 'vehicles', 'ID', v_cols)
 setup_group(town, 'houses', 'ID', h_cols)
 bucket = hep.create_single_bucket(town)
 
+
+
 for i in range(min_ID, max_ID+1):
     fill_event_group(bucket, i, 'people', p_cols, p_ID, p_data)
     fill_event_group(bucket, i, 'vehicles', v_cols, v_ID, v_data)
     fill_event_group(bucket, i, 'houses', h_cols, h_ID, h_data)
     hep.pack(town, bucket)
+    hep.clear_event(bucket)
 
 hep.write_to_file("town_hep.hdf5", town, force_single_precision=False)
