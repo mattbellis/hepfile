@@ -60,6 +60,22 @@ def test_load():
 
     assert len(test_data["jet/njet"]) == 10
 
+    # Passing in a range of subsets
+    subset = (0,4)
+    test_data, test_bucket = hepfile.load(
+        filename, False, desired_datasets, subset=subset)
+    assert len(test_data["jet/njet"]) == 4
+
+    subset = (1,5)
+    test_data, test_bucket = hepfile.load(
+        filename, False, desired_datasets, subset=subset)
+    assert len(test_data["jet/njet"]) == 4
+
+    subset = [1,5]
+    test_data, test_bucket = hepfile.load(
+        filename, False, desired_datasets, subset=subset)
+    assert len(test_data["jet/njet"]) == 4
+
     # Test for poor uses of subset
     test_data, test_bucket = hepfile.load(
         filename, False, desired_datasets, [0,0])
@@ -85,7 +101,7 @@ def test_unpack():
     # the tests directory.
     filename = "FOR_TESTS.hdf5"
     desired_datasets = ['jet', 'muon']
-    subset = 1000
+    subset = 10
 
     bucket, data = hepfile.load(filename, False, desired_datasets, subset)
 
