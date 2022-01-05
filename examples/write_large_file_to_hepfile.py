@@ -31,7 +31,7 @@ hepfile.create_dataset(data,['e','px','py','pz'],group='photon',dtype=float)
 hepfile.create_group(data,'MET',counter='nMET')
 hepfile.create_dataset(data,['pt','phi'],group='MET',dtype=float)
 
-event = hepfile.create_single_event(data)
+event = hepfile.create_single_bucket(data)
 
 nentries = 10000
 
@@ -43,8 +43,6 @@ for i in range(0,nentries):
 
     if i%1000==0:
         print(i)
-
-    hepfile.clear_event(event)
 
     njet = np.random.randint(10)
     event['jet/njet'] = njet

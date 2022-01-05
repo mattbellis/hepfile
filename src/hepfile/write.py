@@ -88,12 +88,7 @@ def create_single_bucket(data):
     bucket = {}
 
     for k in data.keys():
-        # IS THIS FIRST ONE DEPRECATED FOR SOME EARLIER DEV CYCLE???
-        if k[-5:] == "index":
-            bucket[k] = data[k]
-        elif k in data["_GROUPS_"]["_SINGLETONS_GROUP_"]:
-            bucket[k] = None
-        elif k in data["_LIST_OF_COUNTERS_"]:
+        if k in data["_LIST_OF_COUNTERS_"]:
             bucket[k] = 0
         else:
             bucket[k] = data[k].copy()

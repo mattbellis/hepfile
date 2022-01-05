@@ -20,18 +20,18 @@ def sep_cols_data_ids(filename):
     return cols, data, data_ID
 
 
-def setup_group(data, groupname, counter, datasets):
-    hep.create_group(data, groupname=groupname, counter=counter)
+def setup_group(data, group_name, counter, datasets):
+    hep.create_group(data, group_name=group_name, counter=counter)
     #for dset in datasets:
-    hep.create_dataset(data, datasets, group=groupname, dtype = str)
+    hep.create_dataset(data, datasets, group=group_name, dtype = str)
 
 
-def fill_event_group(event, i, groupname, cols, counters, data):
+def fill_event_group(event, i, group_name, cols, counters, data):
     for j in range(len(counters)):
         if counters[j] == i:
-            event[f'{groupname}/ID'] += 1
+            event[f'{group_name}/ID'] += 1
             for k in range(len(cols)):
-                event[f'{groupname}/{cols[k]}'].append(data[k][j])
+                event[f'{group_name}/{cols[k]}'].append(data[k][j])
 
 
 p_cols, p_data, p_ID = sep_cols_data_ids('sheet1.csv')
@@ -54,6 +54,5 @@ for i in range(min_ID, max_ID+1):
     fill_event_group(bucket, i, 'vehicles', v_cols, v_ID, v_data)
     fill_event_group(bucket, i, 'houses', h_cols, h_ID, h_data)
     hep.pack(town, bucket)
-    hep.clear_event(bucket)
 
 hep.write_to_file("town_hep.hdf5", town, force_single_precision=False)
