@@ -222,8 +222,11 @@ def load(filename=None, verbose=False, desired_datasets=None, subset=None):
             data[counter_name] = infile[counter_name][:]
             index = full_file_index
 
+        subset_index = index
+        # If the file is *not* empty....
         # Just to make sure the "local" index of the data dictionary starts at 0
-        subset_index = index - index[0]
+        if len(index)>0:
+            subset_index = index - index[0]
 
         index_name = "%s_INDEX" % (counter_name)
 
