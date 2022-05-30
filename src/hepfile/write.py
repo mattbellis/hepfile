@@ -125,6 +125,16 @@ def create_group(data, group_name, counter=None):
     # Change name of variable, just to keep code more understandable
     counter_name = counter
 
+    # Create a counter_name if the user has not specified one
+    if counter_name is None:
+        print("----------------------------------------------------")
+        print(
+            f"There is no counter to go with group \033[1m{group_name}\033[0m")
+        print("Are you sure that's what you want?")
+        counter_name = f"N_{group_name}"
+        print(f"Creating a counter called \033[1m{counter_name}\033[0m")
+        print("-----------------------------------------------------")
+
     # Check for slashes in the counter name. We can't have them.
     if counter_name.find('/')>=0:
         new_counter_name = counter_name.replace('/','-')
@@ -136,16 +146,6 @@ def create_group(data, group_name, counter=None):
         counter_name = new_counter_name 
 
     keys = data.keys()
-
-    # Create a counter_name if the user has not specified one
-    if counter_name is None:
-        print("----------------------------------------------------")
-        print(
-            f"There is no counter to go with group \033[1m{group_name}\033[0m")
-        print("Are you sure that's what you want?")
-        counter_name = f"N_{group_name}"
-        print(f"Creating a counter called \033[1m{counter_name}\033[0m")
-        print("-----------------------------------------------------")
 
     # Then put the group and any datasets in there next.
     keyfound = False
