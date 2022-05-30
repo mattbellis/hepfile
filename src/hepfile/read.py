@@ -310,6 +310,9 @@ def unpack(bucket, data, n=0):
 
 	**data** (dict): Data dictionary used to fill the bucket dictionary
 
+    **n** (integer): 0 by default. Which entry should be pulled out of the data
+                     dictionary and inserted into the bucket dictionary.
+
     """
 
     keys = bucket.keys()
