@@ -22,8 +22,8 @@ sys.path.insert(0, os.path.abspath("../"))
 project = "hepfile"
 copyright = "2021, Matt Bellis"
 author = "Matt Bellis"
-version = "0.1.0"
-release = "0.1.0"
+version = "0.2.0"
+release = "0.2.0"
 
 # The master toctree document.
 master_doc = 'index'
