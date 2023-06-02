@@ -2,7 +2,7 @@ import h5py as h5
 import numpy as np
 
 ################################################################################
-def load(filename=None, verbose=False, desired_datasets=None, subset=None):
+def load(filename=None, verbose=False, desired_groups=None, subset=None):
 
     '''
     Reads all, or a subset of the data, from the HDF5 file to fill a data dictionary.
@@ -13,8 +13,7 @@ def load(filename=None, verbose=False, desired_datasets=None, subset=None):
 	
 	**verbose** (boolean): True if debug output is required
 
-	**desired_datasets** (list): Datasets to be read from input file, THIS IS REALLY
-    STRING MATCHING SO THE USER COULD PASS IN A GROUP NAME. IS THIS RIGHT?
+	**desired_groups** (list): Groups to be read from input file, 
 
 	**subset** (int): Number of buckets to be read from input file
 
@@ -137,11 +136,11 @@ def load(filename=None, verbose=False, desired_datasets=None, subset=None):
     ############################################################################
 
     ############################################################################
-    # Only keep select data from file, if we have specified desired_datasets
+    # Only keep select data from file, if we have specified desired_groups
     ############################################################################
-    if desired_datasets is not None:
-        if type(desired_datasets) != list:
-            desired_datasets = list(desired_datasets)
+    if desired_groups is not None:
+        if type(desired_groups) != list:
+            desired_groups = list(desired_groups)
 
         # Count backwards because we'll be removing stuff as we go.
         i = len(all_datasets) - 1
@@ -151,7 +150,7 @@ def load(filename=None, verbose=False, desired_datasets=None, subset=None):
             is_dropped = True
             # This is looking to see if the string is anywhere in the name
             # of the dataset
-            for desdat in desired_datasets:
+            for desdat in desired_groups:
                 if desdat in entry:
                     is_dropped = False
                     break
