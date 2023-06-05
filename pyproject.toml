@@ -35,6 +35,8 @@ requires = [
   "awkward >= 1.4",
   "typing; python_version<'3.5'",
   "pre-commit",
+  "jupyter",
+  "mistune==0.8.4"
 ]
 
 [tool.flit.metadata.requires-extra]
@@ -47,6 +49,7 @@ dev = [
 docs = [
   "Sphinx >=3.0.0",
   "myst_parser>=0.13",
+  "nbsphinx>=0.9.1",
   "sphinx-book-theme>=0.0.33",
   "sphinx_copybutton",
 ]

@@ -35,6 +35,7 @@ master_doc = 'index'
 # ones.
 extensions = [
     "myst_parser",
+    "nbsphinx",
     "sphinx.ext.autodoc",
     "sphinx.ext.mathjax",
     "sphinx.ext.napoleon",
