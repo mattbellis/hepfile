@@ -18,8 +18,8 @@ infilename = sys.argv[1]
 
 #:wq
 
-data,event = np.load(infilename)
-x = np.unpack_awkward_arrays(data,['jet'])
+data,event = hp.load(infilename)
+x = hp.unpack_awkward_arrays(data,['jet'])
 
 
 
