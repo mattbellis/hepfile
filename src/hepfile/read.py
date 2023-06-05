@@ -13,8 +13,7 @@ def load(filename=None, verbose=False, desired_groups=None, subset=None):
 	
 	**verbose** (boolean): True if debug output is required
 
-	**desired_groups** (list): Datasets to be read from input file, THIS IS REALLY
-    STRING MATCHING SO THE USER COULD PASS IN A GROUP NAME. IS THIS RIGHT?
+	**desired_groups** (list): Groups to be read from input file, 
 
 	**subset** (int): Number of buckets to be read from input file
 
