@@ -1,18 +1,7 @@
 Examples
 ========
 
-Write to and read from file (generic example)
----------------------------------------------
+.. toctree:: 
+   :maxdepth: 2
 
-
-Write to file (HEP example)
----------------------------
-.. include:: examples/write_HEP.rst
-
-Read from file (HEP example)
-----------------------------
-
-Converting .csv files to hepfile
---------------------------------
-
-More examples here. 
+   example_rst/write_HEP.rst

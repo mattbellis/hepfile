@@ -148,3 +148,6 @@ dist/
 # Accidental datafiles
 .hdf5
 .h5
+
+# no html files that were generated for testing
+html/

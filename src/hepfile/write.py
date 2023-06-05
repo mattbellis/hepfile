@@ -562,20 +562,31 @@ def write_to_file(
             else:
                 name = "%s/%s" % (group, dataset)
 
+            if verbose is True:
+                print(f"Writing {name} to file")
+
             x = data[name]
 
             dataset_dtype = data['_MAP_DATASETS_TO_DATA_TYPES_'][name]
 
             if type(x) == list:
+                if verbose is True:
+                    print("\tConverting list to array...")
                 x = np.array(x)
 
             # Do single precision only, unless specified
             if force_single_precision == True:
                 if x.dtype == np.float64:
+                    if verbose is True:
+                        print("\tConverting array to single precision...")
                     x = x.astype(np.float32)
                     dataset_dtype = np.float32
 
             if dataset_dtype is not str:
+
+                if verbose is True:
+                    print("\tWriting to file...")
+
                 hdoutfile.create_dataset(
                     name, data=x, compression=comp_type, compression_opts=comp_opts, dtype=dataset_dtype
                 )

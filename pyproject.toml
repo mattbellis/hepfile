@@ -32,6 +32,7 @@ requires-python = ">=3.7"
 requires = [
   "numpy >=1.13.3",
   "h5py",
+  "awkward >= 1.4",
   "typing; python_version<'3.5'",
   "pre-commit",
 ]
