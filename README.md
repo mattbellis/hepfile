@@ -35,7 +35,7 @@ For local builds for testing.
 /home/bellis/.local/bin/flit install
 ```
 
-Need to install
+Install the following packages using `pip`:
 
 ```
 flit
