@@ -20,6 +20,9 @@ authors:
   - name: Willow Hagen
     orcid: 0000-0001-6637-2112
     affiliation: "3,1"
+  - name: Noah Franz
+    orcid: 0000-0003-4537-3575
+    affiliation: 1
 affiliations:
  - name: Siena College
    index: 1
