@@ -224,7 +224,7 @@ def test_write_file_metadata():
     file.close()
 
     # Adding a new attribute
-    hepfile.write_file_metadata(filename, {'author': 'John Doe'})
+    hepfile._write_file_metadata(filename, {'author': 'John Doe'})
     file = h5.File(filename, "r")
 
     assert 'author' in file.attrs.keys()
