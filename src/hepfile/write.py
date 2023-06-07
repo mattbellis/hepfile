@@ -627,6 +627,6 @@ def write_to_file(
     hdoutfile.attrs["_NUMBER_OF_BUCKETS_"] = _NUMBER_OF_BUCKETS_
     hdoutfile.close()
 
-    _write_file_metadata(filename)
+    write_file_metadata(filename)
 
     return hdoutfile
