@@ -11,7 +11,7 @@ def initialize():
 
     Returns:
 
-        **data** (dict): An empty data dictionary
+        data (dict): An empty data dictionary
 
     """
 
@@ -45,8 +45,8 @@ def clear_bucket(bucket):
     """ Clears the data from the bucket dictionary - should the name of the function change?
 
     Args:
-        **bucket** (dict): The dictionary to be cleared. This is designed to clear the data from
-                      the lists in the **bucket** dictionary, but theoretically, it would
+        bucket (dict): The dictionary to be cleared. This is designed to clear the data from
+                      the lists in the bucket dictionary, but theoretically, it would
                       clear out the lists from any dictionary. 
 
     """
@@ -78,10 +78,10 @@ def create_single_bucket(data):
     packed into the the master data dictionary.
 
     Args:
-        **data** (dict): Data dictionary that will hold all the data from the bucket.
+        data (dict): Data dictionary that will hold all the data from the bucket.
 
     Returns:
-        **bucket** (dict): The new bucket dictionary with keys and no bucket information
+        bucket (dict): The new bucket dictionary with keys and no bucket information
 
     """
 
@@ -104,11 +104,11 @@ def create_group(data, group_name, counter=None):
     """ Adds a group in the dictionary
 
     Args:
-        **data** (dict): Dictionary to which the group will be added
+        data (dict): Dictionary to which the group will be added
 
-        **group_name** (string): Name of the group to be added
+        group_name (string): Name of the group to be added
 
-        **counter** (string): Name of the counter key. None by default
+        counter (string): Name of the counter key. None by default
 
     """
 
@@ -186,16 +186,16 @@ def create_dataset(data, datasets, group=None, dtype=float):
     """ Adds a dataset to a group in a dictionary. If the group does not exist, it will be created.
 
     Args:
-        **data** (dict): Dictionary that contains the group
+        data (dict): Dictionary that contains the group
 
-        **datasets** (list): Dataset to be added to the group (This doesn't have to be a list)
+        datasets (list): Dataset to be added to the group (This doesn't have to be a list)
 
-        **group** (string): Name of group the dataset will be added to.  None by default
+        group (string): Name of group the dataset will be added to.  None by default
 
-        **dtype** (type): The data type. None by default - I don't think this is every used 
+        dtype (type): The data type. None by default - I don't think this is every used 
 
     Returns:
-        **-1**: If the group is None
+        -1: If the group is None
 
 
     """
@@ -282,11 +282,11 @@ def pack(data, bucket, AUTO_SET_COUNTER=True, EMPTY_OUT_BUCKET=True, STRICT_CHEC
     (This is analagous to the ROOT TTree::Fill() member function).
 
     Args:
-        **data** (dict): Data dictionary to hold the entire dataset EDIT.
+        data (dict): Data dictionary to hold the entire dataset EDIT.
 
-        **bucket** (dict): bucket to be packed into data.
+        bucket (dict): bucket to be packed into data.
 
-        **EMPTY_OUT_BUCKET** (bool): If this is `True` then empty out the `bucket`
+        EMPTY_OUT_BUCKET (bool): If this is `True` then empty out the `bucket`
                                 container in preparation for the next iteration. We used to ask the users to do
                                 this "by hand" but now do it automatically by default. We allow the user to 
                                 not do this, if they are running some sort of debugging. 
@@ -398,10 +398,10 @@ def _convert_list_and_key_to_string_data(datalist, key):
     """ Converts data dictionary to a string
 
     Args:
-        **datalist** (list): A list to be saved as a string.
+        datalist (list): A list to be saved as a string.
 
     Returns:
-        **key** (string): We will assume that this will be unpacked as a dictionary,
+        key (string): We will assume that this will be unpacked as a dictionary,
                       and this will be the key for the list in that dictionary.
 
     """
@@ -427,10 +427,10 @@ def _convert_dict_to_string_data(dictionary):
     """ Converts data dictionary to a string
 
     Args:
-        **dictionary** (dict): Dictionary to be converted to a string
+        dictionary (dict): Dictionary to be converted to a string
 
     Returns:
-        **mydataset** (string): String representation of the dataset
+        mydataset (string): String representation of the dataset
 
     """
 
@@ -454,19 +454,19 @@ def write_file_metadata(filename, mydict={}, write_default_values=True, append=T
     """ Writes file metadata in the attributes of an HDF5 file
 
     Args:
-    **filename** (string): Name of output file
+    filename (string): Name of output file
 
-    **mydict** (dictionary): Metadata desired by user
+    mydict (dictionary): Metadata desired by user
 
-    **write_default_values** (boolean): True if user wants to write/update the 
+    write_default_values (boolean): True if user wants to write/update the 
                                         default metadata: date, hepfile version, 
                                         h5py version, numpy version, and Python 
                                         version, false if otherwise.
 
-    **append** (boolean): True if user wants to keep older metadata, false otherwise.
+    append (boolean): True if user wants to keep older metadata, false otherwise.
 
     Returns:
-    **hdoutfile** (HDF5): File with new metadata
+    hdoutfile (HDF5): File with new metadata
 
     """
 
@@ -503,16 +503,16 @@ def write_to_file(
     """ Writes the selected data to an HDF5 file
 
     Args:
-        **filename** (string): Name of output file
+        filename (string): Name of output file
 
-        **data** (dictionary): Data to be written into output file
+        data (dictionary): Data to be written into output file
 
-        **comp_type** (string): Type of compression
+        comp_type (string): Type of compression
 
-        **force_single_precision** (boolean): True if data should be written in single precision
+        force_single_precision (boolean): True if data should be written in single precision
 
     Returns:
-        **hdoutfile** (HDF5): File to which the data has been written 
+        hdoutfile (HDF5): File to which the data has been written 
 
     """
 

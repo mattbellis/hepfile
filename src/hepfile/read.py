@@ -9,18 +9,18 @@ def load(filename=None, verbose=False, desired_groups=None, subset=None):
     Returns an empty dictionary to be filled later with data from individual buckets.
 
     Args:
-	**filename** (string): Name of the input file
+	filename (string): Name of the input file
 	
-	**verbose** (boolean): True if debug output is required
+	verbose (boolean): True if debug output is required
 
-	**desired_groups** (list): Groups to be read from input file, 
+	desired_groups (list): Groups to be read from input file, 
 
-	**subset** (int): Number of buckets to be read from input file
+	subset (int): Number of buckets to be read from input file
 
     Returns:
-	**data** (dict): Selected data from HDF5 file
+	data (dict): Selected data from HDF5 file
 	
-	**bucket** (dict): An empty bucket dictionary to be filled by data from select buckets
+	bucket (dict): An empty bucket dictionary to be filled by data from select buckets
 
     '''
 
@@ -305,11 +305,11 @@ def unpack(bucket, data, n=0):
 
     Args:
 
-	**bucket** (dict): bucket dictionary to be filled
+	bucket (dict): bucket dictionary to be filled
 
-	**data** (dict): Data dictionary used to fill the bucket dictionary
+	data (dict): Data dictionary used to fill the bucket dictionary
 
-    **n** (integer): 0 by default. Which entry should be pulled out of the data
+        n (integer): 0 by default. Which entry should be pulled out of the data
                      dictionary and inserted into the bucket dictionary.
 
     """
