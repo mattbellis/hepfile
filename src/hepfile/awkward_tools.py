@@ -5,29 +5,47 @@ import numpy as np
 
 ################################################################################
 #def unpack_awkward_arrays(data,keys):
-def unpack_awkward_arrays(data,groups=None,datasets=None):
-
-    #data,event = read.load(infilename)
-
-    #if type(keys) is not list:
-    #    keys = [keys]
-
-    alldatasets = data['_LIST_OF_DATASETS_']
+def hepfile_to_awkward(data,groups=None,datasets=None):
+    '''
+    Converts all (or a subset of) the output data from `hepfile.read.load` to 
+    a dictionary of awkward arrays.
+    
+    Args:
+        **data** (dict): Output data dictionary from the `hepfile.read.load` function.
+        **groups** (list): list of groups to pull from data and convert to awkward arrays.
+        **datasets** (list): list of datasets to pull from data and include in the awkward arrays.
+        
+    Returns:
+        **ak_arrays** (dict): dictionary of awkward arrays with the data.
+    '''
+    
+    protected_names = ["_PROTECTED_NAMES_",
+                       "_GROUPS_",
+                       "_MAP_DATASETS_TO_COUNTERS_",
+                       "_MAP_DATASETS_TO_DATA_TYPES_"
+                       "_LIST_OF_COUNTERS_",
+                       "_SINGLETONS_GROUP_",
+                       "_SINGLETONS_GROUP_/COUNTER"
+                      ]
+    
+    if datasets is None:
+        datasets = data['_LIST_OF_DATASETS_']
+    
     allgroups = []
-    for d in alldatasets:
-        if d.find('/')>=0:
+    for d in datasets:
+        if d not in protected_names:
             allgroups.append(d.split('/')[0])
-
-    allgroups = np.unique(allgroups)
+    
+    if groups is None:
+        groups = np.unique(allgroups)
     
     ak_arrays = {}
 
     for group in groups:
         print("group: ",group)
         ak_arrays[group] = {}
-        #topkey = key.split('/')[0]
-        #nkey = topkey + "/n"  + topkey
-        for dataset in alldatasets:
+        for dataset in datasets:
+            dataset = group + '/' + dataset
             if dataset.find(group)>=0:
 
                 print("dataset: ",dataset)
@@ -42,31 +60,19 @@ def unpack_awkward_arrays(data,groups=None,datasets=None):
                 vals = data[dataset]
                 print(vals)
                 print(num)
-                if type(vals[0]) is str:
+                if len(vals) > 0 and type(vals[0]) is str:
                     vals = vals.astype(str)
-                ak_array = ak.unflatten(vals,num)
+                ak_array = ak.unflatten(list(vals),list(num))
                 datasetname = dataset.split(group+'/')[-1]
                 ak_arrays[group][datasetname] = ak_array
 
     return ak_arrays
 
 ################################################################################
-'''
-def pack_coffea_awkward_arrays(data,awkward_arrays,new_entries=True,names=None):
 
-    if names is None:
-        print("The names for the groups must be provided!")
-        print("Nothing will be written!")
-        return -1
-    
-    if type(awkward_arrays) is not list:
-        awkward_arrays = [awkward_arrays]
+def awkward_to_hepfile(data,awkward_arrays,new_entries=True,names=None):
+    '''
+    Converts a dictionary of awkward arrays to a hepfile
+    '''
+    return None
 
-    for arr,groupname in zip(awkward_arrays,names):
-        write.create_group(data, groupname, counter="n"+groupname)
-        for field in arr.fields:
-
-
-
-    return 1
-'''
