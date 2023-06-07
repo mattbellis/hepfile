@@ -14,8 +14,8 @@ def dictlike_to_hepfile(dict_list, outfile):
     - data entries in the first level of the dict are singleton objects
 
     Args:
-        **dict_list** (list): list of dictionaries where each dictionary holds information on an event
-        **outfile** (str): path to write output hepfile to
+        dict_list (list): list of dictionaries where each dictionary holds information on an event
+        outfile (str): path to write output hepfile to
     '''
 
     out_dict = {}

@@ -12,6 +12,7 @@ hepfile
    fundamentals
    usage
    examples
+   source
    citations
    contributors
 

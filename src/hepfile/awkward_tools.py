@@ -10,12 +10,12 @@ def hepfile_to_awkward(data,groups=None,datasets=None):
     a dictionary of awkward arrays.
     
     Args:
-        **data** (dict): Output data dictionary from the `hepfile.read.load` function.
-        **groups** (list): list of groups to pull from data and convert to awkward arrays.
-        **datasets** (list): list of datasets to pull from data and include in the awkward arrays.
+        data (dict): Output data dictionary from the `hepfile.read.load` function.
+        groups (list): list of groups to pull from data and convert to awkward arrays.
+        datasets (list): list of datasets to pull from data and include in the awkward arrays.
         
     Returns:
-        **ak_arrays** (dict): dictionary of awkward arrays with the data.
+        ak_arrays (dict): dictionary of awkward arrays with the data.
     '''
     
     protected_names = ["_PROTECTED_NAMES_",
@@ -72,9 +72,9 @@ def awkward_to_hepfile(ak_array, outfile, **kwargs):
     Converts a dictionary of awkward arrays to a hepfile
 
     Args:
-        **ak_array** (Awkward Array): dictionary of Awkward Arrays to write to a hepfile
-        **outfile** (str): path to write output hdf5 file to
-        **kwargs** (None): Passed to `hepfile.write.write_to_file`
+        ak_array (Awkward Array): dictionary of Awkward Arrays to write to a hepfile
+        outfile (str): path to write output hdf5 file to
+        **kwargs (None): Passed to `hepfile.write.write_to_file`
     '''
 
     data = hf.write.initialize()
