@@ -450,7 +450,7 @@ def _convert_dict_to_string_data(dictionary):
 ################################################################################
 # This function writes default attributes and metadata to a file.
 ################################################################################
-def _write_file_metadata(filename, mydict={}, write_default_values=True, append=True):
+def write_file_metadata(filename, mydict={}, write_default_values=True, append=True):
     """ Writes file metadata in the attributes of an HDF5 file
 
     Args:
