@@ -29,7 +29,7 @@ def initialize():
     data["_MAP_DATASETS_TO_DATA_TYPES_"] = {}
     data["_MAP_DATASETS_TO_DATA_TYPES_"]["_SINGLETONS_GROUP_/COUNTER"] = int
 
-    data["_PROTECTED_NAMES_"] = ["_PROTCTED_NAMES_",
+    data["_PROTECTED_NAMES_"] = ["_PROTECTED_NAMES_",
                                  "_GROUPS_",
                                  "_MAP_DATASETS_TO_COUNTERS_",
                                  "_MAP_DATASETS_TO_DATA_TYPES_"
@@ -394,7 +394,7 @@ def pack(data, bucket, AUTO_SET_COUNTER=True, EMPTY_OUT_BUCKET=True, STRICT_CHEC
 ################################################################################
 
 
-def convert_list_and_key_to_string_data(datalist, key):
+def _convert_list_and_key_to_string_data(datalist, key):
     """ Converts data dictionary to a string
 
     Args:
@@ -423,7 +423,7 @@ def convert_list_and_key_to_string_data(datalist, key):
 ################################################################################
 
 ################################################################################
-def convert_dict_to_string_data(dictionary):
+def _convert_dict_to_string_data(dictionary):
     """ Converts data dictionary to a string
 
     Args:
@@ -523,7 +523,7 @@ def write_to_file(
     # Convert this to a 2xN array for writing to the hdf5 file.
     # This gives us one small list of informtion if we need to pull out
     # small chunks of data
-    mydataset = convert_dict_to_string_data(data["_MAP_DATASETS_TO_COUNTERS_"])
+    mydataset = _convert_dict_to_string_data(data["_MAP_DATASETS_TO_COUNTERS_"])
     dset = hdoutfile.create_dataset(
         "_MAP_DATASETS_TO_COUNTERS_",
         data=mydataset,
@@ -534,7 +534,7 @@ def write_to_file(
 
     # Convert this to a 2xN array for writing to the hdf5 file.
     # This has the _GROUPS_ and the datasets in them.
-    mydataset = convert_list_and_key_to_string_data(
+    mydataset = _convert_list_and_key_to_string_data(
         data["_GROUPS_"]["_SINGLETONS_GROUP_"], "_SINGLETONSGROUPFORSTORAGE_"
     )
     dset = hdoutfile.create_dataset(
