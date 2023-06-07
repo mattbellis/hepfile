@@ -1,5 +1,5 @@
 myst-parser
-myst-nb
+nbsphinx
 sphinx-copybutton
 sphinx-book-theme
 autodoc
