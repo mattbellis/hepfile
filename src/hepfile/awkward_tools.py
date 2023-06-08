@@ -111,3 +111,17 @@ def awkward_to_hepfile(ak_array, outfile, **kwargs):
     print("Writing the hdf5 file from the awkward array...")
     hdfile = hf.write_to_file(outfile,data,force_single_precision=False)
 
+def _append_to_awkward(ak_array, new_val):
+    '''
+    Allows for appending to an awkward array
+    
+    Args:
+        ak_array (Awkward Array): Awkward array to append to
+        new_val (any): value to append to the awkward array
+    Return:
+        Awkward Array with new value appended
+    '''
+    ak_list = ak.to_list(ak_array) # convert to list
+    ak_list.append(new_val) # append to list
+    return ak.Array(ak_list) # return an awkward array
+
