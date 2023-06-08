@@ -95,7 +95,14 @@ def awkward_to_hepfile(ak_array, outfile, **kwargs):
         hf.write.create_dataset(data, list(ak_array[group].keys()), group=group)
     
         for ii, dataset in enumerate(ak_array[group].keys()):
-            name = f'{group}/{dataset}'
+
+            # check if dataset name has /'s in it
+            if dataset.find('/') >= 0:
+                dataset_name = dataset.replace('/', '-')
+            else:
+                dataset_name = dataset
+                
+            name = f'{group}/{dataset_name}'
             for data_subset in ak_array[group][dataset]:
                 data[name].append(data_subset)
                 if ii == 0:
