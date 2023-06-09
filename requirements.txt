@@ -1,0 +1,5 @@
+python>=3.7
+numpy>=1.13.3
+h5py
+awkward>=1.4
+hepfile
