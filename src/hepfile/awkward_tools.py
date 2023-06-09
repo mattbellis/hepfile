@@ -63,10 +63,9 @@ def hepfile_to_awkward(data,groups=None,datasets=None):
                 datasetname = dataset.split(group+'/')[-1]
                 ak_arrays[group][datasetname] = ak_array
 
-    return ak_arrays
+    return ak.Array(ak_arrays)
 
 ################################################################################
-
 def awkward_to_hepfile(ak_array, outfile, **kwargs):
     '''
     Converts a dictionary of awkward arrays to a hepfile
@@ -77,25 +76,42 @@ def awkward_to_hepfile(ak_array, outfile, **kwargs):
         **kwargs (None): Passed to `hepfile.write.write_to_file`
     '''
 
+    # validate input array
+    if type(ak_array) != ak.Array:
+        raise IOError('Please input an Awkward Array Record')
+        
+    if ak_array.fields == 0:
+        raise IOError('Your input Awkward Array must be a Record. This means it needs to have fields in it.')
+
+    # check input array only has a "depth" of 2
+    # this can be removed once hepfiles support unlimited depth of groups!
+    if _awkward_depth(ak_array) > 2:
+        raise IOError('Hepfile only supports awkward arrays with a depth <= 2! Please ensure your input follows this guideline.')
+    
     data = hf.write.initialize()
     singleton = False
 
-    for group in ak_array.keys():
+    for group in ak_array.fields:
         
         counter = f'n{group}'
         counter_key = f'{group}/{counter}'
-    
-        if type(ak_array[group]) == ak.Array:
+        if len(ak_array[group].fields) == 0:
             singleton = True
             hf.write.create_dataset(data, group)
             data[group] = ak_array[group]
             continue
     
         hf.write.create_group(data, group, counter=counter)
-        hf.write.create_dataset(data, list(ak_array[group].keys()), group=group)
-    
-        for ii, dataset in enumerate(ak_array[group].keys()):
-            name = f'{group}/{dataset}'
+        hf.write.create_dataset(data, list(ak_array[group].fields), group=group)
+        for ii, dataset in enumerate(ak_array[group].fields):
+
+            # check if dataset name has /'s in it
+            if dataset.find('/') >= 0:
+                dataset_name = dataset.replace('/', '-')
+            else:
+                dataset_name = dataset
+                
+            name = f'{group}/{dataset_name}'
             for data_subset in ak_array[group][dataset]:
                 data[name].append(data_subset)
                 if ii == 0:
@@ -111,3 +127,16 @@ def awkward_to_hepfile(ak_array, outfile, **kwargs):
     print("Writing the hdf5 file from the awkward array...")
     hdfile = hf.write_to_file(outfile,data,force_single_precision=False)
 
+
+def _awkward_depth(ak_array):
+
+    max_depth = 0
+    for item in ak_array.to_list():
+        item_depth = -1
+        for s in str(item):
+            if s == "{":
+                item_depth += 1
+        if item_depth > max_depth:
+            max_depth = item_depth
+
+    return max_depth

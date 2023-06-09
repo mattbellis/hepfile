@@ -2,7 +2,7 @@ import h5py as h5
 import numpy as np
 
 ################################################################################
-def load(filename=None, verbose=False, desired_groups=None, subset=None):
+def load(filename=None, verbose=False, desired_groups=None, subset=None, return_awkward=False):
 
     '''
     Reads all, or a subset of the data, from the HDF5 file to fill a data dictionary.
@@ -16,6 +16,8 @@ def load(filename=None, verbose=False, desired_groups=None, subset=None):
 	desired_groups (list): Groups to be read from input file, 
 
 	subset (int): Number of buckets to be read from input file
+
+        return_awkward (boolean): If True, returns a dictionary of awkward arrays for data. Default is False
 
     Returns:
 	data (dict): Selected data from HDF5 file
@@ -284,6 +286,10 @@ def load(filename=None, verbose=False, desired_groups=None, subset=None):
     infile.close()
     print("Data is read in and input file is closed.")
 
+    if return_awkward:
+        from .awkward_tools import hepfile_to_awkward
+        return hepfile_to_awkward(data), bucket
+    
     return data, bucket
 
 
