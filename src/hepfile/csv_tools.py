@@ -1,6 +1,8 @@
 '''
 Tools to help with managing csvs with hepfile
 '''
+from __future__ import annotations
+
 import os
 import numpy as np
 import pandas as pd

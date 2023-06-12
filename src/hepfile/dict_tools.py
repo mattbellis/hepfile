@@ -1,6 +1,8 @@
 '''
 Functions to help convert dictionaries into hepfiles
 '''
+from __future__ import annotations
+
 import awkward as ak
 from .awkward_tools import awkward_to_hepfile, _is_valid_awkward
 

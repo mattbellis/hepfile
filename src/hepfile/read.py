@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import h5py as h5
 import numpy as np
 
