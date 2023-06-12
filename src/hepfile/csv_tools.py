@@ -1,7 +1,7 @@
 '''
 Tools to help with managing csvs with hepfile
 '''
-
+import os
 import numpy as np
 import pandas as pd
 import awkward as ak
@@ -23,7 +23,7 @@ def csv_to_awkward(csvpaths:list[str], common_key:str, group_names:Optional[list
     '''
     
     if group_names is None:
-        group_names = [os.path.split(file) for file in csvpaths]
+        group_names = [os.path.split(file)[-1] for file in csvpaths]
 
     for_ak = {}
     for f, group_name in zip(csvpaths, group_names):
