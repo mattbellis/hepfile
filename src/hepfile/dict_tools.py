@@ -31,7 +31,6 @@ def dictlike_to_hepfile(dict_list, outfile, **kwargs):
     
     # convert dictionary list to  an awkward array and write to hepfile
     out_ak = ak.Array(dict_list)
-    #hf.awkward_tools.awkward_to_hepfile(out_ak, outfile, **kwargs)
     hf.awkward_tools.awkward_to_hepfile(out_ak, outfile, **kwargs)
     return out_ak
 
@@ -45,6 +44,9 @@ def append(ak_dict, new_dict):
     Return:
         Dictionary of awkward arrays with the new_dict appended
     '''
+
+    hf.awkward_tools._is_valid_awkward(ak_dict)
+    
     if list(new_dict.keys()) != ak_dict.fields:
         raise Exception('Keys of new array do not match keys of existing array!')
         

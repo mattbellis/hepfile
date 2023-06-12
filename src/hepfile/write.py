@@ -545,6 +545,8 @@ def write_to_file(
         compression_opts=comp_opts,
     )
 
+    print(data['_MAP_DATASETS_TO_DATA_TYPES_'])
+
     for group in _GROUPS_:
 
         hdoutfile.create_group(group)
@@ -553,7 +555,7 @@ def write_to_file(
         )
 
         datasets = data["_GROUPS_"][group]
-
+        
         for dataset in datasets:
 
             name = None
@@ -568,7 +570,7 @@ def write_to_file(
             x = data[name]
 
             dataset_dtype = data['_MAP_DATASETS_TO_DATA_TYPES_'][name]
-
+            
             if type(x) == list:
                 if verbose is True:
                     print("\tConverting list to array...")

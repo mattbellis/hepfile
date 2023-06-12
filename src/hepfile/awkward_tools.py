@@ -63,30 +63,38 @@ def hepfile_to_awkward(data,groups=None,datasets=None):
                 datasetname = dataset.split(group+'/')[-1]
                 ak_arrays[group][datasetname] = ak_array
 
-    return ak.Array(ak_arrays)
+
+    awk = ak.Array(ak_arrays)
+
+    try:
+        _is_valid_awkward(awk)
+    except IOError as e:
+        print(e)
+        raise ValueError('Cannot convert to proper awkward array because of the above error! Check your input hepfile format')
+    
+    return awk
 
 ################################################################################
-def awkward_to_hepfile(ak_array, outfile, **kwargs):
+def awkward_to_hepfile(ak_array, outfile=None, write_hepfile=True, **kwargs):
     '''
     Converts a dictionary of awkward arrays to a hepfile
 
     Args:
         ak_array (Awkward Array): dictionary of Awkward Arrays to write to a hepfile
         outfile (str): path to write output hdf5 file to
+        write_hepfile (bool): if True, writes data to outfile. If False, just converts to hepfile format and returns
         **kwargs (None): Passed to `hepfile.write.write_to_file`
     '''
 
-    # validate input array
-    if type(ak_array) != ak.Array:
-        raise IOError('Please input an Awkward Array Record')
-        
-    if ak_array.fields == 0:
-        raise IOError('Your input Awkward Array must be a Record. This means it needs to have fields in it.')
+    # perform IO checks
 
-    # check input array only has a "depth" of 2
-    # this can be removed once hepfiles support unlimited depth of groups!
-    if _awkward_depth(ak_array) > 2:
-        raise IOError('Hepfile only supports awkward arrays with a depth <= 2! Please ensure your input follows this guideline.')
+    _is_valid_awkward(ak_array)
+    
+    if write_hepfile == True and outfile is None:
+        raise IOError('Please provide an outfile path if write_hepfile=True!')
+
+    if write_hepfile == False and outfile is not None:
+        raise Warning('You set write_hepfile to False but provided an output file path. This output file path will not be used!')
     
     data = hf.write.initialize()
     singleton = False
@@ -95,16 +103,22 @@ def awkward_to_hepfile(ak_array, outfile, **kwargs):
         
         counter = f'n{group}'
         counter_key = f'{group}/{counter}'
+        
         if len(ak_array[group].fields) == 0:
             singleton = True
-            hf.write.create_dataset(data, group)
+            
+            dtype = _get_awkward_type(ak_array[group])
+            hf.write.create_dataset(data, group, dtype=dtype)
+
             data[group] = ak_array[group]
             continue
     
         hf.write.create_group(data, group, counter=counter)
-        hf.write.create_dataset(data, list(ak_array[group].fields), group=group)
         for ii, dataset in enumerate(ak_array[group].fields):
-
+            
+            dtype = _get_awkward_type(ak_array[group][dataset])
+            hf.write.create_dataset(data, dataset, group=group, dtype=dtype)
+            
             # check if dataset name has /'s in it
             if dataset.find('/') >= 0:
                 dataset_name = dataset.replace('/', '-')
@@ -123,10 +137,12 @@ def awkward_to_hepfile(ak_array, outfile, **kwargs):
     
     if len(data['_GROUPS_']['_SINGLETONS_GROUP_']) > 1:
         data['_SINGLETONS_GROUP_/COUNTER'] = [1]*len(data[data['_GROUPS_']['_SINGLETONS_GROUP_'][1]])
-        
-    print("Writing the hdf5 file from the awkward array...")
-    hdfile = hf.write_to_file(outfile,data,force_single_precision=False)
 
+    if write_hepfile:
+        print("Writing the hdf5 file from the awkward array...")
+        hdfile = hf.write_to_file(outfile,data,force_single_precision=False)
+
+    return data
 
 def _awkward_depth(ak_array):
 
@@ -140,3 +156,35 @@ def _awkward_depth(ak_array):
             max_depth = item_depth
 
     return max_depth
+
+def _is_valid_awkward(ak_array):
+    '''
+    Checks if the input awkward array is valid and raises an exception if not
+    
+    Args:
+        ak_array (ak.Array): awkward array to check    
+    '''
+
+        # validate input array
+    if type(ak_array) != ak.Array and type(ak_array) != ak.Record:
+        raise IOError('Please input an Awkward Array or Awkward Record')
+        
+    if ak_array.fields == 0:
+        raise IOError('Your input Awkward Array must be a Record. This means it needs to have fields in it.')
+
+    # check input array only has a "depth" of 2
+    # this can be removed once hepfiles support unlimited depth of groups!
+    if _awkward_depth(ak_array) > 2:
+        raise IOError('Hepfile only supports awkward arrays with a depth <= 2! Please ensure your input follows this guideline.')
+
+
+def _get_awkward_type(ak_array):
+
+    ndim = ak_array.ndim
+    if ndim > 2 or ndim < 1:
+        raise ValueError('Cannot check type with depth > 2 or depth <1')
+
+    if ndim == 1:
+        return type(ak_array[0])
+    else:
+        return type(ak_array[0][0])
