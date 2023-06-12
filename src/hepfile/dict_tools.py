@@ -4,7 +4,7 @@ Functions to help convert dictionaries into hepfiles
 import awkward as ak
 from .awkward_tools import awkward_to_hepfile, _is_valid_awkward
 
-def dictlike_to_hepfile(dict_list:list[dict], outfile:str, **kwargs) -> ak.Array|ak.Record:
+def dictlike_to_hepfile(dict_list:list[dict], outfile:str, **kwargs) -> ak.Record:
     '''
     This wraps on `hepfile.awkward_tools.awkward_to_hepfile` to write a list of dictionaries to a hepfile.
     

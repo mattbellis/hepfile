@@ -8,6 +8,6 @@ __all__ = ("__version__",)
 
 from hepfile.read import *
 from hepfile.write import *
-from hepfile.awkward_tools import *
-from hepfile.dict_tools import *
-from hepfile.csv_tools import *
+import hepfile.awkward_tools
+import hepfile.dict_tools
+import hepfile.csv_tools

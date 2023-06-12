@@ -182,7 +182,7 @@ def create_group(data:dict, group_name:str, counter:str=None):
 #
 # This can also add a dataset that is not associate with a group
 ################################################################################
-def create_dataset(data:dict, datasets:str|list, group:str=None, dtype:type=float):
+def create_dataset(data:dict, datasets:list, group:str=None, dtype:type=float):
     """ Adds a dataset to a group in a dictionary. If the group does not exist, it will be created.
 
     Args:

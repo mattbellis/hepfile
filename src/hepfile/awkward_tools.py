@@ -4,7 +4,7 @@ from .write import *
 
 ################################################################################
 #def unpack_awkward_arrays(data,keys):
-def hepfile_to_awkward(data:dict, groups:list=None, datasets:list=None) -> ak.Array | ak.Record:
+def hepfile_to_awkward(data:dict, groups:list=None, datasets:list=None) -> ak.Record:
     '''
     Converts all (or a subset of) the output data from `hepfile.read.load` to 
     a dictionary of awkward arrays.
@@ -75,7 +75,7 @@ def hepfile_to_awkward(data:dict, groups:list=None, datasets:list=None) -> ak.Ar
     return awk
 
 ################################################################################
-def awkward_to_hepfile(ak_array:ak.Array|ak.Record, outfile:str=None, write_hepfile:bool=True, **kwargs) -> dict:
+def awkward_to_hepfile(ak_array:ak.Record, outfile:str=None, write_hepfile:bool=True, **kwargs) -> dict:
     '''
     Converts a dictionary of awkward arrays to a hepfile
 
@@ -147,7 +147,7 @@ def awkward_to_hepfile(ak_array:ak.Array|ak.Record, outfile:str=None, write_hepf
 
     return data
 
-def _awkward_depth(ak_array:ak.Array|ak.Record) -> int:
+def _awkward_depth(ak_array:ak.Record) -> int:
 
     max_depth = 0
     for item in ak_array.to_list():
@@ -160,7 +160,7 @@ def _awkward_depth(ak_array:ak.Array|ak.Record) -> int:
 
     return max_depth
 
-def _is_valid_awkward(ak_array:ak.Array|ak.Record):
+def _is_valid_awkward(ak_array:ak.Record):
     '''
     Checks if the input awkward array is valid and raises an exception if not
     
@@ -181,7 +181,7 @@ def _is_valid_awkward(ak_array:ak.Array|ak.Record):
         raise IOError('Hepfile only supports awkward arrays with a depth <= 2! Please ensure your input follows this guideline.')
 
 
-def _get_awkward_type(ak_array:ak.Array|ak.Record) -> type:
+def _get_awkward_type(ak_array:ak.Record) -> type:
 
     ndim = ak_array.ndim
     if ndim > 2 or ndim < 1:
