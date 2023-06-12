@@ -20,3 +20,8 @@ Source Code Documentation
 -----------------------
 .. automodule:: hepfile.awkward_tools
    :members:
+
+`hepfile.csv_tools`
+-------------------
+.. automodule:: hepfile.csv_tools
+   :members:
