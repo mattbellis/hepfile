@@ -1,6 +1,7 @@
 """
 A file description modeled after the ROOT analysis toolkit and common use-cases in High Energy Physics. Implemented in HDF5, hepfile stands for Heterogeneous Entries in Parallel-file. 
 """
+from __future__ import annotations
 
 __version__ = "0.1.3"
 
