@@ -69,9 +69,9 @@ def csv_to_hepfile(csvpaths: list[str], common_key: str, outfile:Optional[str]=N
     '''
     
     if outfile is None:
-        outpath = csvpath[0]
+        outpath = csvpaths[0]
         outfile = outpath.replace('.csv', '.h5')
         
     awk = csv_to_awkward(csvpaths, common_key, group_names=group_names)
     
-    return oufile, awkward_to_hepfile(awk, outfile=outfile, write_hepfile=write_hepfile)
+    return outfile, awkward_to_hepfile(awk, outfile=outfile, write_hepfile=write_hepfile)
