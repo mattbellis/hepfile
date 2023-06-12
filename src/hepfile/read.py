@@ -2,7 +2,7 @@ import h5py as h5
 import numpy as np
 
 ################################################################################
-def load(filename=None, verbose=False, desired_groups=None, subset=None, return_awkward=False):
+def load(filename:str=None, verbose:bool=False, desired_groups:list[str]=None, subset:int=None, return_awkward:bool=False) -> tuple[dict,dict]:
 
     '''
     Reads all, or a subset of the data, from the HDF5 file to fill a data dictionary.
@@ -296,7 +296,7 @@ def load(filename=None, verbose=False, desired_groups=None, subset=None, return_
 ################################################################################
 
 ################################################################################
-def calculate_index_from_counters(counters):
+def calculate_index_from_counters(counters:int) -> int:
 
     index = np.add.accumulate(counters) - counters
 
@@ -305,7 +305,7 @@ def calculate_index_from_counters(counters):
 ################################################################################
 
 ################################################################################
-def unpack(bucket, data, n=0):
+def unpack(bucket:dict, data:dict, n:int=0):
 
     """ Fills the bucket dictionary with selected rows from the data dictionary.
 
@@ -343,7 +343,7 @@ def unpack(bucket, data, n=0):
 
 
 ################################################################################
-def get_nbuckets_in_file(filename):
+def get_nbuckets_in_file(filename:str) -> int:
 
     """ Get the number of buckets in the file.
 
@@ -369,7 +369,7 @@ def get_nbuckets_in_file(filename):
             return None
 
 ################################################################################
-def get_nbuckets_in_data(data):
+def get_nbuckets_in_data(data:dict) -> int:
 
     """ Get the number of buckets in the data dictionary.
         
@@ -390,7 +390,7 @@ def get_nbuckets_in_data(data):
 
 
 ################################################################################
-def get_file_metadata(filename):
+def get_file_metadata(filename:str) -> dict:
 
     """ Get the file metadata and return it as a dictionary
 
@@ -419,7 +419,7 @@ def get_file_metadata(filename):
 ################################################################################
 
 ################################################################################
-def print_file_metadata(filename):
+def print_file_metadata(filename:str):
 
     """ Pretty print the file metadata 
 
