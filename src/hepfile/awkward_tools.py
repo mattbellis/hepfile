@@ -1,6 +1,6 @@
 import awkward as ak
 import numpy as np
-import hepfile as hf
+from .write import * 
 
 ################################################################################
 #def unpack_awkward_arrays(data,keys):
@@ -99,7 +99,7 @@ def awkward_to_hepfile(ak_array:ak.Array|ak.Record, outfile:str=None, write_hepf
     if write_hepfile == False and outfile is not None:
         raise Warning('You set write_hepfile to False but provided an output file path. This output file path will not be used!')
     
-    data = hf.write.initialize()
+    data = initialize()
     singleton = False
 
     for group in ak_array.fields:
@@ -111,16 +111,16 @@ def awkward_to_hepfile(ak_array:ak.Array|ak.Record, outfile:str=None, write_hepf
             singleton = True
             
             dtype = _get_awkward_type(ak_array[group])
-            hf.write.create_dataset(data, group, dtype=dtype)
+            create_dataset(data, group, dtype=dtype)
 
             data[group] = ak_array[group]
             continue
     
-        hf.write.create_group(data, group, counter=counter)
+        create_group(data, group, counter=counter)
         for ii, dataset in enumerate(ak_array[group].fields):
             
             dtype = _get_awkward_type(ak_array[group][dataset])
-            hf.write.create_dataset(data, dataset, group=group, dtype=dtype)
+            create_dataset(data, dataset, group=group, dtype=dtype)
             
             # check if dataset name has /'s in it
             if dataset.find('/') >= 0:
@@ -143,7 +143,7 @@ def awkward_to_hepfile(ak_array:ak.Array|ak.Record, outfile:str=None, write_hepf
 
     if write_hepfile:
         print("Writing the hdf5 file from the awkward array...")
-        hdfile = hf.write_to_file(outfile,data,force_single_precision=False)
+        hdfile = write_to_file(outfile,data,force_single_precision=False)
 
     return data
 

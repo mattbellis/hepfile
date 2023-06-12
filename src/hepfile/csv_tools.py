@@ -5,7 +5,7 @@ Tools to help with managing csvs with hepfile
 import numpy as np
 import pandas as pd
 import awkward as ak
-import hepfile as hf
+from .awkward_tools import awkward_to_hepfile
 from typing import Optional
 
 def csv_to_awkward(csvpaths:list[str], common_key:str, group_names:Optional[list]=None) -> ak.Record:
@@ -74,4 +74,4 @@ def csv_to_hepfile(csvpaths: list[str], common_key: str, outfile:Optional[str]=N
         
     awk = csv_to_awkward(csvpaths, common_key, group_names=group_names)
     
-    return hf.awkward_tools.awkward_to_hepfile(awk, outfile=outfile, write_hepfile=write_hepfile)
+    return awkward_to_hepfile(awk, outfile=outfile, write_hepfile=write_hepfile)
