@@ -1,10 +1,12 @@
 '''
 Functions to help convert dictionaries into hepfiles
 '''
-import awkward as ak
-import hepfile as hf
+from __future__ import annotations
 
-def dictlike_to_hepfile(dict_list, outfile, **kwargs):
+import awkward as ak
+from .awkward_tools import awkward_to_hepfile, _is_valid_awkward
+
+def dictlike_to_hepfile(dict_list:list[dict], outfile:str, **kwargs) -> ak.Record:
     '''
     This wraps on `hepfile.awkward_tools.awkward_to_hepfile` to write a list of dictionaries to a hepfile.
     
@@ -31,20 +33,22 @@ def dictlike_to_hepfile(dict_list, outfile, **kwargs):
     
     # convert dictionary list to  an awkward array and write to hepfile
     out_ak = ak.Array(dict_list)
-    #hf.awkward_tools.awkward_to_hepfile(out_ak, outfile, **kwargs)
-    hf.awkward_tools.awkward_to_hepfile(out_ak, outfile, **kwargs)
+    awkward_to_hepfile(out_ak, outfile, **kwargs)
     return out_ak
 
-def append(ak_dict, new_dict):
+def append(ak_dict:ak.Record, new_dict:dict) -> ak.Record:
     '''
     Append a new event to an existing awkward dictionary with events
     
     Args:
-        ak_dict (dict): Dictionary of awkward arrays
+        ak_dict (ak.Record): awkward Record of data
         new_dict (dict): Dictionary of value to append to ak_dict. All keys must match ak_dict!
     Return:
-        Dictionary of awkward arrays with the new_dict appended
+        Awkward Record of awkward arrays with the new_dict appended
     '''
+
+    _is_valid_awkward(ak_dict)
+    
     if list(new_dict.keys()) != ak_dict.fields:
         raise Exception('Keys of new array do not match keys of existing array!')
         

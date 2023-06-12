@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import numpy as np
 import h5py as h5
 import datetime
@@ -6,7 +8,7 @@ import hepfile
 
 
 ################################################################################
-def initialize():
+def initialize() -> dict:
     """ Creates an empty data dictionary
 
     Returns:
@@ -41,7 +43,7 @@ def initialize():
 
 
 ################################################################################
-def clear_bucket(bucket):
+def clear_bucket(bucket:dict) -> None:
     """ Clears the data from the bucket dictionary - should the name of the function change?
 
     Args:
@@ -73,7 +75,7 @@ def clear_bucket(bucket):
 # Create a single bucket (dictionary) that will eventually be used to fill
 # the overall dataset
 ################################################################################
-def create_single_bucket(data):
+def create_single_bucket(data:dict) -> dict:
     """ Creates an bucket dictionary that will be used to collect data and then
     packed into the the master data dictionary.
 
@@ -100,7 +102,7 @@ def create_single_bucket(data):
 # This adds a group in the dictionary, similar to
 # a la CreateBranch in ROOT
 ################################################################################
-def create_group(data, group_name, counter=None):
+def create_group(data:dict, group_name:str, counter:str=None):
     """ Adds a group in the dictionary
 
     Args:
@@ -182,7 +184,7 @@ def create_group(data, group_name, counter=None):
 #
 # This can also add a dataset that is not associate with a group
 ################################################################################
-def create_dataset(data, datasets, group=None, dtype=float):
+def create_dataset(data:dict, datasets:list, group:str=None, dtype:type=float):
     """ Adds a dataset to a group in a dictionary. If the group does not exist, it will be created.
 
     Args:
@@ -196,7 +198,6 @@ def create_dataset(data, datasets, group=None, dtype=float):
 
     Returns:
         -1: If the group is None
-
 
     """
 
@@ -276,7 +277,7 @@ def create_dataset(data, datasets, group=None, dtype=float):
 
 
 ################################################################################
-def pack(data, bucket, AUTO_SET_COUNTER=True, EMPTY_OUT_BUCKET=True, STRICT_CHECKING=False, verbose=False):
+def pack(data:dict, bucket:dict, AUTO_SET_COUNTER:bool=True, EMPTY_OUT_BUCKET:bool=True, STRICT_CHECKING:bool=False, verbose:bool=False):
     """ Takes the data from an bucket and packs it into the data dictionary, 
     intelligently, so that it can be stored and extracted efficiently. 
     (This is analagous to the ROOT TTree::Fill() member function).
@@ -394,7 +395,7 @@ def pack(data, bucket, AUTO_SET_COUNTER=True, EMPTY_OUT_BUCKET=True, STRICT_CHEC
 ################################################################################
 
 
-def _convert_list_and_key_to_string_data(datalist, key):
+def _convert_list_and_key_to_string_data(datalist:list[any], key:str) -> str:
     """ Converts data dictionary to a string
 
     Args:
@@ -423,7 +424,7 @@ def _convert_list_and_key_to_string_data(datalist, key):
 ################################################################################
 
 ################################################################################
-def _convert_dict_to_string_data(dictionary):
+def _convert_dict_to_string_data(dictionary:dict) -> str:
     """ Converts data dictionary to a string
 
     Args:
@@ -450,7 +451,7 @@ def _convert_dict_to_string_data(dictionary):
 ################################################################################
 # This function writes default attributes and metadata to a file.
 ################################################################################
-def write_file_metadata(filename, mydict={}, write_default_values=True, append=True):
+def write_file_metadata(filename:str, mydict:dict={}, write_default_values:bool=True, append:bool=True) -> h5.File:
     """ Writes file metadata in the attributes of an HDF5 file
 
     Args:
@@ -498,8 +499,8 @@ def write_file_metadata(filename, mydict={}, write_default_values=True, append=T
 
 ################################################################################
 def write_to_file(
-    filename, data, comp_type=None, comp_opts=None, force_single_precision=True,  verbose=False
-):
+    filename:str, data:dict, comp_type:str=None, comp_opts:list=None, force_single_precision:bool=True,  verbose:bool=False
+) -> h5.File:
     """ Writes the selected data to an HDF5 file
 
     Args:
@@ -545,6 +546,8 @@ def write_to_file(
         compression_opts=comp_opts,
     )
 
+    print(data['_MAP_DATASETS_TO_DATA_TYPES_'])
+
     for group in _GROUPS_:
 
         hdoutfile.create_group(group)
@@ -553,7 +556,7 @@ def write_to_file(
         )
 
         datasets = data["_GROUPS_"][group]
-
+        
         for dataset in datasets:
 
             name = None
@@ -568,7 +571,7 @@ def write_to_file(
             x = data[name]
 
             dataset_dtype = data['_MAP_DATASETS_TO_DATA_TYPES_'][name]
-
+            
             if type(x) == list:
                 if verbose is True:
                     print("\tConverting list to array...")
