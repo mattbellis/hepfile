@@ -50,7 +50,7 @@ def csv_to_awkward(csvpaths:list[str], common_key:str, group_names:Optional[list
         
     return ak.Record(for_ak)
 
-def csv_to_hepfile(csvpaths: list[str], common_key: str, outfile:Optional[str]=None, group_names:Optional[list]=None, write_hepfile:bool=True) -> dict:
+def csv_to_hepfile(csvpaths: list[str], common_key: str, outfile:Optional[str]=None, group_names:Optional[list]=None, write_hepfile:bool=True) -> tuple[str, dict]:
     '''
     Convert a list of csvs to a hepfile
     
@@ -74,4 +74,4 @@ def csv_to_hepfile(csvpaths: list[str], common_key: str, outfile:Optional[str]=N
         
     awk = csv_to_awkward(csvpaths, common_key, group_names=group_names)
     
-    return awkward_to_hepfile(awk, outfile=outfile, write_hepfile=write_hepfile)
+    return oufile, awkward_to_hepfile(awk, outfile=outfile, write_hepfile=write_hepfile)
