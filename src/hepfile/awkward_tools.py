@@ -64,7 +64,7 @@ def hepfile_to_awkward(data,groups=None,datasets=None):
                 ak_arrays[group][datasetname] = ak_array
 
 
-    awk = ak.Array(ak_arrays)
+    awk = ak.Record(ak_arrays)
 
     try:
         _is_valid_awkward(awk)

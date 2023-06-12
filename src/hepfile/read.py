@@ -17,7 +17,7 @@ def load(filename=None, verbose=False, desired_groups=None, subset=None, return_
 
 	subset (int): Number of buckets to be read from input file
 
-        return_awkward (boolean): If True, returns a dictionary of awkward arrays for data. Default is False
+        return_awkward (boolean): If True, returns an awkward array Record. Default is False
 
     Returns:
 	data (dict): Selected data from HDF5 file
