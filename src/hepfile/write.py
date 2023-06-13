@@ -466,26 +466,29 @@ def write_file_metadata(filename:str, mydict:dict={}, write_default_values:bool=
 
     """
 
-    hdoutfile = h5.File(filename, "a")
+    with h5.File(filename, "a") as hdoutfile:
 
-    non_metadata = ["_NUMBER_OF_BUCKETS_"]
+        #hdoutfile = h5.File(filename, "a")
 
-    if not append:
-        for key in hdoutfile.attr.keys():
-            if key not in non_metadata:
-                del hdoutfile.attrs[key]
+        non_metadata = ["_NUMBER_OF_BUCKETS_"]
 
-    if write_default_values:
-        hdoutfile.attrs["date"] = datetime.datetime.now().isoformat(sep=" ")
-        hdoutfile.attrs["hepfile_version"] = hepfile.__version__
-        hdoutfile.attrs["numpy_version"] = np.__version__
-        hdoutfile.attrs["h5py_version"] = h5.__version__
-        hdoutfile.attrs["python_version"] = sys.version
+        if not append:
+            for key in hdoutfile.attr.keys():
+                if key not in non_metadata:
+                    del hdoutfile.attrs[key]
 
-    for key in mydict:
-        hdoutfile.attrs[key] = mydict[key]
+        if write_default_values:
+            hdoutfile.attrs["date"] = datetime.datetime.now().isoformat(sep=" ")
+            hdoutfile.attrs["hepfile_version"] = hepfile.__version__
+            hdoutfile.attrs["numpy_version"] = np.__version__
+            hdoutfile.attrs["h5py_version"] = h5.__version__
+            hdoutfile.attrs["python_version"] = sys.version
 
-    hdoutfile.close()
+        for key in mydict:
+            hdoutfile.attrs[key] = mydict[key]
+
+        #hdoutfile.close()
+
     print("Metadata added")
     return hdoutfile
 
@@ -512,128 +515,129 @@ def write_to_file(
 
     """
 
-    hdoutfile = h5.File(filename, "w")
+    #hdoutfile = h5.File(filename, "w")
 
-    _GROUPS_ = data["_GROUPS_"].keys()
+    with h5.File(filename, "w") as hdoutfile:
+        _GROUPS_ = data["_GROUPS_"].keys()
 
-    # Convert this to a 2xN array for writing to the hdf5 file.
-    # This gives us one small list of informtion if we need to pull out
-    # small chunks of data
-    mydataset = _convert_dict_to_string_data(data["_MAP_DATASETS_TO_COUNTERS_"])
-    dset = hdoutfile.create_dataset(
-        "_MAP_DATASETS_TO_COUNTERS_",
-        data=mydataset,
-        dtype="S256",
-        compression=comp_type,
-        compression_opts=comp_opts,
-    )
-
-    # Convert this to a 2xN array for writing to the hdf5 file.
-    # This has the _GROUPS_ and the datasets in them.
-    mydataset = _convert_list_and_key_to_string_data(
-        data["_GROUPS_"]["_SINGLETONS_GROUP_"], "_SINGLETONSGROUPFORSTORAGE_"
-    )
-    dset = hdoutfile.create_dataset(
-        "_SINGLETONSGROUPFORSTORAGE_",
-        data=mydataset,
-        dtype="S256",
-        compression=comp_type,
-        compression_opts=comp_opts,
-    )
-
-    print(data['_MAP_DATASETS_TO_DATA_TYPES_'])
-
-    for group in _GROUPS_:
-
-        hdoutfile.create_group(group)
-        hdoutfile[group].attrs["counter"] = np.string_(
-            data["_MAP_DATASETS_TO_COUNTERS_"][group]
+        # Convert this to a 2xN array for writing to the hdf5 file.
+        # This gives us one small list of informtion if we need to pull out
+        # small chunks of data
+        mydataset = _convert_dict_to_string_data(data["_MAP_DATASETS_TO_COUNTERS_"])
+        dset = hdoutfile.create_dataset(
+            "_MAP_DATASETS_TO_COUNTERS_",
+            data=mydataset,
+            dtype="S256",
+            compression=comp_type,
+            compression_opts=comp_opts,
         )
 
-        datasets = data["_GROUPS_"][group]
-        
-        for dataset in datasets:
+        # Convert this to a 2xN array for writing to the hdf5 file.
+        # This has the _GROUPS_ and the datasets in them.
+        mydataset = _convert_list_and_key_to_string_data(
+            data["_GROUPS_"]["_SINGLETONS_GROUP_"], "_SINGLETONSGROUPFORSTORAGE_"
+        )
+        dset = hdoutfile.create_dataset(
+            "_SINGLETONSGROUPFORSTORAGE_",
+            data=mydataset,
+            dtype="S256",
+            compression=comp_type,
+            compression_opts=comp_opts,
+        )
 
-            name = None
-            if group == "_SINGLETONS_GROUP_" and dataset is not "COUNTER":
-                name = dataset
-            else:
-                name = "%s/%s" % (group, dataset)
+        print(data['_MAP_DATASETS_TO_DATA_TYPES_'])
 
-            if verbose is True:
-                print(f"Writing {name} to file")
-
-            x = data[name]
-
-            dataset_dtype = data['_MAP_DATASETS_TO_DATA_TYPES_'][name]
+        for group in _GROUPS_:
             
-            if type(x) == list:
-                if verbose is True:
-                    print("\tConverting list to array...")
-                x = np.array(x)
+            hdoutfile.create_group(group)
+            hdoutfile[group].attrs["counter"] = np.string_(
+                data["_MAP_DATASETS_TO_COUNTERS_"][group]
+            )
 
-            # Do single precision only, unless specified
-            if force_single_precision == True:
+            datasets = data["_GROUPS_"][group]
+        
+            for dataset in datasets:
 
-                # different type calls depending on input datastructure
-                if isinstance(x, np.ndarray):
-                    dtype = x.dtype
-                elif isinstance(x, ak.Array) or isinstance(x, ak.Record):
-                    dtype = x.type
+                name = None
+                if group == "_SINGLETONS_GROUP_" and dataset is not "COUNTER":
+                    name = dataset
                 else:
-                    dtype = None
-                    raise Warning('Not a proper data type to convert to single precision, skipping!')
-                
-                if dtype == np.float64:
-                    if verbose is True:
-                        print("\tConverting array to single precision...")
-                    x = x.astype(np.float32)
-                    dataset_dtype = np.float32
-
-            if dataset_dtype is not str:
+                    name = "%s/%s" % (group, dataset)
 
                 if verbose is True:
-                    print("\tWriting to file...")
+                    print(f"Writing {name} to file")
 
-                hdoutfile.create_dataset(
-                    name, data=x, compression=comp_type, compression_opts=comp_opts, dtype=dataset_dtype
-                )
-            else:
-                # For writing strings, we need to make sure our strings are ascii and not Unicode
-                #
-                # See my question on StackOverflow and the super-helpful response!
-                #
-                # https://stackoverflow.com/questions/68500454/can-i-use-h5py-to-write-strings-to-an-hdf5-file-in-one-line-rather-than-looping
-                dataset_dtype = h5.special_dtype(vlen=str)
-                longest_word = len(max(x, key=len))
-                arr = np.array(x, dtype='S'+str(longest_word))
-                hdoutfile.create_dataset(
-                    name, data=arr, dtype=dataset_dtype,  compression=comp_type, compression_opts=comp_opts)
+                x = data[name]
 
-            if (verbose):
-                print(f"Writing to file {name} as type {str(dataset_dtype)}")
+                dataset_dtype = data['_MAP_DATASETS_TO_DATA_TYPES_'][name]
+            
+                if type(x) == list:
+                    if verbose is True:
+                        print("\tConverting list to array...")
+                    x = np.array(x)
 
-    # Get the number of buckets
-    counters = data["_LIST_OF_COUNTERS_"]
-    _NUMBER_OF_BUCKETS_ = -1
-    prevcounter = None
-    for i, countername in enumerate(counters):
-        ncounter = len(data[countername])
-        #print("%-32s has %-12d entries" % (countername, ncounter))
-        print(f"{countername:<32s} has {ncounter:<12d} entries")
-        if i > 0 and ncounter != _NUMBER_OF_BUCKETS_:
-            print("-------- WARNING -----------")
-            print(f"{countername} and {prevcounter} have differing numbers of entries!")
-            print("-------- WARNING -----------")
-            # SHOULD WE EXIT ON THIS?
+                # Do single precision only, unless specified
+                if force_single_precision == True:
 
-        if _NUMBER_OF_BUCKETS_ < ncounter:
-            _NUMBER_OF_BUCKETS_ = ncounter
+                    # different type calls depending on input datastructure
+                    if isinstance(x, np.ndarray):
+                        dtype = x.dtype
+                    elif isinstance(x, ak.Array) or isinstance(x, ak.Record):
+                        dtype = x.type
+                    else:
+                        dtype = None
+                        raise Warning('Not a proper data type to convert to single precision, skipping!')
+                
+                    if dtype == np.float64:
+                        if verbose is True:
+                            print("\tConverting array to single precision...")
+                        x = x.astype(np.float32)
+                        dataset_dtype = np.float32
 
-        prevcounter = countername
+                if dataset_dtype is not str:
 
-    hdoutfile.attrs["_NUMBER_OF_BUCKETS_"] = _NUMBER_OF_BUCKETS_
-    hdoutfile.close()
+                    if verbose is True:
+                        print("\tWriting to file...")
+
+                    hdoutfile.create_dataset(
+                        name, data=x, compression=comp_type, compression_opts=comp_opts, dtype=dataset_dtype
+                    )
+                else:
+                    # For writing strings, we need to make sure our strings are ascii and not Unicode
+                    #
+                    # See my question on StackOverflow and the super-helpful response!
+                    #
+                    # https://stackoverflow.com/questions/68500454/can-i-use-h5py-to-write-strings-to-an-hdf5-file-in-one-line-rather-than-looping
+                    dataset_dtype = h5.special_dtype(vlen=str)
+                    longest_word = len(max(x, key=len))
+                    arr = np.array(x, dtype='S'+str(longest_word))
+                    hdoutfile.create_dataset(
+                        name, data=arr, dtype=dataset_dtype,  compression=comp_type, compression_opts=comp_opts)
+
+                if (verbose):
+                    print(f"Writing to file {name} as type {str(dataset_dtype)}")
+
+        # Get the number of buckets
+        counters = data["_LIST_OF_COUNTERS_"]
+        _NUMBER_OF_BUCKETS_ = -1
+        prevcounter = None
+        for i, countername in enumerate(counters):
+            ncounter = len(data[countername])
+            #print("%-32s has %-12d entries" % (countername, ncounter))
+            print(f"{countername:<32s} has {ncounter:<12d} entries")
+            if i > 0 and ncounter != _NUMBER_OF_BUCKETS_:
+                print("-------- WARNING -----------")
+                print(f"{countername} and {prevcounter} have differing numbers of entries!")
+                print("-------- WARNING -----------")
+                # SHOULD WE EXIT ON THIS?
+
+            if _NUMBER_OF_BUCKETS_ < ncounter:
+                _NUMBER_OF_BUCKETS_ = ncounter
+
+            prevcounter = countername
+
+        hdoutfile.attrs["_NUMBER_OF_BUCKETS_"] = _NUMBER_OF_BUCKETS_
+        #hdoutfile.close()
 
     write_file_metadata(filename)
 
