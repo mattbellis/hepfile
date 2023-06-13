@@ -17,3 +17,4 @@ in the README of the github!
    example_nb/add_metadata.ipynb
    example_nb/awkward_arrays.ipynb
    example_nb/housing.ipynb
+   example_nb/converting_json_to_hepfile.ipynb
