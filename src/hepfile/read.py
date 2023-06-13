@@ -4,7 +4,7 @@ import h5py as h5
 import numpy as np
 
 ################################################################################
-def load(filename:str=None, verbose:bool=False, desired_groups:list[str]=None, subset:int=None, return_awkward:bool=False) -> tuple[dict,dict]:
+def load(filename:str, verbose:bool=False, desired_groups:list[str]=None, subset:int=None, return_awkward:bool=False) -> tuple[dict,dict]:
 
     '''
     Reads all, or a subset of the data, from the HDF5 file to fill a data dictionary.
@@ -28,264 +28,257 @@ def load(filename:str=None, verbose:bool=False, desired_groups:list[str]=None, s
 
     '''
 
-    # Open the HDF5 file
-    infile = None
-    if filename != None:
-        infile = h5.File(filename, "r+")
-    else:
-        print("No filename passed in! Can't open file.\n")
-        return None,None
+    with h5.File(filename, "r+") as infile:
+    
+        # Create the initial data and bucket dictionary to hold the data
+        data = {}
+        bucket = {}
 
-    # Create the initial data and bucket dictionary to hold the data
-    data = {}
-    bucket = {}
+        # We'll fill the data dictionary with some extra fields, though we won't
+        # need them all for the bucket
+        data["_MAP_DATASETS_TO_COUNTERS_"] = {}
+        data["_MAP_DATASETS_TO_INDEX_"] = {}
+        data["_LIST_OF_COUNTERS_"] = []
+        data["_LIST_OF_DATASETS_"] = []
 
-    # We'll fill the data dictionary with some extra fields, though we won't
-    # need them all for the bucket
-    data["_MAP_DATASETS_TO_COUNTERS_"] = {}
-    data["_MAP_DATASETS_TO_INDEX_"] = {}
-    data["_LIST_OF_COUNTERS_"] = []
-    data["_LIST_OF_DATASETS_"] = []
+        # Get the number of buckets.
+        # In HEP (High Energy Physics), this would be the number of events
+        data["_NUMBER_OF_BUCKETS_"] = infile.attrs["_NUMBER_OF_BUCKETS_"]
 
-    # Get the number of buckets.
-    # In HEP (High Energy Physics), this would be the number of events
-    data["_NUMBER_OF_BUCKETS_"] = infile.attrs["_NUMBER_OF_BUCKETS_"]
+        # We might only read in a subset of the data though!
+        if subset is not None:
+            if type(subset) is tuple:
+                subset = list(subset)
 
-    # We might only read in a subset of the data though!
-    if subset is not None:
-        if type(subset) is tuple:
-            subset = list(subset)
+            if type(subset) is int:
+                print("Single subset value of {subset} being interpreted as a high range")
+                print(f"subset being set to a range of (0,{subset})\n")
+                subset = [0, subset]
 
-        if type(subset) is int:
-            print("Single subset value of {subset} being interpreted as a high range")
-            print(f"subset being set to a range of (0,{subset})\n")
-            subset = [0, subset]
+            # If the user has specified `subset` incorrectly, then let's return
+            # an empty data and bucket
+            if subset[1]-subset[0]<=0:
+                print("The range in subset is either 0 or negative!")
+                print(f"{subset[1]} - {subset[0]} = {subset[1] - subset[0]}")
+                print("Returning an empty data and bucket dictionary!\n")
+                return data,bucket
 
-        # If the user has specified `subset` incorrectly, then let's return
-        # an empty data and bucket
-        if subset[1]-subset[0]<=0:
-            print("The range in subset is either 0 or negative!")
-            print(f"{subset[1]} - {subset[0]} = {subset[1] - subset[0]}")
-            print("Returning an empty data and bucket dictionary!\n")
-            return data,bucket
+            # Make sure the user is not asking for something bigger than the file!
+            nbuckets = data["_NUMBER_OF_BUCKETS_"]
 
-        # Make sure the user is not asking for something bigger than the file!
-        nbuckets = data["_NUMBER_OF_BUCKETS_"]
+            if subset[0] > nbuckets:
+                print("Range for subset starts greater than number of buckets in file!")
+                print(f"{subset[0]} > {nbuckets}")
+                print(f"I'm not sure how to handle this so the file will not be opened.")
+                print(f"Returning None,None")
+                infile.close()
+                return None,None
 
-        if subset[0] > nbuckets:
-            print("Range for subset starts greater than number of buckets in file!")
-            print(f"{subset[0]} > {nbuckets}")
-            print(f"I'm not sure how to handle this so the file will not be opened.")
-            print(f"Returning None,None")
-            infile.close()
-            return None,None
+            if subset[1] > nbuckets:
+                print("Range for subset is greater than number of buckets in file!")
+                print(f"{subset[1]} > {nbuckets}")
+                print(f"High range of subset will be set to {nbuckets}\n")
+                subset[1] = nbuckets
 
-        if subset[1] > nbuckets:
-            print("Range for subset is greater than number of buckets in file!")
-            print(f"{subset[1]} > {nbuckets}")
-            print(f"High range of subset will be set to {nbuckets}\n")
-            subset[1] = nbuckets
+            data["_NUMBER_OF_BUCKETS_"] = subset[1] - subset[0]
+            nbuckets = data["_NUMBER_OF_BUCKETS_"]
 
-        data["_NUMBER_OF_BUCKETS_"] = subset[1] - subset[0]
-        nbuckets = data["_NUMBER_OF_BUCKETS_"]
+            print("Will read in a subset of the file!")
+            print(f"From bucket {subset[0]} (inclusive) through bucket {subset[1]-1} (inclusive)")
+            print(f"Bucket {subset[1]} is not read in")
+            print(f"Reading in {nbuckets} buckets\n")
 
-        print("Will read in a subset of the file!")
-        print(f"From bucket {subset[0]} (inclusive) through bucket {subset[1]-1} (inclusive)")
-        print(f"Bucket {subset[1]} is not read in")
-        print(f"Reading in {nbuckets} buckets\n")
+        ############################################################################
+        # Get the datasets and counters
+        ############################################################################
+        dc = infile["_MAP_DATASETS_TO_COUNTERS_"]
+        for vals in dc:
 
-    ############################################################################
-    # Get the datasets and counters
-    ############################################################################
-    dc = infile["_MAP_DATASETS_TO_COUNTERS_"]
-    for vals in dc:
+            if verbose:
+                print(f"Map datasets to counters: {vals}")
 
-        if verbose:
-            print(f"Map datasets to counters: {vals}")
+            # The decode is there because vals were stored as numpy.bytes
+            counter = vals[1].decode()
+            index = f"{counter}_INDEX"
+            data["_MAP_DATASETS_TO_COUNTERS_"][vals[0].decode()] = counter
+            data["_MAP_DATASETS_TO_INDEX_"][vals[0].decode()] = index
+            data["_LIST_OF_COUNTERS_"].append(vals[1].decode())
+            data["_LIST_OF_DATASETS_"].append(vals[0].decode())
+            data["_LIST_OF_DATASETS_"].append(vals[1].decode())  # Get the counters as well
 
-        # The decode is there because vals were stored as numpy.bytes
-        counter = vals[1].decode()
-        index = f"{counter}_INDEX"
-        data["_MAP_DATASETS_TO_COUNTERS_"][vals[0].decode()] = counter
-        data["_MAP_DATASETS_TO_INDEX_"][vals[0].decode()] = index
-        data["_LIST_OF_COUNTERS_"].append(vals[1].decode())
-        data["_LIST_OF_DATASETS_"].append(vals[0].decode())
-        data["_LIST_OF_DATASETS_"].append(vals[1].decode())  # Get the counters as well
+        # We may have added some counters and datasets multiple times.
+        # So just to be sure, only keep the unique values
+        data["_LIST_OF_COUNTERS_"] = np.unique(data["_LIST_OF_COUNTERS_"]).tolist()
+        data["_LIST_OF_DATASETS_"] = np.unique(data["_LIST_OF_DATASETS_"]).tolist()
+        ############################################################################
 
-    # We may have added some counters and datasets multiple times.
-    # So just to be sure, only keep the unique values
-    data["_LIST_OF_COUNTERS_"] = np.unique(data["_LIST_OF_COUNTERS_"]).tolist()
-    data["_LIST_OF_DATASETS_"] = np.unique(data["_LIST_OF_DATASETS_"]).tolist()
-    ############################################################################
+        ############################################################################
+        # Pull out the SINGLETON datasets
+        ############################################################################
+        sg = infile["_SINGLETONSGROUPFORSTORAGE_"][0]  # This is a numpy array of strings
+        decoded_string = sg[1].decode()
 
-    ############################################################################
-    # Pull out the SINGLETON datasets
-    ############################################################################
-    sg = infile["_SINGLETONSGROUPFORSTORAGE_"][0]  # This is a numpy array of strings
-    decoded_string = sg[1].decode()
+        vals = decoded_string.split("__:__")
+        vals.remove("COUNTER")
 
-    vals = decoded_string.split("__:__")
-    vals.remove("COUNTER")
+        data["_SINGLETONS_GROUP_"] = vals
+        ############################################################################
 
-    data["_SINGLETONS_GROUP_"] = vals
-    ############################################################################
-
-    ############################################################################
-    # Get the list of datasets and groups
-    ############################################################################
-    all_datasets = data["_LIST_OF_DATASETS_"]
-
-    if verbose:
-        print(f"all_datasets: {all_datasets}")
-    ############################################################################
-
-    ############################################################################
-    # Only keep select data from file, if we have specified desired_groups
-    ############################################################################
-    if desired_groups is not None:
-        if type(desired_groups) != list:
-            desired_groups = list(desired_groups)
-
-        # Count backwards because we'll be removing stuff as we go.
-        i = len(all_datasets) - 1
-        while i >= 0:
-            entry = all_datasets[i]
-
-            is_dropped = True
-            # This is looking to see if the string is anywhere in the name
-            # of the dataset
-            for desdat in desired_groups:
-                if desdat in entry:
-                    is_dropped = False
-                    break
-
-            if is_dropped == True:
-                print(f"Not reading out {entry} from the file....")
-                all_datasets.remove(entry)
-
-            i -= 1
+        ############################################################################
+        # Get the list of datasets and groups
+        ############################################################################
+        all_datasets = data["_LIST_OF_DATASETS_"]
 
         if verbose:
-            print(f"After only selecting certain datasets ----- ")
             print(f"all_datasets: {all_datasets}")
-    ###########################################################################
+        ############################################################################
 
-    # We might need the counter for SINGLETONS so let's pull it out
-    data["_SINGLETONS_GROUP_/COUNTER"] = infile["_SINGLETONS_GROUP_"]['COUNTER']
+        ############################################################################
+        # Only keep select data from file, if we have specified desired_groups
+        ############################################################################
+        if desired_groups is not None:
+            if type(desired_groups) != list:
+                desired_groups = list(desired_groups)
 
-    if verbose == True:
-        print("\nDatasets and counters:")
-        print(data["_MAP_DATASETS_TO_COUNTERS_"])
-        print("\nList of counters:")
-        print(data["_LIST_OF_COUNTERS_"])
-        print("\n_SINGLETONS_GROUP_/COUNTER:")
-        print(data["_SINGLETONS_GROUP_/COUNTER"])
-        print("\n")
+            # Count backwards because we'll be removing stuff as we go.
+            i = len(all_datasets) - 1
+            while i >= 0:
+                entry = all_datasets[i]
 
-    ############################################################################
-    # Pull out the counters and build the indices
-    ############################################################################
-    print("Building the indices...\n")
+                is_dropped = True
+                # This is looking to see if the string is anywhere in the name
+                # of the dataset
+                for desdat in desired_groups:
+                    if desdat in entry:
+                        is_dropped = False
+                        break
 
-    if verbose:
-        print("data.keys()")
-        print(data.keys())
-        print("\n")
+                if is_dropped == True:
+                    print(f"Not reading out {entry} from the file....")
+                    all_datasets.remove(entry)
 
-    # We will need to keep track of the indices in the entire file
-    # This way, if the user specifies a subset of the data, we have the full 
-    # indices already calculated
-    full_file_indices = {}
+                i -= 1
 
-    for counter_name in data["_LIST_OF_COUNTERS_"]:
+            if verbose:
+                print(f"After only selecting certain datasets ----- ")
+                print(f"all_datasets: {all_datasets}")
+        ###########################################################################
 
-        if verbose:
-            print(f"counter name: ------------ {counter_name}\n")
-
-        full_file_counters = infile[counter_name]
-        full_file_index = calculate_index_from_counters(full_file_counters)
-
-        if verbose:
-            print(f"full file counters: {full_file_counters}\n")
-            print(f"full file index: {full_file_index}\n")
-
-        # If we passed in subset, grab that slice of the data from the file
-        if subset is not None and subset[1] <= subset[0]:
-            print("Will not be reading anything in!")
-            print(f"High range of {subset[1]} is less than or equal to low range of {subset[0]}")
-            print("Returning None,None...")
-            return None,None
-
-        elif subset is not None:
-            # We tack on +1 to the high range of subset when we pull out the counters
-            # and index because we want to get all of the entries for the last entry.
-            data[counter_name] = infile[counter_name][subset[0] : subset[1]+1]
-            index = full_file_index[subset[0] : subset[1]+1]
-        else:
-            data[counter_name] = infile[counter_name][:]
-            index = full_file_index
-
-        subset_index = index
-        # If the file is *not* empty....
-        # Just to make sure the "local" index of the data dictionary starts at 0
-        if len(index)>0:
-            subset_index = index - index[0]
-
-        index_name = "%s_INDEX" % (counter_name)
-
-        data[index_name] = subset_index
-        full_file_indices[index_name] = index
-
-    print("Built the indices!")
-
-    if verbose:
-        print("full_file_index: ")
-        print(f"{full_file_indices}\n")
-
-    # Loop over the all_datasets we want and pull out the data.
-    for name in all_datasets:
-
-        # If this is a counter, we're going to have to grab the indices
-        # differently than for a "normal" dataset
-        IS_COUNTER = True
-        index_name = None
-        if name not in data["_LIST_OF_COUNTERS_"]:
-            index_name = data["_MAP_DATASETS_TO_INDEX_"][name]
-            IS_COUNTER = False # We will use different indices for the counters
+        # We might need the counter for SINGLETONS so let's pull it out
+        data["_SINGLETONS_GROUP_/COUNTER"] = infile["_SINGLETONS_GROUP_"]['COUNTER']
 
         if verbose == True:
-            print(f"------ {name}")
-            print(f"index_name: {index_name}\n")
+            print("\nDatasets and counters:")
+            print(data["_MAP_DATASETS_TO_COUNTERS_"])
+            print("\nList of counters:")
+            print(data["_LIST_OF_COUNTERS_"])
+            print("\n_SINGLETONS_GROUP_/COUNTER:")
+            print(data["_SINGLETONS_GROUP_/COUNTER"])
+            print("\n")
 
-        dataset = infile[name]
+        ############################################################################
+        # Pull out the counters and build the indices
+        ############################################################################
+        print("Building the indices...\n")
 
         if verbose:
-            print(f"dataset type: {type(dataset)}")
-        
-        # This will ignore the groups
-        if type(dataset) == h5.Dataset:
-            dataset_name = name
+            print("data.keys()")
+            print(data.keys())
+            print("\n")
 
-            if subset is not None:
-                if IS_COUNTER:
-                    # If this is a counter, then the subset indices
-                    # map on to the same locations for any counters
-                    lo = subset[0]
-                    hi = subset[1]
-                else:
-                    lo = full_file_indices[index_name][0]
-                    hi = full_file_indices[index_name][-1]
-                if verbose:
-                    print(f"dataset name/lo/hi: {dataset_name},{lo},{hi}\n")
-                data[dataset_name] = dataset[lo : hi]
+        # We will need to keep track of the indices in the entire file
+        # This way, if the user specifies a subset of the data, we have the full 
+        # indices already calculated
+        full_file_indices = {}
+
+        for counter_name in data["_LIST_OF_COUNTERS_"]:
+
+            if verbose:
+                print(f"counter name: ------------ {counter_name}\n")
+
+            full_file_counters = infile[counter_name]
+            full_file_index = calculate_index_from_counters(full_file_counters)
+
+            if verbose:
+                print(f"full file counters: {full_file_counters}\n")
+                print(f"full file index: {full_file_index}\n")
+
+            # If we passed in subset, grab that slice of the data from the file
+            if subset is not None and subset[1] <= subset[0]:
+                print("Will not be reading anything in!")
+                print(f"High range of {subset[1]} is less than or equal to low range of {subset[0]}")
+                print("Returning None,None...")
+                return None,None
+
+            elif subset is not None:
+                # We tack on +1 to the high range of subset when we pull out the counters
+                # and index because we want to get all of the entries for the last entry.
+                data[counter_name] = infile[counter_name][subset[0] : subset[1]+1]
+                index = full_file_index[subset[0] : subset[1]+1]
             else:
-                data[dataset_name] = dataset[:]
+                data[counter_name] = infile[counter_name][:]
+                index = full_file_index
 
-            bucket[dataset_name] = None  # This will be filled for individual bucket
+            subset_index = index
+            # If the file is *not* empty....
+            # Just to make sure the "local" index of the data dictionary starts at 0
+            if len(index)>0:
+                subset_index = index - index[0]
+
+            index_name = "%s_INDEX" % (counter_name)
+
+            data[index_name] = subset_index
+            full_file_indices[index_name] = index
+
+        print("Built the indices!")
+
+        if verbose:
+            print("full_file_index: ")
+            print(f"{full_file_indices}\n")
+
+        # Loop over the all_datasets we want and pull out the data.
+        for name in all_datasets:
+
+            # If this is a counter, we're going to have to grab the indices
+            # differently than for a "normal" dataset
+            IS_COUNTER = True
+            index_name = None
+            if name not in data["_LIST_OF_COUNTERS_"]:
+                index_name = data["_MAP_DATASETS_TO_INDEX_"][name]
+                IS_COUNTER = False # We will use different indices for the counters
+
             if verbose == True:
-                print(dataset)
+                print(f"------ {name}")
+                print(f"index_name: {index_name}\n")
 
-    infile.close()
+            dataset = infile[name]
+
+            if verbose:
+                print(f"dataset type: {type(dataset)}")
+
+            # This will ignore the groups
+            if type(dataset) == h5.Dataset:
+                dataset_name = name
+
+                if subset is not None:
+                    if IS_COUNTER:
+                        # If this is a counter, then the subset indices
+                        # map on to the same locations for any counters
+                        lo = subset[0]
+                        hi = subset[1]
+                    else:
+                        lo = full_file_indices[index_name][0]
+                        hi = full_file_indices[index_name][-1]
+                    if verbose:
+                        print(f"dataset name/lo/hi: {dataset_name},{lo},{hi}\n")
+                    data[dataset_name] = dataset[lo : hi]
+                else:
+                    data[dataset_name] = dataset[:]
+
+                bucket[dataset_name] = None  # This will be filled for individual bucket
+                if verbose == True:
+                    print(dataset)
+
     print("Data is read in and input file is closed.")
 
     if return_awkward:
@@ -398,22 +391,19 @@ def get_file_metadata(filename:str) -> dict:
 
     """
 
-    f = h5.File(filename, "r+")
+    with h5.File(filename, "r+") as f:
+        a = f.attrs
 
-    a = f.attrs
+        if len(a) < 1:
+            print(f"No metadata in file {filename}!")
+            print(f"File has no attributes.\n")
+            f.close()
+            return None
 
-    if len(a) < 1:
-        print(f"No metadata in file {filename}!")
-        print(f"File has no attributes.\n")
-        f.close()
-        return None
+        metadata = {}
 
-    metadata = {}
-
-    for key in a.keys():
-        metadata[key] = a[key]
-
-    f.close()
+        for key in a.keys():
+            metadata[key] = a[key]
 
     return metadata
 

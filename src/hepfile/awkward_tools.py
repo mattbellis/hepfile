@@ -2,10 +2,10 @@ from __future__ import annotations
 
 import awkward as ak
 import numpy as np
-from .write import * 
+from .write import *
+from .constants import protected_names 
 
 ################################################################################
-#def unpack_awkward_arrays(data,keys):
 def hepfile_to_awkward(data:dict, groups:list=None, datasets:list=None) -> ak.Record:
     '''
     Converts all (or a subset of) the output data from `hepfile.read.load` to 
@@ -19,16 +19,7 @@ def hepfile_to_awkward(data:dict, groups:list=None, datasets:list=None) -> ak.Re
     Returns:
         ak_arrays (dict): dictionary of awkward arrays with the data.
     '''
-    
-    protected_names = ["_PROTECTED_NAMES_",
-                       "_GROUPS_",
-                       "_MAP_DATASETS_TO_COUNTERS_",
-                       "_MAP_DATASETS_TO_DATA_TYPES_"
-                       "_LIST_OF_COUNTERS_",
-                       "_SINGLETONS_GROUP_",
-                       "_SINGLETONS_GROUP_/COUNTER"
-                      ]
-    
+        
     if datasets is None:
         datasets = data['_LIST_OF_DATASETS_']
     
@@ -65,8 +56,7 @@ def hepfile_to_awkward(data:dict, groups:list=None, datasets:list=None) -> ak.Re
                 datasetname = dataset.split(group+'/')[-1]
                 ak_arrays[group][datasetname] = ak_array
 
-
-    awk = ak.Record(ak_arrays)
+    awk = ak.Array(ak_arrays)
 
     try:
         _is_valid_awkward(awk)
