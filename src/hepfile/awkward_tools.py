@@ -6,7 +6,6 @@ from .write import *
 from .constants import protected_names 
 
 ################################################################################
-#def unpack_awkward_arrays(data,keys):
 def hepfile_to_awkward(data:dict, groups:list=None, datasets:list=None) -> ak.Record:
     '''
     Converts all (or a subset of) the output data from `hepfile.read.load` to 
@@ -57,8 +56,7 @@ def hepfile_to_awkward(data:dict, groups:list=None, datasets:list=None) -> ak.Re
                 datasetname = dataset.split(group+'/')[-1]
                 ak_arrays[group][datasetname] = ak_array
 
-
-    awk = ak.Record(ak_arrays)
+    awk = ak.Array(ak_arrays)
 
     try:
         _is_valid_awkward(awk)
