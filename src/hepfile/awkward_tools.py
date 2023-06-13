@@ -145,7 +145,7 @@ def awkward_to_hepfile(ak_array:ak.Record, outfile:str=None, write_hepfile:bool=
 
     if write_hepfile:
         print("Writing the hdf5 file from the awkward array...")
-        hdfile = write_to_file(outfile,data,force_single_precision=False)
+        hdfile = write_to_file(outfile,data)
 
     return data
 

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import numpy as np
+import awkward as ak
 import h5py as h5
 import datetime
 import sys
@@ -579,7 +580,17 @@ def write_to_file(
 
             # Do single precision only, unless specified
             if force_single_precision == True:
-                if x.dtype == np.float64:
+
+                # different type calls depending on input datastructure
+                if isinstance(x, np.ndarray):
+                    dtype = x.dtype
+                elif isinstance(x, ak.Array) or isinstance(x, ak.Record):
+                    dtype = x.type
+                else:
+                    dtype = None
+                    raise Warning('Not a proper data type to convert to single precision, skipping!')
+                
+                if dtype == np.float64:
                     if verbose is True:
                         print("\tConverting array to single precision...")
                     x = x.astype(np.float32)
