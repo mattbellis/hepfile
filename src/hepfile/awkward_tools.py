@@ -2,7 +2,8 @@ from __future__ import annotations
 
 import awkward as ak
 import numpy as np
-from .write import * 
+from .write import *
+from .constants import protected_names 
 
 ################################################################################
 #def unpack_awkward_arrays(data,keys):
@@ -19,16 +20,7 @@ def hepfile_to_awkward(data:dict, groups:list=None, datasets:list=None) -> ak.Re
     Returns:
         ak_arrays (dict): dictionary of awkward arrays with the data.
     '''
-    
-    protected_names = ["_PROTECTED_NAMES_",
-                       "_GROUPS_",
-                       "_MAP_DATASETS_TO_COUNTERS_",
-                       "_MAP_DATASETS_TO_DATA_TYPES_"
-                       "_LIST_OF_COUNTERS_",
-                       "_SINGLETONS_GROUP_",
-                       "_SINGLETONS_GROUP_/COUNTER"
-                      ]
-    
+        
     if datasets is None:
         datasets = data['_LIST_OF_DATASETS_']
     

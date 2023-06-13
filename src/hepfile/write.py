@@ -6,7 +6,7 @@ import h5py as h5
 import datetime
 import sys
 import hepfile
-
+from . import constants
 
 ################################################################################
 def initialize() -> dict:
@@ -32,13 +32,7 @@ def initialize() -> dict:
     data["_MAP_DATASETS_TO_DATA_TYPES_"] = {}
     data["_MAP_DATASETS_TO_DATA_TYPES_"]["_SINGLETONS_GROUP_/COUNTER"] = int
 
-    data["_PROTECTED_NAMES_"] = ["_PROTECTED_NAMES_",
-                                 "_GROUPS_",
-                                 "_MAP_DATASETS_TO_COUNTERS_",
-                                 "_MAP_DATASETS_TO_DATA_TYPES_"
-                                 "_LIST_OF_COUNTERS_",
-                                 "_SINGLETONS_GROUP_/COUNTER",
-                                 ]
+    data["_PROTECTED_NAMES_"] = constants.protected_names
 
     return data
 
