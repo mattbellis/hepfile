@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import h5py as h5
 import numpy as np
+from . import constants
 
 ################################################################################
 def load(filename:str, verbose:bool=False, desired_groups:list[str]=None, subset:int=None, return_awkward:bool=False) -> tuple[dict,dict]:
@@ -281,6 +282,40 @@ def load(filename:str, verbose:bool=False, desired_groups:list[str]=None, subset
 
     print("Data is read in and input file is closed.")
 
+    # edit data so it matches the format of the data dict that was saved to the file
+    # this makes it so that data can be directly passed to write_to_file
+    # 1) add back in _GROUP_
+    groups = {}
+    for dataset in data['_LIST_OF_DATASETS_']:
+        if dataset.find('/') < 0 and dataset not in data['_SINGLETONS_GROUP_']:
+            groups[dataset] = []
+
+    groups['_SINGLETONS_GROUP_'] = data['_SINGLETONS_GROUP_'] # copy over the data
+    
+    for key in groups.keys():
+        for dataset in data['_LIST_OF_DATASETS_']:
+            if dataset.find('/') >= 0 and dataset.find(key) >= 0:
+                groups[key].append(dataset.split('/')[-1])
+
+    data['_GROUPS_'] = groups
+
+    # 2) add back in _MAP_DATASETS_TO_DATA_TYPES
+    dtypes = {}
+    for key in data['_LIST_OF_DATASETS_']:
+
+        if key not in list(data.keys()):
+            continue
+        
+        if isinstance(data[key], list):
+            data[key] = np.array(data[key])
+
+        dtypes[key] = data[key].dtype
+        
+    data['_MAP_DATASETS_TO_DATA_TYPES_'] = dtypes
+
+    # 3) add _PROTECTED_NAMES_
+    data['_PROTECTED_NAMES_'] = constants.protected_names
+    
     if return_awkward:
         from .awkward_tools import hepfile_to_awkward
         return hepfile_to_awkward(data), bucket
