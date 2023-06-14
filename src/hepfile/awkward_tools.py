@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import warnings
 import awkward as ak
 import numpy as np
 from .write import *
@@ -89,7 +90,7 @@ def awkward_to_hepfile(ak_array:ak.Record, outfile:str=None, write_hepfile:bool=
         raise IOError('Please provide an outfile path if write_hepfile=True!')
 
     if write_hepfile == False and outfile is not None:
-        raise Warning('You set write_hepfile to False but provided an output file path. This output file path will not be used!')
+        warnings.warn('You set write_hepfile to False but provided an output file path. This output file path will not be used!')
     
     data = initialize()
     singleton = False
@@ -110,8 +111,12 @@ def awkward_to_hepfile(ak_array:ak.Record, outfile:str=None, write_hepfile:bool=
     
         create_group(data, group, counter=counter)
         for ii, dataset in enumerate(ak_array[group].fields):
-            
-            dtype = _get_awkward_type(ak_array[group][dataset])
+
+            if len(ak_array[group][dataset][0]) == 0:
+                dtype = None
+            else:
+                dtype = _get_awkward_type(ak_array[group][dataset])
+
             create_dataset(data, dataset, group=group, dtype=dtype)
             
             # check if dataset name has /'s in it
@@ -178,7 +183,7 @@ def _get_awkward_type(ak_array:ak.Record) -> type:
     ndim = ak_array.ndim
     if ndim > 2 or ndim < 1:
         raise ValueError('Cannot check type with depth > 2 or depth <1')
-
+    
     if ndim == 1:
         return type(ak_array[0])
     else:

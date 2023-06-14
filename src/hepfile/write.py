@@ -5,6 +5,7 @@ import awkward as ak
 import h5py as h5
 import datetime
 import sys
+import warnings
 import hepfile
 from . import constants
 
@@ -584,7 +585,7 @@ def write_to_file(
                         dtype = x.type
                     else:
                         dtype = None
-                        raise Warning('Not a proper data type to convert to single precision, skipping!')
+                        warninga.warn('Not a proper data type to convert to single precision, skipping!')
                 
                     if dtype == np.float64:
                         if verbose is True:
@@ -624,9 +625,7 @@ def write_to_file(
             #print("%-32s has %-12d entries" % (countername, ncounter))
             print(f"{countername:<32s} has {ncounter:<12d} entries")
             if i > 0 and ncounter != _NUMBER_OF_BUCKETS_:
-                print("-------- WARNING -----------")
-                print(f"{countername} and {prevcounter} have differing numbers of entries!")
-                print("-------- WARNING -----------")
+                warnings.warn(f"{countername} and {prevcounter} have differing numbers of entries!")
                 # SHOULD WE EXIT ON THIS?
 
             if _NUMBER_OF_BUCKETS_ < ncounter:
