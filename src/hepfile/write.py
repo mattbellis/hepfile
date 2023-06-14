@@ -545,8 +545,6 @@ def write_to_file(
             compression_opts=comp_opts,
         )
 
-        print(data['_MAP_DATASETS_TO_DATA_TYPES_'])
-
         for group in _GROUPS_:
             
             hdoutfile.create_group(group)
@@ -557,16 +555,16 @@ def write_to_file(
             datasets = data["_GROUPS_"][group]
         
             for dataset in datasets:
-
+                print(group, dataset)
                 name = None
-                if group == "_SINGLETONS_GROUP_" and dataset is not "COUNTER":
+                if group == "_SINGLETONS_GROUP_" and dataset != "COUNTER":
                     name = dataset
                 else:
                     name = "%s/%s" % (group, dataset)
 
                 if verbose is True:
                     print(f"Writing {name} to file")
-
+                
                 x = data[name]
 
                 dataset_dtype = data['_MAP_DATASETS_TO_DATA_TYPES_'][name]
