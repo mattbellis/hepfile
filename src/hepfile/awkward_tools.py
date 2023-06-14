@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import warnings
 import awkward as ak
 import numpy as np
 from .write import *
@@ -89,7 +90,7 @@ def awkward_to_hepfile(ak_array:ak.Record, outfile:str=None, write_hepfile:bool=
         raise IOError('Please provide an outfile path if write_hepfile=True!')
 
     if write_hepfile == False and outfile is not None:
-        raise Warning('You set write_hepfile to False but provided an output file path. This output file path will not be used!')
+        warnings.warn('You set write_hepfile to False but provided an output file path. This output file path will not be used!')
     
     data = initialize()
     singleton = False
