@@ -24,7 +24,7 @@ def test_csv_to_hepfile():
     assert 'Age' in data['_GROUPS_']['People.csv']
 
     # read in the people csv and check data integrity
-    people = pd.read_csv(files[0])
+    people = pd.read_csv(os.path.join('docs', 'example_nb', 'People.csv'))
 
     assert np.all(np.array(data['People.csv/Height']) == np.array(people['Height']))
     assert np.all(np.array(data['People.csv/Gender ID']) == np.array(people['Gender ID']))
