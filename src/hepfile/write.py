@@ -33,6 +33,9 @@ def initialize() -> dict:
     data["_MAP_DATASETS_TO_DATA_TYPES_"] = {}
     data["_MAP_DATASETS_TO_DATA_TYPES_"]["_SINGLETONS_GROUP_/COUNTER"] = int
 
+    data["_META_"] = []
+    data["_MAP_GROUP_TO_META_"] = {}
+
     data["_PROTECTED_NAMES_"] = constants.protected_names
 
     return data
@@ -271,7 +274,28 @@ def create_dataset(data:dict, datasets:list, group:str=None, dtype:type=float):
 
     return 0
 
+###############################################################################
+def create_group_meta(data:dict, meta_name:str):
+    '''
+    Create metadata for a group (or singleton) and add it to data
 
+    Args:
+        data (dict): a data object returned by hf.initialize()
+        meta_name (str): name of either a group or a singleton dataset
+    '''
+
+    if meta_name in data['_MAP_GROUP_TO_META_'].keys():
+        warnings.warn(f'This name {meta_name} already has metadata in the hepfile data, skipping!')
+        return
+
+    if len(data['_MAP_GROUP_TO_META_'].keys()) == 0:
+        curr_idx = 0
+    else:
+        curr_idx = max(data['_MAP_GROUP_TO_META_'].values()) + 1
+        
+    data['_MAP_GROUP_TO_META_'][meta_name] =  curr_idx# index of the metadata
+    data['_META_'] = [] # empty list for metadata
+    
 ################################################################################
 def pack(data:dict, bucket:dict, AUTO_SET_COUNTER:bool=True, EMPTY_OUT_BUCKET:bool=True, STRICT_CHECKING:bool=False, verbose:bool=False):
     """ Takes the data from an bucket and packs it into the data dictionary, 
@@ -356,6 +380,7 @@ def pack(data:dict, bucket:dict, AUTO_SET_COUNTER:bool=True, EMPTY_OUT_BUCKET:bo
             or key == "_GROUPS_"
             or key == "_LIST_OF_COUNTERS_"
             or key == "_MAP_DATASETS_TO_DATA_TYPES_"
+            or key == "_MAP_GROUP_TO_META_"
         ):
             continue
 
