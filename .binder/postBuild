@@ -1,2 +1,2 @@
 #!/bin/bash
-flit install
+#flit install
