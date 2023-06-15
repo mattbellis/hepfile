@@ -1,4 +1,5 @@
 numpy>=1.13.3
+pandas
 h5py
 awkward>=2.1.2
 flit
