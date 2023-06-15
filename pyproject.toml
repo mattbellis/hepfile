@@ -33,7 +33,7 @@ requires = [
   "numpy >=1.13.3",
   "pandas",
   "h5py",
-  "awkward >= 1.4",
+  "awkward >= 2.1.2",
   "typing; python_version<'3.5'",
   "pre-commit",
   "jupyter",
