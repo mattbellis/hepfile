@@ -37,6 +37,12 @@ For local builds for testing.
 /home/bellis/.local/bin/flit install
 ```
 
+or 
+
+```
+pip install -e .
+```
+
 Install the following packages using `pip`:
 
 ```
