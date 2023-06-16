@@ -24,14 +24,15 @@ def hepfile_to_awkward(data:dict, groups:list=None, datasets:list=None) -> ak.Re
     if datasets is None:
         datasets = data['_LIST_OF_DATASETS_']
     
-    allgroups = []
-    for d in datasets:
-        if d not in protected_names:
-            allgroups.append(d.split('/')[0])
-    
+    allgroups = np.array([d.split('/')[0] for d in datasets if d not in protected_names])
+        
     if groups is None:
         groups = np.unique(allgroups)
-        
+
+    datasets = set(datasets) - set(groups) # get rid of groups from datasets
+    datasets = np.array(list(datasets - set(protected_names))) # get rid of protected names in datasets
+    
+    print(len(groups), len(datasets))
     print(groups, datasets)
     
     ak_arrays = {}
@@ -39,24 +40,24 @@ def hepfile_to_awkward(data:dict, groups:list=None, datasets:list=None) -> ak.Re
     for group in groups:
         ak_arrays[group] = {}
         for dataset in datasets:
-            if dataset.find(group)>=0:
-                
+            if dataset.find(group) >= 0:
                 if dataset in data['_LIST_OF_COUNTERS_'] or dataset == group:
                     if dataset in data['_SINGLETONS_GROUP_']:
                         ak_arrays[group] = ak.Array(data[dataset])
                     continue                   
-
+                
                 nkey = data['_MAP_DATASETS_TO_COUNTERS_'][dataset]
                 
                 num = data[nkey]
                 vals = data[dataset]
-
+                
                 if len(vals) > 0 and type(vals[0]) is str:
                     vals = vals.astype(str)
                 ak_array = ak.unflatten(list(vals),list(num))
                 datasetname = dataset.split(group+'/')[-1]
                 ak_arrays[group][datasetname] = ak_array
 
+    print(ak_arrays)
     awk = ak.Array(ak_arrays)
 
     try:
@@ -152,6 +153,8 @@ def _awkward_depth(ak_array:ak.Record) -> int:
         for s in str(item):
             if s == "{":
                 item_depth += 1
+            if s == "}":
+                item_depth -= 1
         if item_depth > max_depth:
             max_depth = item_depth
 

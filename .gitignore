@@ -148,6 +148,7 @@ dist/
 # Accidental datafiles
 *.hdf5
 *.h5
+*.fastq
 
 # no html files that were generated for testing
 html/
