@@ -319,8 +319,9 @@ def load(filename:str, verbose:bool=False, desired_groups:list[str]=None, subset
     if return_awkward:
         from .awkward_tools import hepfile_to_awkward
         return hepfile_to_awkward(data), bucket
-    
-    return data, bucket
+
+    meta = get_file_metadata(filename)
+    return data, meta, bucket
 
 
 ################################################################################

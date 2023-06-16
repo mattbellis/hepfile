@@ -33,8 +33,7 @@ def initialize() -> dict:
     data["_MAP_DATASETS_TO_DATA_TYPES_"] = {}
     data["_MAP_DATASETS_TO_DATA_TYPES_"]["_SINGLETONS_GROUP_/COUNTER"] = int
 
-    data["_META_"] = []
-    data["_MAP_GROUP_TO_META_"] = {}
+    data["_META_"] = {}
 
     data["_PROTECTED_NAMES_"] = constants.protected_names
 
@@ -275,7 +274,7 @@ def create_dataset(data:dict, datasets:list, group:str=None, dtype:type=float):
     return 0
 
 ###############################################################################
-def create_group_meta(data:dict, meta_name:str):
+def add_group_meta(data:dict, meta_name:str, meta_data:list):
     '''
     Create metadata for a group (or singleton) and add it to data
 
@@ -284,17 +283,11 @@ def create_group_meta(data:dict, meta_name:str):
         meta_name (str): name of either a group or a singleton dataset
     '''
 
-    if meta_name in data['_MAP_GROUP_TO_META_'].keys():
+    if meta_name in data['_META_'].keys():
         warnings.warn(f'This name {meta_name} already has metadata in the hepfile data, skipping!')
         return
-
-    if len(data['_MAP_GROUP_TO_META_'].keys()) == 0:
-        curr_idx = 0
-    else:
-        curr_idx = max(data['_MAP_GROUP_TO_META_'].values()) + 1
         
-    data['_MAP_GROUP_TO_META_'][meta_name] =  curr_idx# index of the metadata
-    data['_META_'] = [] # empty list for metadata
+    data['_META_'][meta_name] = meta_data # empty list for metadata
     
 ################################################################################
 def pack(data:dict, bucket:dict, AUTO_SET_COUNTER:bool=True, EMPTY_OUT_BUCKET:bool=True, STRICT_CHECKING:bool=False, verbose:bool=False):
@@ -380,7 +373,8 @@ def pack(data:dict, bucket:dict, AUTO_SET_COUNTER:bool=True, EMPTY_OUT_BUCKET:bo
             or key == "_GROUPS_"
             or key == "_LIST_OF_COUNTERS_"
             or key == "_MAP_DATASETS_TO_DATA_TYPES_"
-            or key == "_MAP_GROUP_TO_META_"
+            or key == "_META_"
+            or key == "_PROTECTED_NAMES_"
         ):
             continue
 
@@ -509,7 +503,7 @@ def write_file_metadata(filename:str, mydict:dict={}, write_default_values:bool=
             hdoutfile.attrs["numpy_version"] = np.__version__
             hdoutfile.attrs["h5py_version"] = h5.__version__
             hdoutfile.attrs["python_version"] = sys.version
-
+        
         for key in mydict:
             hdoutfile.attrs[key] = mydict[key]
 
@@ -581,7 +575,6 @@ def write_to_file(
             datasets = data["_GROUPS_"][group]
         
             for dataset in datasets:
-                print(group, dataset)
                 name = None
                 if group == "_SINGLETONS_GROUP_" and dataset != "COUNTER":
                     name = dataset
@@ -661,6 +654,6 @@ def write_to_file(
         hdoutfile.attrs["_NUMBER_OF_BUCKETS_"] = _NUMBER_OF_BUCKETS_
         #hdoutfile.close()
 
-    write_file_metadata(filename)
+    write_file_metadata(filename, mydict=data['_META_'])
 
     return hdoutfile
