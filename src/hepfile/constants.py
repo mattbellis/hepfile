@@ -10,5 +10,5 @@ protected_names = ["_PROTECTED_NAMES_",
                    "_SINGLETONS_GROUP_",
                    "_SINGLETONS_GROUP_/COUNTER",
                    "_META_",
-                   "_MAP_GROUP_TO_META_"
+                   "_SINGLETONSGROUPFORSTORAGE_"
                    ]

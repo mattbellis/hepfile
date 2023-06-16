@@ -572,6 +572,11 @@ def write_to_file(
                 data["_MAP_DATASETS_TO_COUNTERS_"][group]
             )
 
+            if group in data["_META_"].keys():
+                hdoutfile[group].attrs["meta"] = np.string_(
+                    data["_META_"][group]
+                )
+
             datasets = data["_GROUPS_"][group]
         
             for dataset in datasets:
@@ -654,6 +659,6 @@ def write_to_file(
         hdoutfile.attrs["_NUMBER_OF_BUCKETS_"] = _NUMBER_OF_BUCKETS_
         #hdoutfile.close()
 
-    write_file_metadata(filename, mydict=data['_META_'])
+    write_file_metadata(filename) #, mydict=data['_META_'])
 
     return hdoutfile

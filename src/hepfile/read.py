@@ -41,7 +41,8 @@ def load(filename:str, verbose:bool=False, desired_groups:list[str]=None, subset
         data["_MAP_DATASETS_TO_INDEX_"] = {}
         data["_LIST_OF_COUNTERS_"] = []
         data["_LIST_OF_DATASETS_"] = []
-
+        data["_META_"] = {}
+        
         # Get the number of buckets.
         # In HEP (High Energy Physics), this would be the number of events
         data["_NUMBER_OF_BUCKETS_"] = infile.attrs["_NUMBER_OF_BUCKETS_"]
@@ -106,13 +107,13 @@ def load(filename:str, verbose:bool=False, desired_groups:list[str]=None, subset
             data["_LIST_OF_COUNTERS_"].append(vals[1].decode())
             data["_LIST_OF_DATASETS_"].append(vals[0].decode())
             data["_LIST_OF_DATASETS_"].append(vals[1].decode())  # Get the counters as well
-
+            
         # We may have added some counters and datasets multiple times.
         # So just to be sure, only keep the unique values
         data["_LIST_OF_COUNTERS_"] = np.unique(data["_LIST_OF_COUNTERS_"]).tolist()
         data["_LIST_OF_DATASETS_"] = np.unique(data["_LIST_OF_DATASETS_"]).tolist()
-        ############################################################################
-
+        ############################################################################            
+        
         ############################################################################
         # Pull out the SINGLETON datasets
         ############################################################################
@@ -280,6 +281,10 @@ def load(filename:str, verbose:bool=False, desired_groups:list[str]=None, subset
                 if verbose == True:
                     print(dataset)
 
+            else: # if it is a group instead, write the metadata for that group
+                if name not in constants.protected_names:
+                    data['_META_'][name] = dataset.attrs['meta']
+        
     print("Data is read in and input file is closed.")
 
     # edit data so it matches the format of the data dict that was saved to the file
