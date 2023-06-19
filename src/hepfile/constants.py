@@ -2,7 +2,8 @@
 Some constants used in the rest of the package
 '''
 
-protected_names = ["_PROTECTED_NAMES_",
+# set of names that can not be used in group or dataset names
+protected_names = {"_PROTECTED_NAMES_",
                    "_GROUPS_",
                    "_MAP_DATASETS_TO_COUNTERS_",
                    "_MAP_DATASETS_TO_DATA_TYPES_"
@@ -11,4 +12,4 @@ protected_names = ["_PROTECTED_NAMES_",
                    "_SINGLETONS_GROUP_/COUNTER",
                    "_META_",
                    "_SINGLETONSGROUPFORSTORAGE_"
-                   ]
+                   }
