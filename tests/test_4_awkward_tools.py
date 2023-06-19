@@ -12,7 +12,8 @@ def test_hepfile_to_awkward():
 
     # convert
     awk = hf.awkward_tools.hepfile_to_awkward(hepfile)
-
+    print(awk)
+    
     # check that the data is consistent
 
     # first check that the first level keys are all good in the awkward array

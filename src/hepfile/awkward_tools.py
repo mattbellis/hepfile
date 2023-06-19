@@ -39,10 +39,8 @@ def hepfile_to_awkward(data:dict, groups:list=None, datasets:list=None) -> ak.Re
             
             if dataset in list_of_counters: continue
 
-            if group == '_SINGLETONS_GROUP_': print('made it ')
-            
-            if dataset in singletons_group:
-                ak_arrays[group] = ak.Array(data[dataset])
+            if dset in singletons_group:
+                ak_arrays[dset] = ak.Array(data[dset])
                 continue                   
                 
             nkey = data['_MAP_DATASETS_TO_COUNTERS_'][dataset]
