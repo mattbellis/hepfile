@@ -28,6 +28,7 @@ def hepfile_to_awkward(data:dict, groups:list=None, datasets:list=None) -> ak.Re
         groups = list(data['_GROUPS_'].keys())
     
     ak_arrays = {}
+
     # turn a few things into sets for faster searching
     list_of_counters = set(data['_LIST_OF_COUNTERS_'])
     singletons_group = set(data['_SINGLETONS_GROUP_'])
