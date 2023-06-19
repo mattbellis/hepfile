@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import warnings
 import h5py as h5
 import numpy as np
 from . import constants
@@ -283,8 +284,12 @@ def load(filename:str, verbose:bool=False, desired_groups:list[str]=None, subset
 
             else: # if it is a group instead, write the metadata for that group
                 if name not in constants.protected_names:
-                    data['_META_'][name] = dataset.attrs['meta']
-        
+                    try:
+                        data['_META_'][name] = dataset.attrs['meta']
+                    except KeyError:
+                        warnings.warn('No metadata found for the group, this must be an old file structure!',
+                                      category=FutureWarning)
+                        
     print("Data is read in and input file is closed.")
 
     # edit data so it matches the format of the data dict that was saved to the file
