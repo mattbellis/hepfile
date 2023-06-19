@@ -295,7 +295,6 @@ def load(filename:str, verbose:bool=False, desired_groups:list[str]=None, subset
     allgroups = np.array([d.split('/')[0] for d in datasets])
     
     singletons_group = set(data['_SINGLETONS_GROUP_'])
-    protected = set(constants.protected_names)
     groups = {}
     
     groups['_SINGLETONS_GROUP_'] = data['_SINGLETONS_GROUP_'] # copy over the data
@@ -303,7 +302,7 @@ def load(filename:str, verbose:bool=False, desired_groups:list[str]=None, subset
     for key in np.unique(allgroups):
 
         if key in singletons_group: continue
-        if key in protected: continue
+        if key in constants.protected_names: continue
         
         where_groups = np.where((key == allgroups) * (key != datasets))[0]
         groups[key] = [dataset.split('/')[-1] for dataset in datasets[where_groups]]
