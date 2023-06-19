@@ -282,10 +282,9 @@ def load(filename:str, verbose:bool=False, desired_groups:list[str]=None, subset
                 if verbose == True:
                     print(dataset)
 
-            else: # if it is a group instead, write the metadata for that group
-                if name not in constants.protected_names:
-                    if 'meta' in dataset.attrs.keys(): # otherwise no meta was written for this group
-                        data['_META_'][name] = dataset.attrs['meta']
+            # write the metadata for that group to data if it exists
+            if name not in constants.protected_names and 'meta' in dataset.attrs.keys():
+                data['_META_'][name] = dataset.attrs['meta']
                         
     print("Data is read in and input file is closed.")
 

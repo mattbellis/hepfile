@@ -277,20 +277,22 @@ def create_dataset(data:dict, datasets:list, group:str=None, dtype:type=float, v
     return 0
 
 ###############################################################################
-def add_group_meta(data:dict, meta_name:str, meta_data:list):
+def add_meta(data:dict, name:str, meta_data:list):
     '''
     Create metadata for a group (or singleton) and add it to data
 
     Args:
         data (dict): a data object returned by hf.initialize()
-        meta_name (str): name of either a group or a singleton dataset
+        name (str): name of either a group, singleton, or dataset the metadata corresponds to.
+                    if passing a dataset name, make sure it is the full path (group/dataset)!
+        meta_data (list): list of metadata to write to that group/dataset/singleton
     '''
 
-    if meta_name in data['_META_'].keys():
-        warnings.warn(f'This name {meta_name} already has metadata in the hepfile data, skipping!')
+    if name in data['_META_'].keys():
+        warnings.warn(f'This name {name} already has metadata in the hepfile data, skipping!')
         return
         
-    data['_META_'][meta_name] = meta_data # empty list for metadata
+    data['_META_'][name] = meta_data # empty list for metadata
     
 ################################################################################
 def pack(data:dict, bucket:dict, AUTO_SET_COUNTER:bool=True, EMPTY_OUT_BUCKET:bool=True, STRICT_CHECKING:bool=False, verbose:bool=False):
@@ -639,6 +641,12 @@ def write_to_file(
                     hdoutfile.create_dataset(
                         name, data=arr, dtype=dataset_dtype,  compression=comp_type, compression_opts=comp_opts)
 
+                # write the dataset metadata if there is some
+                if name in data['_META_']:
+                    hdoutfile[name].attrs["meta"] = np.string_(
+                    data["_META_"][name]
+                    )
+                
                 if (verbose):
                     print(f"Writing to file {name} as type {str(dataset_dtype)}")
 
