@@ -85,14 +85,10 @@ def create_single_bucket(data:dict) -> dict:
 
     """
 
-    bucket = {}
-
-    for k in data.keys():
-        if k in data["_LIST_OF_COUNTERS_"]:
-            bucket[k] = 0
-        else:
-            bucket[k] = data[k].copy()
-
+    bucket = {k:data[k].copy() for k in data.keys()}
+    for k in bucket["_LIST_OF_COUNTERS_"]:
+        bucket[k] = 0
+        
     return bucket
 
 
@@ -113,7 +109,7 @@ def create_group(data:dict, group_name:str, counter:str=None, verbose=False):
     """
 
     # Check for slashes in the group name. We can't have them.
-    if group_name.find('/')>=0:
+    if '/' in group_name: 
         new_group_name = group_name.replace('/','-')
         print("----------------------------------------------------")
         print(f"Slashes / are not allowed in group names")
@@ -136,7 +132,7 @@ def create_group(data:dict, group_name:str, counter:str=None, verbose=False):
         print("-----------------------------------------------------")
 
     # Check for slashes in the counter name. We can't have them.
-    if counter_name.find('/')>=0:
+    if '/' in counter_name: 
         new_counter_name = counter_name.replace('/','-')
         print("----------------------------------------------------")
         print(f"Slashes / are not allowed in counter names")
@@ -149,12 +145,10 @@ def create_group(data:dict, group_name:str, counter:str=None, verbose=False):
 
     # Then put the group and any datasets in there next.
     keyfound = False
-    for k in keys:
-        if group_name == k:
-            print(f"\033[1m{group_name}\033[0m is already in the dictionary!")
-            keyfound = True
-            break
-
+    if group_name in keys:
+        print(f"\033[1m{group_name}\033[0m is already in the dictionary!")
+        keyfound = True
+        
     if keyfound == False:
 
         data["_GROUPS_"][group_name] = []
@@ -207,7 +201,7 @@ def create_dataset(data:dict, datasets:list, group:str=None, dtype:type=float, v
     # Check for slashes in the group name. We can't have them.
     for i in range(len(datasets)):
         tempname = datasets[i]
-        if tempname.find('/')>=0:
+        if '/' in tempname:
             new_dataset_name = tempname.replace('/','-')
             print("----------------------------------------------------")
             print(f"Slashes / are not allowed in dataset names")
@@ -223,10 +217,11 @@ def create_dataset(data:dict, datasets:list, group:str=None, dtype:type=float, v
 
         for dataset in datasets:
             keyfound = False
-            for k in data["_GROUPS_"]["_SINGLETONS_GROUP_"]:
-                if dataset == k:
-                    print(f"\033[1m{dataset}\033[0m is already in the dictionary!")
-                    keyfound = True
+
+            if dataset in data["_GROUPS_"]["_SINGLETONS_GROUP_"]:    
+                print(f"\033[1m{dataset}\033[0m is already in the dictionary!")
+                keyfound = True
+
             if keyfound == False:
                 if verbose:
                     print(f"Adding dataset \033[1m{dataset}\033[0m to the dictionary as a SINGLETON.")
@@ -239,11 +234,8 @@ def create_dataset(data:dict, datasets:list, group:str=None, dtype:type=float, v
         return 0
 
     # Put the counter in the dictionary first.
-    keyfound = False
-    for k in data["_GROUPS_"]:
-        if group == k:
-            keyfound = True
-
+    keyfound = group in data["_GROUPS_"]
+    
     # NEED TO FIX THIS PART SO THAT IT FINDS THE RIGHT COUNTER FROM THE GROUP
     if keyfound == False:
         print(f"Your group, \033[1m{group}\033[0m is not in the dictionary yet!")
@@ -251,17 +243,14 @@ def create_dataset(data:dict, datasets:list, group:str=None, dtype:type=float, v
         print(f"Adding it, along with a counter of \033[1m{counter}\033[0m")
         create_group(data, group, counter=counter)
 
-    # Then put the datasets into the group in there next.
-    if type(datasets) != list:
-        datasets = [datasets]
-
     for dataset in datasets:
         keyfound = False
         name = "%s/%s" % (group, dataset)
-        for k in keys:
-            if name == k:
-                print(f"\033[1m{name}\033[0m is already in the dictionary!")
-                keyfound = True
+
+        if name in keys:
+            print(f"\033[1m{name}\033[0m is already in the dictionary!")
+            keyfound = True
+
         if keyfound == False:
             if verbose:
                 print(f"Adding dataset \033[1m{dataset}\033[0m to the dictionary under group \033[1m{group}\033[0m.")
