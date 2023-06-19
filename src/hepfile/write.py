@@ -35,8 +35,6 @@ def initialize() -> dict:
 
     data["_META_"] = {}
 
-    data["_PROTECTED_NAMES_"] = constants.protected_names
-
     return data
 
 
@@ -107,7 +105,10 @@ def create_group(data:dict, group_name:str, counter:str=None, verbose=False):
         counter (string): Name of the counter key. None by default
 
     """
-
+    # check that group_name isn't in protected_names
+    if group_name in constants.protected_names:
+        raise ValueError(f"{group_name} is protected, please choose a different group name!")
+    
     # Check for slashes in the group name. We can't have them.
     if '/' in group_name: 
         new_group_name = group_name.replace('/','-')
@@ -198,9 +199,14 @@ def create_dataset(data:dict, datasets:list, group:str=None, dtype:type=float, v
     if type(datasets) != list:
         datasets = [datasets]
 
-    # Check for slashes in the group name. We can't have them.
+    # Check for slashes in the dataset name. We can't have them.
     for i in range(len(datasets)):
         tempname = datasets[i]
+
+        # check that tempname isn't in protected_names
+        if tempname in constants.protected_names:
+            raise ValueError(f"{tempname} is protected, please choose a different dataset name!")
+        
         if '/' in tempname:
             new_dataset_name = tempname.replace('/','-')
             print("----------------------------------------------------")
@@ -247,6 +253,10 @@ def create_dataset(data:dict, datasets:list, group:str=None, dtype:type=float, v
         keyfound = False
         name = "%s/%s" % (group, dataset)
 
+        # check that tempname isn't in protected_names
+        if name in constants.protected_names:
+            raise ValueError(f"{name} is protected, please choose a different dataset or group name!")
+        
         if name in keys:
             print(f"\033[1m{name}\033[0m is already in the dictionary!")
             keyfound = True
