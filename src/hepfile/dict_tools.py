@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import awkward as ak
 from .awkward_tools import awkward_to_hepfile, _is_valid_awkward
+from .errors import *
 
 def dictlike_to_hepfile(dict_list:list[dict], outfile:str, **kwargs) -> ak.Record:
     '''
@@ -29,11 +30,17 @@ def dictlike_to_hepfile(dict_list:list[dict], outfile:str, **kwargs) -> ak.Recor
     keys = dict_list[0].keys()
     for item in dict_list:
         if item.keys() != keys:
-            raise IOError('Keys must match across the entire input dictionary list!!!')
+            raise InputError('Keys must match across the entire input dictionary list!!!')
     
     # convert dictionary list to  an awkward array and write to hepfile
     out_ak = ak.Array(dict_list)
-    awkward_to_hepfile(out_ak, outfile, **kwargs)
+
+    # catch an awkward structure error and instead return a dictionary structure error
+    try:
+        awkward_to_hepfile(out_ak, outfile, **kwargs)
+    except AwkwardStructureError as e:
+        raise DictStructureError(e)
+    
     return out_ak
 
 def append(ak_dict:ak.Record, new_dict:dict) -> ak.Record:
@@ -50,7 +57,7 @@ def append(ak_dict:ak.Record, new_dict:dict) -> ak.Record:
     _is_valid_awkward(ak_dict)
     
     if list(new_dict.keys()) != ak_dict.fields:
-        raise Exception('Keys of new array do not match keys of existing array!')
+        raise InputError('Keys of new array do not match keys of existing array!')
         
     ak_list = ak.to_list(ak_dict)
     ak_list.append(new_dict)
