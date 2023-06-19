@@ -290,25 +290,31 @@ def load(filename:str, verbose:bool=False, desired_groups:list[str]=None, subset
     # edit data so it matches the format of the data dict that was saved to the file
     # this makes it so that data can be directly passed to write_to_file
     # 1) add back in _GROUP_
-    groups = {}
-    for dataset in data['_LIST_OF_DATASETS_']:
-        if dataset.find('/') < 0 and dataset not in data['_SINGLETONS_GROUP_']:
-            groups[dataset] = []
+    datasets = np.array(data['_LIST_OF_DATASETS_'])
 
+    allgroups = np.array([d.split('/')[0] for d in datasets])
+    
+    singletons_group = set(data['_SINGLETONS_GROUP_'])
+    protected = set(constants.protected_names)
+    groups = {}
+    
     groups['_SINGLETONS_GROUP_'] = data['_SINGLETONS_GROUP_'] # copy over the data
     
-    for key in groups.keys():
-        for dataset in data['_LIST_OF_DATASETS_']:
-            if dataset.find('/') >= 0 and dataset.find(key) >= 0:
-                groups[key].append(dataset.split('/')[-1])
+    for key in np.unique(allgroups):
 
+        if key in singletons_group: continue
+        if key in protected: continue
+        
+        where_groups = np.where((key == allgroups) * (key != datasets))[0]
+        groups[key] = [dataset.split('/')[-1] for dataset in datasets[where_groups]]
+        
     data['_GROUPS_'] = groups
 
     # 2) add back in _MAP_DATASETS_TO_DATA_TYPES
     dtypes = {}
     for key in data['_LIST_OF_DATASETS_']:
 
-        if key not in list(data.keys()):
+        if key not in data.keys():
             continue
         
         if isinstance(data[key], list):

@@ -24,39 +24,39 @@ def hepfile_to_awkward(data:dict, groups:list=None, datasets:list=None) -> ak.Re
     if datasets is None:
         datasets = data['_LIST_OF_DATASETS_']
     
-    allgroups = np.array([d.split('/')[0] for d in datasets if d not in protected_names])
-        
     if groups is None:
-        groups = np.unique(allgroups)
-
-    datasets = set(datasets) - set(groups) # get rid of groups from datasets
-    datasets = np.array(list(datasets - set(protected_names))) # get rid of protected names in datasets
+        groups = list(data['_GROUPS_'].keys())
     
     ak_arrays = {}
-
     # turn a few things into sets for faster searching
     list_of_counters = set(data['_LIST_OF_COUNTERS_'])
     singletons_group = set(data['_SINGLETONS_GROUP_'])
-    
+
     for group in groups:
-        ak_arrays[group] = {}
-        for dataset in datasets:
-            if group in dataset:
-                if dataset in list_of_counters or dataset == group:
-                    if dataset in singletons_group:
-                        ak_arrays[group] = ak.Array(data[dataset])
-                    continue                   
+        for dset in data['_GROUPS_'][group]:
+
+            dataset = f'{group}/{dset}'
+            
+            if dataset in list_of_counters: continue
+
+            if group == '_SINGLETONS_GROUP_': print('made it ')
+            
+            if dataset in singletons_group:
+                ak_arrays[group] = ak.Array(data[dataset])
+                continue                   
                 
-                nkey = data['_MAP_DATASETS_TO_COUNTERS_'][dataset]
+            nkey = data['_MAP_DATASETS_TO_COUNTERS_'][dataset]
                 
-                num = data[nkey]
-                vals = data[dataset]
-                
-                if len(vals) > 0 and type(vals[0]) is str:
-                    vals = vals.astype(str)
-                ak_array = ak.unflatten(list(vals),list(num))
-                datasetname = dataset.split(group+'/')[-1]
-                ak_arrays[group][datasetname] = ak_array
+            num = data[nkey]
+            vals = data[dataset]
+            
+            if len(vals) > 0 and type(vals[0]) is str:
+                vals = vals.astype(str)
+            ak_array = ak.unflatten(list(vals),list(num))
+
+            if group not in ak_arrays.keys():
+                ak_arrays[group] = {}
+            ak_arrays[group][dset] = ak_array
 
     awk = ak.Array(ak_arrays)
 

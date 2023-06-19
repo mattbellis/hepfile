@@ -100,7 +100,7 @@ def create_single_bucket(data:dict) -> dict:
 # This adds a group in the dictionary, similar to
 # a la CreateBranch in ROOT
 ################################################################################
-def create_group(data:dict, group_name:str, counter:str=None):
+def create_group(data:dict, group_name:str, counter:str=None, verbose=False):
     """ Adds a group in the dictionary
 
     Args:
@@ -158,7 +158,8 @@ def create_group(data:dict, group_name:str, counter:str=None):
     if keyfound == False:
 
         data["_GROUPS_"][group_name] = []
-        print(f"Adding group \033[1m{group_name}\033[0m")
+        if verbose:
+            print(f"Adding group \033[1m{group_name}\033[0m")
 
         data["_GROUPS_"][group_name].append(counter_name)
         full_counter_name = f"{group_name}/{counter_name}"
@@ -170,7 +171,8 @@ def create_group(data:dict, group_name:str, counter:str=None):
             data["_LIST_OF_COUNTERS_"].append(full_counter_name)
 
         data[full_counter_name] = []
-        print(f"Adding a counter for \033[1m{group_name}\033[0m as \033[1m{counter_name}\033[0m")
+        if verbose:
+            print(f"Adding a counter for \033[1m{group_name}\033[0m as \033[1m{counter_name}\033[0m")
 
     return 0
 
@@ -182,7 +184,7 @@ def create_group(data:dict, group_name:str, counter:str=None):
 #
 # This can also add a dataset that is not associate with a group
 ################################################################################
-def create_dataset(data:dict, datasets:list, group:str=None, dtype:type=float):
+def create_dataset(data:dict, datasets:list, group:str=None, dtype:type=float, verbose=False):
     """ Adds a dataset to a group in a dictionary. If the group does not exist, it will be created.
 
     Args:
@@ -226,7 +228,8 @@ def create_dataset(data:dict, datasets:list, group:str=None, dtype:type=float):
                     print(f"\033[1m{dataset}\033[0m is already in the dictionary!")
                     keyfound = True
             if keyfound == False:
-                print(f"Adding dataset \033[1m{dataset}\033[0m to the dictionary as a SINGLETON.")
+                if verbose:
+                    print(f"Adding dataset \033[1m{dataset}\033[0m to the dictionary as a SINGLETON.")
                 data["_GROUPS_"]["_SINGLETONS_GROUP_"].append(dataset)
                 data[dataset] = []
                 data["_MAP_DATASETS_TO_COUNTERS_"][dataset] = "_SINGLETONS_GROUP_/COUNTER"
@@ -260,7 +263,8 @@ def create_dataset(data:dict, datasets:list, group:str=None, dtype:type=float):
                 print(f"\033[1m{name}\033[0m is already in the dictionary!")
                 keyfound = True
         if keyfound == False:
-            print(f"Adding dataset \033[1m{dataset}\033[0m to the dictionary under group \033[1m{group}\033[0m.")
+            if verbose:
+                print(f"Adding dataset \033[1m{dataset}\033[0m to the dictionary under group \033[1m{group}\033[0m.")
             data[name] = []
             data["_GROUPS_"][group].append(dataset)
 
@@ -608,7 +612,7 @@ def write_to_file(
                         dtype = x.type
                     else:
                         dtype = None
-                        warninga.warn('Not a proper data type to convert to single precision, skipping!')
+                        warnings.warn('Not a proper data type to convert to single precision, skipping!')
                 
                     if dtype == np.float64:
                         if verbose is True:
@@ -645,8 +649,10 @@ def write_to_file(
         prevcounter = None
         for i, countername in enumerate(counters):
             ncounter = len(data[countername])
-            #print("%-32s has %-12d entries" % (countername, ncounter))
-            print(f"{countername:<32s} has {ncounter:<12d} entries")
+
+            if verbose:
+                print(f"{countername:<32s} has {ncounter:<12d} entries")
+
             if i > 0 and ncounter != _NUMBER_OF_BUCKETS_:
                 warnings.warn(f"{countername} and {prevcounter} have differing numbers of entries!")
                 # SHOULD WE EXIT ON THIS?
