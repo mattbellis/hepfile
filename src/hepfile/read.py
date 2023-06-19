@@ -284,11 +284,8 @@ def load(filename:str, verbose:bool=False, desired_groups:list[str]=None, subset
 
             else: # if it is a group instead, write the metadata for that group
                 if name not in constants.protected_names:
-                    try:
+                    if 'meta' in dataset.attrs.keys(): # otherwise no meta was written for this group
                         data['_META_'][name] = dataset.attrs['meta']
-                    except KeyError:
-                        warnings.warn('No metadata found for the group, this must be an old file structure!',
-                                      category=FutureWarning)
                         
     print("Data is read in and input file is closed.")
 
