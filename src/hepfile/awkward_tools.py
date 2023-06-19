@@ -20,7 +20,7 @@ def hepfile_to_awkward(data:dict, groups:list=None, datasets:list=None) -> ak.Re
     Returns:
         ak_arrays (dict): dictionary of awkward arrays with the data.
     '''
-        
+    
     if datasets is None:
         datasets = data['_LIST_OF_DATASETS_']
     
@@ -32,17 +32,18 @@ def hepfile_to_awkward(data:dict, groups:list=None, datasets:list=None) -> ak.Re
     datasets = set(datasets) - set(groups) # get rid of groups from datasets
     datasets = np.array(list(datasets - set(protected_names))) # get rid of protected names in datasets
     
-    print(len(groups), len(datasets))
-    print(groups, datasets)
-    
     ak_arrays = {}
 
+    # turn a few things into sets for faster searching
+    list_of_counters = set(data['_LIST_OF_COUNTERS_'])
+    singletons_group = set(data['_SINGLETONS_GROUP_'])
+    
     for group in groups:
         ak_arrays[group] = {}
         for dataset in datasets:
-            if dataset.find(group) >= 0:
-                if dataset in data['_LIST_OF_COUNTERS_'] or dataset == group:
-                    if dataset in data['_SINGLETONS_GROUP_']:
+            if group in dataset:
+                if dataset in list_of_counters or dataset == group:
+                    if dataset in singletons_group:
                         ak_arrays[group] = ak.Array(data[dataset])
                     continue                   
                 
@@ -57,7 +58,6 @@ def hepfile_to_awkward(data:dict, groups:list=None, datasets:list=None) -> ak.Re
                 datasetname = dataset.split(group+'/')[-1]
                 ak_arrays[group][datasetname] = ak_array
 
-    print(ak_arrays)
     awk = ak.Array(ak_arrays)
 
     try:
@@ -169,7 +169,7 @@ def _is_valid_awkward(ak_array:ak.Record):
     '''
 
         # validate input array
-    if type(ak_array) != ak.Array and type(ak_array) != ak.Record:
+    if not isinstance(ak_array, ak.Array) and not isinstance(ak_array, ak.Record):
         raise IOError('Please input an Awkward Array or Awkward Record')
         
     if ak_array.fields == 0:
