@@ -569,7 +569,9 @@ def write_to_file(
                 hdoutfile[group].attrs["meta"] = np.string_(
                     data["_META_"][group]
                 )
-
+            else:
+                hdoutfile[group].attrs["meta"] = ""
+                
             datasets = data["_GROUPS_"][group]
         
             for dataset in datasets:
