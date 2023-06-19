@@ -57,7 +57,11 @@ def hepfile_to_awkward(data:dict, groups:list=None, datasets:list=None) -> ak.Re
                 ak_arrays[group] = {}
             ak_arrays[group][dset] = ak_array
 
-    awk = ak.Array(ak_arrays)
+    try:
+        awk = ak.Array(ak_arrays)
+    except ValueError as e:
+        warnings.warn('Cannot convert to an Awkward Array because dict arrays have different lengths! Returning an Awkward Record instead.')
+        awk = ak.Record(ak_arrays)
 
     try:
         _is_valid_awkward(awk)
