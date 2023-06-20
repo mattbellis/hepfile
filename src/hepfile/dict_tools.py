@@ -56,8 +56,8 @@ def append(ak_dict:ak.Record, new_dict:dict) -> ak.Record:
 
     _is_valid_awkward(ak_dict)
     
-    if list(new_dict.keys()) != ak_dict.fields:
-        raise InputError('Keys of new array do not match keys of existing array!')
+    if sorted(list(new_dict.keys())) != sorted(ak_dict.fields):
+        raise InputError(f'Keys of new array do not match keys of existing array!\nExisting Array Keys: {ak_dict.fields}\nNew Dictionary Keys: {new_dict.keys()}')
         
     ak_list = ak.to_list(ak_dict)
     ak_list.append(new_dict)
