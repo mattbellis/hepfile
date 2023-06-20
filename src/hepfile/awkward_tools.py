@@ -172,7 +172,7 @@ def _is_valid_awkward(ak_array:ak.Record):
         ak_array (ak.Array): awkward array to check    
     '''
 
-        # validate input array
+    # validate input array
     if not isinstance(ak_array, ak.Array) and not isinstance(ak_array, ak.Record):
         raise AwkwardStructureError('Please input an Awkward Array or Awkward Record')
         
