@@ -15,7 +15,7 @@ import os
 sys.path.append(os.path.abspath(os.pardir))
 sys.path.insert(0, os.path.abspath("."))
 sys.path.insert(0, os.path.abspath("../"))
-
+sys.path.insert(0, os.path.abspath("../src/hepfile")) # needed for autodocs
 
 # -- Project information -----------------------------------------------------
 
