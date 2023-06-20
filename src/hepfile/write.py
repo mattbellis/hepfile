@@ -8,6 +8,7 @@ import sys
 import warnings
 import hepfile
 from . import constants
+from .errors import *
 
 ################################################################################
 def initialize() -> dict:
@@ -107,7 +108,7 @@ def create_group(data:dict, group_name:str, counter:str=None, verbose=False):
     """
     # check that group_name isn't in protected_names
     if group_name in constants.protected_names:
-        raise ValueError(f"{group_name} is protected, please choose a different group name!")
+        raise InputError(f"{group_name} is protected, please choose a different group name!")
     
     # Check for slashes in the group name. We can't have them.
     if '/' in group_name: 
@@ -205,7 +206,7 @@ def create_dataset(data:dict, datasets:list, group:str=None, dtype:type=float, v
 
         # check that tempname isn't in protected_names
         if tempname in constants.protected_names:
-            raise ValueError(f"{tempname} is protected, please choose a different dataset name!")
+            raise InputError(f"{tempname} is protected, please choose a different dataset name!")
         
         if '/' in tempname:
             new_dataset_name = tempname.replace('/','-')
@@ -244,9 +245,8 @@ def create_dataset(data:dict, datasets:list, group:str=None, dtype:type=float, v
     
     # NEED TO FIX THIS PART SO THAT IT FINDS THE RIGHT COUNTER FROM THE GROUP
     if keyfound == False:
-        print(f"Your group, \033[1m{group}\033[0m is not in the dictionary yet!")
         counter = f"N_{group}"
-        print(f"Adding it, along with a counter of \033[1m{counter}\033[0m")
+        warnings.warn(f"Your group, \033[1m{group}\033[0m is not in the dictionary yet! Adding it, along with a counter of \033[1m{counter}\033[0m")
         create_group(data, group, counter=counter)
 
     for dataset in datasets:
@@ -255,10 +255,10 @@ def create_dataset(data:dict, datasets:list, group:str=None, dtype:type=float, v
 
         # check that tempname isn't in protected_names
         if name in constants.protected_names:
-            raise ValueError(f"{name} is protected, please choose a different dataset or group name!")
+            raise InputError(f"{name} is protected, please choose a different dataset or group name!")
         
         if name in keys:
-            print(f"\033[1m{name}\033[0m is already in the dictionary!")
+            warnings.warn(f"\033[1m{name}\033[0m is already in the dictionary! Skipping!!!")
             keyfound = True
 
         if keyfound == False:
@@ -355,19 +355,17 @@ def pack(data:dict, bucket:dict, AUTO_SET_COUNTER:bool=True, EMPTY_OUT_BUCKET:bo
                         elif counter_value != temp_counter_value:
                             # In this case, we found two groups of different length!
                             # Print this to help the user identify their error
-                            print(
-                                f"Oh no!!!! Two datasets in group {group} have different sizes!")
+                            err = ''
                             for tempd in datasets:
                                 temp_full_dataset_name = group + "/" + tempd
                                 # Don't worry about the dataset
                                 if counter == temp_full_dataset_name:
                                     continue
-                                print(
-                                    f"{tempd}: {len(bucket[temp_full_dataset_name])}")
+                                err += f"{tempd}: {len(bucket[temp_full_dataset_name])}\n"
 
-                            # Return a value for the external program to catch.
-                            return -1
-
+                            # Raise an exception for the external program to catch.
+                            raise DatasetSizeDiscrepancy(f"Oh no!!!! Two datasets in group {group} have different sizes! {err}")
+                            
     # Then pack the bucket into the data
     keys = list(bucket.keys())
 
@@ -396,9 +394,8 @@ def pack(data:dict, bucket:dict, AUTO_SET_COUNTER:bool=True, EMPTY_OUT_BUCKET:bo
             # This is for counters and SINGLETONS
             if key in data["_GROUPS_"]["_SINGLETONS_GROUP_"]:
                 if bucket[key] == None:
-                    print(f"\n\033[1m{key}\033[0m is part of the SINGLETON group and is expected to have a value for each bucket.")
-                    print("However it is None...exiting.\n")
-                    exit()
+                    raise MissingSingletonValue(f"\n\033[1m{key}\033[0m is part of the SINGLETON group and is expected to have a value for each bucket. However it is None!")
+                    
                 # Append the single value from the singletons
                 else:
                     data[key].append(bucket[key])

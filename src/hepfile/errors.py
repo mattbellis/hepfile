@@ -16,3 +16,9 @@ class RangeSubsetError(Exception):
 
 class MetadataNotFound(Exception):
     pass
+
+class DatasetSizeDiscrepancy(Exception):
+    pass
+
+class MissingSingletonValue(Exception):
+    pass
