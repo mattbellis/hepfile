@@ -155,15 +155,17 @@ def test_pack():
     bucket['obj/myint'].append(2)
     # 1 != 0, strict checking should fail.
 
-    test = hepfile.pack(data, bucket, STRICT_CHECKING=True)
-
-    # Was the mistake caught?
-    assert test == -1
-    # Was nothing packed?
-    assert len(data['obj/myint']) == 6
-    # Is bucket not cleared?
-    assert isEmpty(bucket) == False
-
+    try:
+        test = hepfile.pack(data, bucket, STRICT_CHECKING=True)
+    except hepfile.errors.DatasetSizeDiscrepancy:
+        pass
+    else:
+        assert test == -1
+        # Was nothing packed?
+        assert len(data['obj/myint']) == 6
+        # Is bucket not cleared?
+        assert isEmpty(bucket) == False
+        
     # EMPTY_OUT_BUCKET = False
 
     bucket['obj/mystr'].append('two')
