@@ -4,6 +4,7 @@ import warnings
 import h5py as h5
 import numpy as np
 from . import constants
+from .errors import *
 
 ################################################################################
 def load(filename:str, verbose:bool=False, desired_groups:list[str]=None, subset:int=None, return_awkward:bool=False) -> tuple[dict,dict]:
@@ -61,26 +62,16 @@ def load(filename:str, verbose:bool=False, desired_groups:list[str]=None, subset
             # If the user has specified `subset` incorrectly, then let's return
             # an empty data and bucket
             if subset[1]-subset[0]<=0:
-                print("The range in subset is either 0 or negative!")
-                print(f"{subset[1]} - {subset[0]} = {subset[1] - subset[0]}")
-                print("Returning an empty data and bucket dictionary!\n")
-                return data,bucket
-
+                raise RangeSubsetError(f"The range in subset is either 0 or negative! {subset[1]} - {subset[0]} = {subset[1] - subset[0]}")
+                
             # Make sure the user is not asking for something bigger than the file!
             nbuckets = data["_NUMBER_OF_BUCKETS_"]
 
             if subset[0] > nbuckets:
-                print("Range for subset starts greater than number of buckets in file!")
-                print(f"{subset[0]} > {nbuckets}")
-                print(f"I'm not sure how to handle this so the file will not be opened.")
-                print(f"Returning None,None")
-                infile.close()
-                return None,None
-
+                raise RangeSubsetError(f'Range for subset starts greater than number of buckets in file! {subset[0]} > {nbuckets}')
+                
             if subset[1] > nbuckets:
-                print("Range for subset is greater than number of buckets in file!")
-                print(f"{subset[1]} > {nbuckets}")
-                print(f"High range of subset will be set to {nbuckets}\n")
+                warnings.warn(f'Range for subset is greater than number of buckets in file!\n{subset[1]} > {nbuckets}\nHigh range of subset will be set to {nbuckets}\n')
                 subset[1] = nbuckets
 
             data["_NUMBER_OF_BUCKETS_"] = subset[1] - subset[0]
@@ -208,11 +199,8 @@ def load(filename:str, verbose:bool=False, desired_groups:list[str]=None, subset
 
             # If we passed in subset, grab that slice of the data from the file
             if subset is not None and subset[1] <= subset[0]:
-                print("Will not be reading anything in!")
-                print(f"High range of {subset[1]} is less than or equal to low range of {subset[0]}")
-                print("Returning None,None...")
-                return None,None
-
+                raise RangeSubsetError(f"Unable to read anything in! High range of {subset[1]} is less than or equal to low range of {subset[0]}")
+                
             elif subset is not None:
                 # We tack on +1 to the high range of subset when we pull out the counters
                 # and index because we want to get all of the entries for the last entry.
@@ -394,9 +382,8 @@ def get_nbuckets_in_file(filename:str) -> int:
     #a = f.attrs
 
     if type(filename) is not str:
-        print(f"Expecting a string for the filename!")
-        return None
-
+        raise InputError('Expecting the input filename to be a string!')
+        
     with h5.File(filename, "r+") as f:
         a = f.attrs
 
@@ -405,10 +392,8 @@ def get_nbuckets_in_file(filename:str) -> int:
             f.close()
             return _NUMBER_OF_BUCKETS_
         else:
-            print('\nFile does not contain the attribute, "_NUMBER_OF_BUCKETS_"\n')
-            f.close()
-            return None
-
+            raise AttributeError('File does not contain the attribute, "_NUMBER_OF_BUCKETS_"')
+            
 ################################################################################
 def get_nbuckets_in_data(data:dict) -> int:
 
@@ -419,17 +404,14 @@ def get_nbuckets_in_data(data:dict) -> int:
     """
 
     if type(data) is not dict:
-        print(f"{data} is not a dictionary!\n")
-        return None
-
+        raise InputError(f"{data} is not a dictionary!\n")
+        
     if "_NUMBER_OF_BUCKETS_" in list(data.keys()):
         _NUMBER_OF_BUCKETS_ = data["_NUMBER_OF_BUCKETS_"]
         return _NUMBER_OF_BUCKETS_
     else:
-        print('\ndata dictionary does not contain the key, "_NUMBER_OF_BUCKETS_"\n')
-        return None
-
-
+        raise AttributeError('\ndata dictionary does not contain the key, "_NUMBER_OF_BUCKETS_"\n')
+        
 ################################################################################
 def get_file_metadata(filename:str) -> dict:
 
@@ -441,13 +423,9 @@ def get_file_metadata(filename:str) -> dict:
         a = f.attrs
 
         if len(a) < 1:
-            print(f"No metadata in file {filename}!")
-            print(f"File has no attributes.\n")
-            f.close()
-            return None
-
+            raise MetadataNotFound(f"No metadata in file {filename}! File has no attributes.\n")
+            
         metadata = {}
-
         for key in a.keys():
             metadata[key] = a[key]
 
@@ -463,13 +441,14 @@ def print_file_metadata(filename:str):
 
     """
 
-    metadata = get_file_metadata(filename)
-
-    if metadata is None:
-        return None
-
     output = ""
-
+    
+    try:
+        metadata = get_file_metadata(filename)
+    except MetadataNotFound:
+        print(f'No Metadata in {filename}!')
+        return output
+    
     keys = list(metadata.keys())
 
     first_keys_to_print = ["date", "_NUMBER_OF_BUCKETS_"]

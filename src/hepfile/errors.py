@@ -10,3 +10,9 @@ class AwkwardStructureError(Exception):
 
 class DictStructureError(Exception):
     pass
+
+class RangeSubsetError(Exception):
+    pass
+
+class MetadataNotFound(Exception):
+    pass
