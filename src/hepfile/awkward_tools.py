@@ -41,12 +41,12 @@ def hepfile_to_awkward(data:dict, groups:list=None, datasets:list=None) -> ak.Re
             
             if dataset in list_of_counters: continue
 
-            if dataset not in data.keys(): continue
-
             if dset in singletons_group:
                 if dset in data.keys(): # skip if it isn't in data
                     ak_arrays[dset] = ak.Array(data[dset])
-                continue                   
+                continue
+
+            if dataset not in data.keys(): continue
                 
             nkey = data['_MAP_DATASETS_TO_COUNTERS_'][dataset]
                 
