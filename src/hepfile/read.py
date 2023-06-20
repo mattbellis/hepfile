@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import warnings
 import h5py as h5
 import numpy as np
 from . import constants
@@ -41,7 +42,8 @@ def load(filename:str, verbose:bool=False, desired_groups:list[str]=None, subset
         data["_MAP_DATASETS_TO_INDEX_"] = {}
         data["_LIST_OF_COUNTERS_"] = []
         data["_LIST_OF_DATASETS_"] = []
-
+        data["_META_"] = {}
+        
         # Get the number of buckets.
         # In HEP (High Energy Physics), this would be the number of events
         data["_NUMBER_OF_BUCKETS_"] = infile.attrs["_NUMBER_OF_BUCKETS_"]
@@ -106,13 +108,13 @@ def load(filename:str, verbose:bool=False, desired_groups:list[str]=None, subset
             data["_LIST_OF_COUNTERS_"].append(vals[1].decode())
             data["_LIST_OF_DATASETS_"].append(vals[0].decode())
             data["_LIST_OF_DATASETS_"].append(vals[1].decode())  # Get the counters as well
-
+            
         # We may have added some counters and datasets multiple times.
         # So just to be sure, only keep the unique values
         data["_LIST_OF_COUNTERS_"] = np.unique(data["_LIST_OF_COUNTERS_"]).tolist()
         data["_LIST_OF_DATASETS_"] = np.unique(data["_LIST_OF_DATASETS_"]).tolist()
-        ############################################################################
-
+        ############################################################################            
+        
         ############################################################################
         # Pull out the SINGLETON datasets
         ############################################################################
@@ -280,30 +282,39 @@ def load(filename:str, verbose:bool=False, desired_groups:list[str]=None, subset
                 if verbose == True:
                     print(dataset)
 
+            # write the metadata for that group to data if it exists
+            if name not in constants.protected_names and 'meta' in dataset.attrs.keys():
+                data['_META_'][name] = dataset.attrs['meta']
+                        
     print("Data is read in and input file is closed.")
 
     # edit data so it matches the format of the data dict that was saved to the file
     # this makes it so that data can be directly passed to write_to_file
     # 1) add back in _GROUP_
-    groups = {}
-    for dataset in data['_LIST_OF_DATASETS_']:
-        if dataset.find('/') < 0 and dataset not in data['_SINGLETONS_GROUP_']:
-            groups[dataset] = []
+    datasets = np.array(data['_LIST_OF_DATASETS_'])
 
+    allgroups = np.array([d.split('/')[0] for d in datasets])
+    
+    singletons_group = set(data['_SINGLETONS_GROUP_'])
+    groups = {}
+    
     groups['_SINGLETONS_GROUP_'] = data['_SINGLETONS_GROUP_'] # copy over the data
     
-    for key in groups.keys():
-        for dataset in data['_LIST_OF_DATASETS_']:
-            if dataset.find('/') >= 0 and dataset.find(key) >= 0:
-                groups[key].append(dataset.split('/')[-1])
+    for key in np.unique(allgroups):
 
+        if key in singletons_group: continue
+        if key in constants.protected_names: continue
+        
+        where_groups = np.where((key == allgroups) * (key != datasets))[0]
+        groups[key] = [dataset.split('/')[-1] for dataset in datasets[where_groups]]
+        
     data['_GROUPS_'] = groups
 
     # 2) add back in _MAP_DATASETS_TO_DATA_TYPES
     dtypes = {}
     for key in data['_LIST_OF_DATASETS_']:
 
-        if key not in list(data.keys()):
+        if key not in data.keys():
             continue
         
         if isinstance(data[key], list):
@@ -319,7 +330,7 @@ def load(filename:str, verbose:bool=False, desired_groups:list[str]=None, subset
     if return_awkward:
         from .awkward_tools import hepfile_to_awkward
         return hepfile_to_awkward(data), bucket
-    
+
     return data, bucket
 
 
