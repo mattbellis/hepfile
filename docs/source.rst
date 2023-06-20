@@ -25,3 +25,8 @@ Source Code Documentation
 -------------------
 .. automodule:: hepfile.csv_tools
    :members:
+
+`hepfile.errors`
+-------------------
+.. automodule:: hepfile.errors
+   :members:
