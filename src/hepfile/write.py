@@ -33,7 +33,7 @@ def initialize() -> dict:
     data["_MAP_DATASETS_TO_DATA_TYPES_"] = {}
     data["_MAP_DATASETS_TO_DATA_TYPES_"]["_SINGLETONS_GROUP_/COUNTER"] = int
 
-    data["_PROTECTED_NAMES_"] = constants.protected_names
+    data["_META_"] = {}
 
     return data
 
@@ -83,14 +83,10 @@ def create_single_bucket(data:dict) -> dict:
 
     """
 
-    bucket = {}
-
-    for k in data.keys():
-        if k in data["_LIST_OF_COUNTERS_"]:
-            bucket[k] = 0
-        else:
-            bucket[k] = data[k].copy()
-
+    bucket = {k:data[k].copy() for k in data.keys()}
+    for k in bucket["_LIST_OF_COUNTERS_"]:
+        bucket[k] = 0
+        
     return bucket
 
 
@@ -98,7 +94,7 @@ def create_single_bucket(data:dict) -> dict:
 # This adds a group in the dictionary, similar to
 # a la CreateBranch in ROOT
 ################################################################################
-def create_group(data:dict, group_name:str, counter:str=None):
+def create_group(data:dict, group_name:str, counter:str=None, verbose=False):
     """ Adds a group in the dictionary
 
     Args:
@@ -109,9 +105,12 @@ def create_group(data:dict, group_name:str, counter:str=None):
         counter (string): Name of the counter key. None by default
 
     """
-
+    # check that group_name isn't in protected_names
+    if group_name in constants.protected_names:
+        raise ValueError(f"{group_name} is protected, please choose a different group name!")
+    
     # Check for slashes in the group name. We can't have them.
-    if group_name.find('/')>=0:
+    if '/' in group_name: 
         new_group_name = group_name.replace('/','-')
         print("----------------------------------------------------")
         print(f"Slashes / are not allowed in group names")
@@ -134,7 +133,7 @@ def create_group(data:dict, group_name:str, counter:str=None):
         print("-----------------------------------------------------")
 
     # Check for slashes in the counter name. We can't have them.
-    if counter_name.find('/')>=0:
+    if '/' in counter_name: 
         new_counter_name = counter_name.replace('/','-')
         print("----------------------------------------------------")
         print(f"Slashes / are not allowed in counter names")
@@ -147,16 +146,15 @@ def create_group(data:dict, group_name:str, counter:str=None):
 
     # Then put the group and any datasets in there next.
     keyfound = False
-    for k in keys:
-        if group_name == k:
-            print(f"\033[1m{group_name}\033[0m is already in the dictionary!")
-            keyfound = True
-            break
-
+    if group_name in keys:
+        print(f"\033[1m{group_name}\033[0m is already in the dictionary!")
+        keyfound = True
+        
     if keyfound == False:
 
         data["_GROUPS_"][group_name] = []
-        print(f"Adding group \033[1m{group_name}\033[0m")
+        if verbose:
+            print(f"Adding group \033[1m{group_name}\033[0m")
 
         data["_GROUPS_"][group_name].append(counter_name)
         full_counter_name = f"{group_name}/{counter_name}"
@@ -168,7 +166,8 @@ def create_group(data:dict, group_name:str, counter:str=None):
             data["_LIST_OF_COUNTERS_"].append(full_counter_name)
 
         data[full_counter_name] = []
-        print(f"Adding a counter for \033[1m{group_name}\033[0m as \033[1m{counter_name}\033[0m")
+        if verbose:
+            print(f"Adding a counter for \033[1m{group_name}\033[0m as \033[1m{counter_name}\033[0m")
 
     return 0
 
@@ -180,7 +179,7 @@ def create_group(data:dict, group_name:str, counter:str=None):
 #
 # This can also add a dataset that is not associate with a group
 ################################################################################
-def create_dataset(data:dict, datasets:list, group:str=None, dtype:type=float):
+def create_dataset(data:dict, datasets:list, group:str=None, dtype:type=float, verbose=False):
     """ Adds a dataset to a group in a dictionary. If the group does not exist, it will be created.
 
     Args:
@@ -200,10 +199,15 @@ def create_dataset(data:dict, datasets:list, group:str=None, dtype:type=float):
     if type(datasets) != list:
         datasets = [datasets]
 
-    # Check for slashes in the group name. We can't have them.
+    # Check for slashes in the dataset name. We can't have them.
     for i in range(len(datasets)):
         tempname = datasets[i]
-        if tempname.find('/')>=0:
+
+        # check that tempname isn't in protected_names
+        if tempname in constants.protected_names:
+            raise ValueError(f"{tempname} is protected, please choose a different dataset name!")
+        
+        if '/' in tempname:
             new_dataset_name = tempname.replace('/','-')
             print("----------------------------------------------------")
             print(f"Slashes / are not allowed in dataset names")
@@ -219,12 +223,14 @@ def create_dataset(data:dict, datasets:list, group:str=None, dtype:type=float):
 
         for dataset in datasets:
             keyfound = False
-            for k in data["_GROUPS_"]["_SINGLETONS_GROUP_"]:
-                if dataset == k:
-                    print(f"\033[1m{dataset}\033[0m is already in the dictionary!")
-                    keyfound = True
+
+            if dataset in data["_GROUPS_"]["_SINGLETONS_GROUP_"]:    
+                print(f"\033[1m{dataset}\033[0m is already in the dictionary!")
+                keyfound = True
+
             if keyfound == False:
-                print(f"Adding dataset \033[1m{dataset}\033[0m to the dictionary as a SINGLETON.")
+                if verbose:
+                    print(f"Adding dataset \033[1m{dataset}\033[0m to the dictionary as a SINGLETON.")
                 data["_GROUPS_"]["_SINGLETONS_GROUP_"].append(dataset)
                 data[dataset] = []
                 data["_MAP_DATASETS_TO_COUNTERS_"][dataset] = "_SINGLETONS_GROUP_/COUNTER"
@@ -234,11 +240,8 @@ def create_dataset(data:dict, datasets:list, group:str=None, dtype:type=float):
         return 0
 
     # Put the counter in the dictionary first.
-    keyfound = False
-    for k in data["_GROUPS_"]:
-        if group == k:
-            keyfound = True
-
+    keyfound = group in data["_GROUPS_"]
+    
     # NEED TO FIX THIS PART SO THAT IT FINDS THE RIGHT COUNTER FROM THE GROUP
     if keyfound == False:
         print(f"Your group, \033[1m{group}\033[0m is not in the dictionary yet!")
@@ -246,19 +249,21 @@ def create_dataset(data:dict, datasets:list, group:str=None, dtype:type=float):
         print(f"Adding it, along with a counter of \033[1m{counter}\033[0m")
         create_group(data, group, counter=counter)
 
-    # Then put the datasets into the group in there next.
-    if type(datasets) != list:
-        datasets = [datasets]
-
     for dataset in datasets:
         keyfound = False
         name = "%s/%s" % (group, dataset)
-        for k in keys:
-            if name == k:
-                print(f"\033[1m{name}\033[0m is already in the dictionary!")
-                keyfound = True
+
+        # check that tempname isn't in protected_names
+        if name in constants.protected_names:
+            raise ValueError(f"{name} is protected, please choose a different dataset or group name!")
+        
+        if name in keys:
+            print(f"\033[1m{name}\033[0m is already in the dictionary!")
+            keyfound = True
+
         if keyfound == False:
-            print(f"Adding dataset \033[1m{dataset}\033[0m to the dictionary under group \033[1m{group}\033[0m.")
+            if verbose:
+                print(f"Adding dataset \033[1m{dataset}\033[0m to the dictionary under group \033[1m{group}\033[0m.")
             data[name] = []
             data["_GROUPS_"][group].append(dataset)
 
@@ -271,7 +276,24 @@ def create_dataset(data:dict, datasets:list, group:str=None, dtype:type=float):
 
     return 0
 
+###############################################################################
+def add_meta(data:dict, name:str, meta_data:list):
+    '''
+    Create metadata for a group (or singleton) and add it to data
 
+    Args:
+        data (dict): a data object returned by hf.initialize()
+        name (str): name of either a group, singleton, or dataset the metadata corresponds to.
+                    if passing a dataset name, make sure it is the full path (group/dataset)!
+        meta_data (list): list of metadata to write to that group/dataset/singleton
+    '''
+
+    if name in data['_META_'].keys():
+        warnings.warn(f'This name {name} already has metadata in the hepfile data, skipping!')
+        return
+        
+    data['_META_'][name] = meta_data # empty list for metadata
+    
 ################################################################################
 def pack(data:dict, bucket:dict, AUTO_SET_COUNTER:bool=True, EMPTY_OUT_BUCKET:bool=True, STRICT_CHECKING:bool=False, verbose:bool=False):
     """ Takes the data from an bucket and packs it into the data dictionary, 
@@ -356,6 +378,8 @@ def pack(data:dict, bucket:dict, AUTO_SET_COUNTER:bool=True, EMPTY_OUT_BUCKET:bo
             or key == "_GROUPS_"
             or key == "_LIST_OF_COUNTERS_"
             or key == "_MAP_DATASETS_TO_DATA_TYPES_"
+            or key == "_META_"
+            or key == "_PROTECTED_NAMES_"
         ):
             continue
 
@@ -484,7 +508,7 @@ def write_file_metadata(filename:str, mydict:dict={}, write_default_values:bool=
             hdoutfile.attrs["numpy_version"] = np.__version__
             hdoutfile.attrs["h5py_version"] = h5.__version__
             hdoutfile.attrs["python_version"] = sys.version
-
+        
         for key in mydict:
             hdoutfile.attrs[key] = mydict[key]
 
@@ -553,10 +577,14 @@ def write_to_file(
                 data["_MAP_DATASETS_TO_COUNTERS_"][group]
             )
 
+            if group in data["_META_"].keys():
+                hdoutfile[group].attrs["meta"] = np.string_(
+                    data["_META_"][group]
+                )
+                
             datasets = data["_GROUPS_"][group]
         
             for dataset in datasets:
-                print(group, dataset)
                 name = None
                 if group == "_SINGLETONS_GROUP_" and dataset != "COUNTER":
                     name = dataset
@@ -585,7 +613,7 @@ def write_to_file(
                         dtype = x.type
                     else:
                         dtype = None
-                        warninga.warn('Not a proper data type to convert to single precision, skipping!')
+                        warnings.warn('Not a proper data type to convert to single precision, skipping!')
                 
                     if dtype == np.float64:
                         if verbose is True:
@@ -613,6 +641,12 @@ def write_to_file(
                     hdoutfile.create_dataset(
                         name, data=arr, dtype=dataset_dtype,  compression=comp_type, compression_opts=comp_opts)
 
+                # write the dataset metadata if there is some
+                if name in data['_META_']:
+                    hdoutfile[name].attrs["meta"] = np.string_(
+                    data["_META_"][name]
+                    )
+                
                 if (verbose):
                     print(f"Writing to file {name} as type {str(dataset_dtype)}")
 
@@ -622,8 +656,10 @@ def write_to_file(
         prevcounter = None
         for i, countername in enumerate(counters):
             ncounter = len(data[countername])
-            #print("%-32s has %-12d entries" % (countername, ncounter))
-            print(f"{countername:<32s} has {ncounter:<12d} entries")
+
+            if verbose:
+                print(f"{countername:<32s} has {ncounter:<12d} entries")
+
             if i > 0 and ncounter != _NUMBER_OF_BUCKETS_:
                 warnings.warn(f"{countername} and {prevcounter} have differing numbers of entries!")
                 # SHOULD WE EXIT ON THIS?
@@ -636,6 +672,6 @@ def write_to_file(
         hdoutfile.attrs["_NUMBER_OF_BUCKETS_"] = _NUMBER_OF_BUCKETS_
         #hdoutfile.close()
 
-    write_file_metadata(filename)
+    write_file_metadata(filename) #, mydict=data['_META_'])
 
     return hdoutfile

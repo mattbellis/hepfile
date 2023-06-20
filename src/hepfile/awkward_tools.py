@@ -21,44 +21,48 @@ def hepfile_to_awkward(data:dict, groups:list=None, datasets:list=None) -> ak.Re
     Returns:
         ak_arrays (dict): dictionary of awkward arrays with the data.
     '''
-        
+    
     if datasets is None:
         datasets = data['_LIST_OF_DATASETS_']
     
-    allgroups = []
-    for d in datasets:
-        if d not in protected_names:
-            allgroups.append(d.split('/')[0])
-    
     if groups is None:
-        groups = np.unique(allgroups)
-        
-    print(groups, datasets)
+        groups = list(data['_GROUPS_'].keys())
     
     ak_arrays = {}
 
+    # turn a few things into sets for faster searching
+    list_of_counters = set(data['_LIST_OF_COUNTERS_'])
+    singletons_group = set(data['_SINGLETONS_GROUP_'])
+
     for group in groups:
-        ak_arrays[group] = {}
-        for dataset in datasets:
-            if dataset.find(group)>=0:
+        for dset in data['_GROUPS_'][group]:
+
+            dataset = f'{group}/{dset}'
+            
+            if dataset in list_of_counters: continue
+
+            if dset in singletons_group:
+                ak_arrays[dset] = ak.Array(data[dset])
+                continue                   
                 
-                if dataset in data['_LIST_OF_COUNTERS_'] or dataset == group:
-                    if dataset in data['_SINGLETONS_GROUP_']:
-                        ak_arrays[group] = ak.Array(data[dataset])
-                    continue                   
-
-                nkey = data['_MAP_DATASETS_TO_COUNTERS_'][dataset]
+            nkey = data['_MAP_DATASETS_TO_COUNTERS_'][dataset]
                 
-                num = data[nkey]
-                vals = data[dataset]
+            num = data[nkey]
+            vals = data[dataset]
+            
+            if len(vals) > 0 and type(vals[0]) is str:
+                vals = vals.astype(str)
+            ak_array = ak.unflatten(list(vals),list(num))
 
-                if len(vals) > 0 and type(vals[0]) is str:
-                    vals = vals.astype(str)
-                ak_array = ak.unflatten(list(vals),list(num))
-                datasetname = dataset.split(group+'/')[-1]
-                ak_arrays[group][datasetname] = ak_array
+            if group not in ak_arrays.keys():
+                ak_arrays[group] = {}
+            ak_arrays[group][dset] = ak_array
 
-    awk = ak.Array(ak_arrays)
+    try:
+        awk = ak.Array(ak_arrays)
+    except ValueError as e:
+        warnings.warn('Cannot convert to an Awkward Array because dict arrays have different lengths! Returning an Awkward Record instead.')
+        awk = ak.Record(ak_arrays)
 
     try:
         _is_valid_awkward(awk)
@@ -153,6 +157,8 @@ def _awkward_depth(ak_array:ak.Record) -> int:
         for s in str(item):
             if s == "{":
                 item_depth += 1
+            if s == "}":
+                item_depth -= 1
         if item_depth > max_depth:
             max_depth = item_depth
 
@@ -167,7 +173,7 @@ def _is_valid_awkward(ak_array:ak.Record):
     '''
 
         # validate input array
-    if type(ak_array) != ak.Array and type(ak_array) != ak.Record:
+    if not isinstance(ak_array, ak.Array) and not isinstance(ak_array, ak.Record):
         raise AwkwardStructureError('Please input an Awkward Array or Awkward Record')
         
     if ak_array.fields == 0:
