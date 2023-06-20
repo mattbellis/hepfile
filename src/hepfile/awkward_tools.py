@@ -5,6 +5,7 @@ import awkward as ak
 import numpy as np
 from .write import *
 from .constants import protected_names 
+from .errors import *
 
 ################################################################################
 def hepfile_to_awkward(data:dict, groups:list=None, datasets:list=None) -> ak.Record:
@@ -65,9 +66,9 @@ def hepfile_to_awkward(data:dict, groups:list=None, datasets:list=None) -> ak.Re
 
     try:
         _is_valid_awkward(awk)
-    except IOError as e:
+    except AwkwardStructureError as e:
         print(e)
-        raise ValueError('Cannot convert to proper awkward array because of the above error! Check your input hepfile format')
+        raise AwkwardStructureError('Cannot convert to proper awkward array because of the above error! Check your input hepfile format')
     
     return awk
 
@@ -91,7 +92,7 @@ def awkward_to_hepfile(ak_array:ak.Record, outfile:str=None, write_hepfile:bool=
     _is_valid_awkward(ak_array)
     
     if write_hepfile == True and outfile is None:
-        raise IOError('Please provide an outfile path if write_hepfile=True!')
+        raise InputError('Please provide an outfile path if write_hepfile=True!')
 
     if write_hepfile == False and outfile is not None:
         warnings.warn('You set write_hepfile to False but provided an output file path. This output file path will not be used!')
@@ -173,22 +174,22 @@ def _is_valid_awkward(ak_array:ak.Record):
 
         # validate input array
     if not isinstance(ak_array, ak.Array) and not isinstance(ak_array, ak.Record):
-        raise IOError('Please input an Awkward Array or Awkward Record')
+        raise AwkwardStructureError('Please input an Awkward Array or Awkward Record')
         
     if ak_array.fields == 0:
-        raise IOError('Your input Awkward Array must be a Record. This means it needs to have fields in it.')
+        raise AwkwardStructureError('Your input Awkward Array must be a Record. This means it needs to have fields in it.')
 
     # check input array only has a "depth" of 2
     # this can be removed once hepfiles support unlimited depth of groups!
     if _awkward_depth(ak_array) > 2:
-        raise IOError('Hepfile only supports awkward arrays with a depth <= 2! Please ensure your input follows this guideline.')
+        raise AwkwardStructureError('Hepfile only supports awkward arrays with a depth <= 2! Please ensure your input follows this guideline.')
 
 
 def _get_awkward_type(ak_array:ak.Record) -> type:
 
     ndim = ak_array.ndim
     if ndim > 2 or ndim < 1:
-        raise ValueError('Cannot check type with depth > 2 or depth <1')
+        raise InputError('Cannot check type with depth > 2 or depth <1')
     
     if ndim == 1:
         return type(ak_array[0])
