@@ -504,6 +504,7 @@ def write_file_metadata(filename:str, mydict:dict={}, write_default_values:bool=
             hdoutfile.attrs["hepfile_version"] = hepfile.__version__
             hdoutfile.attrs["numpy_version"] = np.__version__
             hdoutfile.attrs["h5py_version"] = h5.__version__
+            hdoutfile.attrs["awkward_version"] = ak.__version__
             hdoutfile.attrs["python_version"] = sys.version
         
         for key in mydict:
@@ -514,6 +515,62 @@ def write_file_metadata(filename:str, mydict:dict={}, write_default_values:bool=
     print("Metadata added")
     return hdoutfile
 
+################################################################################
+# This function writes a set of user-defined header information to the 
+# hepfile
+################################################################################
+def write_file_header(filename:str, mydict:dict={}) -> h5.File:
+    """ Writes header data to a protected group in an HDF5 file.
+
+        If there is already header information, it is overwritten
+        by this function. 
+
+    Args:
+    filename (string): Name of file to write to (file should already exist
+                       and the group will be appended to it.)
+
+    mydict (dictionary): Header data passed in by user
+
+    Returns:
+    hdoutfile (HDF5): Returns the file with new metadata
+
+    """
+
+    with h5.File(filename, "a") as hdoutfile:
+
+        # We are going to write *all* the values as strings. The user can 
+        # change the type upon reading, if they so choose.
+        dt = h5.string_dtype(encoding='utf-8')
+
+        # If the _HEADER_ group exists, delete it. 
+        header_group = None
+        if '_HEADER_' in hdoutfile:
+            del hdoutfile['_HEADER_']
+
+        header_group = hdoutfile.create_group('_HEADER_')
+
+        for key in mydict.keys():
+            
+            values = mydict[key]
+            # If value is just a str, int, or float, make it an array
+            if type(values)==str or type(values)==float or type(values)==int:
+                values = np.array(values).astype(str)
+
+            # Make sure that the data is an array of strings.
+            if type(values) != np.ndarray:
+                values = np.array(values).astype(str)
+
+            # When we pass in the values, we need to do it as a list (NOT SURE WHY?)
+            header_group.create_dataset(key,(len(values),1),dtype=dt, data=values.tolist())
+
+    # DO WE WANT TO DO THIS HERE?
+    hdoutfile.close()
+
+    print("Header data added")
+    return hdoutfile
+
+
+################################################################################
 
 ################################################################################
 

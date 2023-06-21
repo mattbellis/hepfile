@@ -37,6 +37,13 @@ class MetadataNotFound(Exception):
     '''
     pass
 
+class HeaderNotFound(Exception):
+    '''
+    Thrown when there is no header found for a hepfile even
+    though the user has requested it.
+    '''
+    pass
+
 class DatasetSizeDiscrepancy(Exception):
     '''
     Thrown when two datasets under one group do not have the same
