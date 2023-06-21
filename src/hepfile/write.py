@@ -513,7 +513,6 @@ def write_file_metadata(filename:str, mydict:dict={}, write_default_values:bool=
         #hdoutfile.close()
 
     print("Metadata added")
-    return hdoutfile
 
 ################################################################################
 # This function writes a set of user-defined header information to the 
@@ -567,13 +566,12 @@ def write_file_header(filename:str, mydict:dict) -> h5.File:
                 values = values.astype(str)
                     
             # When we pass in the values, we need to do it as a list (NOT SURE WHY?)
-            header_group.create_dataset(key,(len(values),1),dtype=dt, data=values.tolist())
+            header_group.create_dataset(key,(values.size,1),dtype=dt, data=values.tolist())
 
     # DO WE WANT TO DO THIS HERE?
     hdoutfile.close()
 
     print("Header data added")
-    return hdoutfile
 
 
 ################################################################################
