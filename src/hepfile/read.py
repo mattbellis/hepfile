@@ -533,3 +533,30 @@ def print_file_metadata(filename:str):
 
 
 ################################################################################
+
+def print_file_header(filename:str) -> str:
+    '''
+    Pretty print the file header
+
+    Args:
+        filename (str): filename to retrieve the header from.
+
+    Returns:
+        String representation of the header information, if it exists.
+    '''
+
+    hdr = get_file_header(filename, return_type='dict')
+
+    return_str = '''
+    ##############################################################
+    ###                    Hepfile Header                      ###
+    ##############################################################
+    ##############################################################
+    '''
+
+    for key in hdr.keys():
+        return_str += f'{key}:\t\t\t{hdr[key]}\n'
+
+    print(return_str)
+    return return_str
+    
