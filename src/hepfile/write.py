@@ -567,7 +567,7 @@ def write_file_header(filename:str, mydict:dict) -> h5.File:
                 values = values.astype(str)
                     
             # When we pass in the values, we need to do it as a list (NOT SURE WHY?)
-            header_group.create_dataset(key,(len(values),1),dtype=dt, data=values.tolist())
+            header_group.create_dataset(key,(values.size,1),dtype=dt, data=values.tolist())
 
     # DO WE WANT TO DO THIS HERE?
     hdoutfile.close()
