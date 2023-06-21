@@ -547,16 +547,16 @@ def print_file_header(filename:str) -> str:
 
     hdr = get_file_header(filename, return_type='dict')
 
-    return_str = '''
-    ##############################################################
-    ###                    Hepfile Header                      ###
-    ##############################################################
-    ##############################################################
-    '''
-
+    return_str = f"{'#':#>64}\n"
+    return_str += f"###{' ':>22}Hepfile Header{' ':>22}###\n"
+    return_str += f"{'#':#>64}\n"
+    return_str += f"{'#':#>64}\n"
+    
     for key in hdr.keys():
-        return_str += f'{key}:\t\t\t{hdr[key]}\n'
-
+        return_str += f'{key}:'
+        for val in hdr[key]:
+            return_str += f"\t\t\t{val}\n"
+            
     print(return_str)
     return return_str
     
