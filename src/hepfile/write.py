@@ -513,7 +513,6 @@ def write_file_metadata(filename:str, mydict:dict={}, write_default_values:bool=
         #hdoutfile.close()
 
     print("Metadata added")
-    return hdoutfile
 
 ################################################################################
 # This function writes a set of user-defined header information to the 
@@ -573,7 +572,6 @@ def write_file_header(filename:str, mydict:dict) -> h5.File:
     hdoutfile.close()
 
     print("Header data added")
-    return hdoutfile
 
 
 ################################################################################
