@@ -3,6 +3,7 @@ from __future__ import annotations
 import warnings
 import h5py as h5
 import numpy as np
+import pandas as pd
 from . import constants
 from .errors import *
 
@@ -435,6 +436,51 @@ def get_file_metadata(filename:str) -> dict:
 ################################################################################
 
 ################################################################################
+def get_file_header(filename:str, return_type:str='dict') -> dict:
+
+    """ Get the file header and return it as a dictionary or dataframe
+
+        Args:
+        filename(string): HDF5 file to open and read the header information
+
+        return_type(string): If 'dict' return the header information as a dictionary.
+                             If 'df' or 'dataframe', return the information as a 
+                             pandas dataframe.
+
+    """
+
+    if return_type is not None and return_type not in ['dict', 'df', 'dataframe']:
+        print("'return_type' must be 'dict', 'df', or 'dataframe'")
+        print("Not returning any header information")
+        return None
+
+    with h5.File(filename, "r+") as f:
+        if '_HEADER_' not in f:
+            raise HeaderNotFound(f"No header data in file {filename}! File has no _HEADER_ group.\n")
+            f.close()
+            return None
+
+        header_group = f['_HEADER_']
+
+        header = {}
+        for key in header_group.keys():
+            # Let's decode the binary strings to make it easier on the user.
+            values = header_group[key][:]
+            temp = []
+            for v in values:
+                temp.append(v[0].decode())
+            
+            # Convert it to numpy array as that may be more expected for the user.
+            header[key] = np.array(temp)
+
+        if return_type=='dataframe' or return_type=='df':
+            header = pd.DataFrame.from_dict(header)
+
+    return header
+
+
+################################################################################
+################################################################################
 def print_file_metadata(filename:str):
 
     """ Pretty print the file metadata 
@@ -487,3 +533,30 @@ def print_file_metadata(filename:str):
 
 
 ################################################################################
+
+def print_file_header(filename:str) -> str:
+    '''
+    Pretty print the file header
+
+    Args:
+        filename (str): filename to retrieve the header from.
+
+    Returns:
+        String representation of the header information, if it exists.
+    '''
+
+    hdr = get_file_header(filename, return_type='dict')
+
+    return_str = f"{'#':#>64}\n"
+    return_str += f"###{' ':>22}Hepfile Header{' ':>22}###\n"
+    return_str += f"{'#':#>64}\n"
+    return_str += f"{'#':#>64}\n"
+    
+    for key in hdr.keys():
+        return_str += f'{key}:'
+        for val in hdr[key]:
+            return_str += f"\t\t\t{val}\n"
+            
+    print(return_str)
+    return return_str
+    
