@@ -519,7 +519,7 @@ def write_file_metadata(filename:str, mydict:dict={}, write_default_values:bool=
 # This function writes a set of user-defined header information to the 
 # hepfile
 ################################################################################
-def write_file_header(filename:str, mydict:dict={}) -> h5.File:
+def write_file_header(filename:str, mydict:dict) -> h5.File:
     """ Writes header data to a protected group in an HDF5 file.
 
         If there is already header information, it is overwritten
@@ -535,6 +535,9 @@ def write_file_header(filename:str, mydict:dict={}) -> h5.File:
     hdoutfile (HDF5): Returns the file with new metadata
 
     """
+
+    if len(mydict.keys()) == 0:
+        raise InputError('Please provide header data to write to the header!')
 
     with h5.File(filename, "a") as hdoutfile:
 
@@ -552,14 +555,17 @@ def write_file_header(filename:str, mydict:dict={}) -> h5.File:
         for key in mydict.keys():
             
             values = mydict[key]
+
+            # check that values can be converted to a np.array
+            try:
+                values = np.array(values)
+            except:
+                raise InputError('Unable to convert header data to a numpy array!')
+            
             # If value is just a str, int, or float, make it an array
             if type(values)==str or type(values)==float or type(values)==int:
-                values = np.array(values).astype(str)
-
-            # Make sure that the data is an array of strings.
-            if type(values) != np.ndarray:
-                values = np.array(values).astype(str)
-
+                values = values.astype(str)
+                    
             # When we pass in the values, we need to do it as a list (NOT SURE WHY?)
             header_group.create_dataset(key,(len(values),1),dtype=dt, data=values.tolist())
 
