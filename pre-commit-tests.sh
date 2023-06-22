@@ -62,7 +62,7 @@ if [[ $PYLINT_RESULT ]]; then
 	echo -e "\tPlease check the following pushing:"
 	echo -e "\t$PYLINT_RESULT"
     fi
-    ERR=0
+    #ERR=1
 else
     if [[ $verbose == $(true) ]]; then
 	echo -e "\tpylint was run with the --errors-only flag"
