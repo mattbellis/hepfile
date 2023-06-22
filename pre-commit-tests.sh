@@ -30,7 +30,9 @@ if [[ $verbose == $(true) ]]; then
 fi
     
 # run linter
-
+if [[ $verbose == $(true) ]]; then
+    echo "2) Checking for superfluous debug statements"
+fi
 
 ##################################################
 
