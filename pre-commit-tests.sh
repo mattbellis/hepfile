@@ -33,6 +33,14 @@ fi
 if [[ $verbose == $(true) ]]; then
     echo "2) Checking for superfluous debug statements"
 fi
+if [[ $(grep "pdb" src/hepfile/*.py) ]]; then
+    
+    echo -e "\tFound a pdb statement:" 
+    echo -e "\t$(grep "pdb" src/hepfile/*.py)"
+    ERR=1
+else
+    echo -e "\tNo debug statements found! Continuing..."
+fi
 
 ##################################################
 

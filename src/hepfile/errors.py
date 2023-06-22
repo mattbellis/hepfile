@@ -1,7 +1,6 @@
 '''
 Custom exception messages
 '''
-
 class InputError(Exception):
     '''
     General error to describe when the input value of a function
