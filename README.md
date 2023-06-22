@@ -49,3 +49,10 @@ Install the following packages using `pip`:
 flit
 autodocs # for sphinx
 ```
+
+Then, run the following commands to setup the pre-commit git hook
+to automatically run tests before committing!
+```
+chmod a+x pre-commit-tests.sh
+ln -s ../../pre-commit-tests.sh .git/hooks/pre-commit
+```
