@@ -14,7 +14,6 @@ echo "-------------------------------------------"
 ##################################################
 # Run tests
 ##################################################
-
 # run pytest and give exit code 1 if not successful
 
 if [[ $verbose == $(true) ]]; then
@@ -28,25 +27,47 @@ ERR=$?
 if [[ $verbose == $(true) ]]; then
     echo -e "\tPython tests finished with exit code $ERR"
 fi
-    
+
+##################################################
 # check for debug statements (we don't want these clogging our code)
 echo -e "\n"
 if [[ $verbose == $(true) ]]; then
     echo "2) Checking for superfluous debug statements"
 fi
-if [[ $(grep "pdb" src/hepfile/*.py) ]]; then
-    
-    echo -e "\tFound a pdb statement:" 
-    echo -e "\t$(grep "pdb" src/hepfile/*.py)"
+
+GREP_RESULT=$(grep "pdb" src/hepfile/*.py | tr "\n" "|" | sed s/"|"/"\n\t"/)
+if [[ $GREP_RESULT ]]; then
+    if [[ $verbose == $(true) ]]; then
+       echo -e "\tFound a pdb statement:" 
+       echo -e "\t$GREP_RESULT"
+    fi	 
     ERR=1
 else
-    echo -e "\tNo debug statements found! Continuing..."
+    [ $verbose == $(true) ] && echo -e "\tNo debug statements found! Continuing..."
 fi
 
+##################################################
 # run a linter
 echo -e "\n"
 if [[ $verbose == $(true) ]]; then
     echo "3) Running pylint"
+fi
+
+PYLINT_RESULT=$(pylint --errors-only hepfile | tr "\n" "|" | sed s/"|"/"\n\t"/)
+if [[ $PYLINT_RESULT ]]; then
+    if [[ $verbose == $(true) ]]; then
+	echo -e "\tWARNING!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+	echo -e "\tpylint found some possible errors!"
+	echo -e "\tCommit will continue, but be cautious!"
+	echo -e "\tPlease check the following pushing:"
+	echo -e "\t$PYLINT_RESULT"
+    fi
+    ERR=0
+else
+    if [[ $verbose == $(true) ]]; then
+	echo -e "\tpylint was run with the --errors-only flag"
+	echo -e "\tNo errors were found! Continuing..."
+    fi
 fi
 
 ##################################################

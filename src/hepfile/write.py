@@ -495,7 +495,7 @@ def write_file_metadata(filename:str, mydict:dict={}, write_default_values:bool=
         non_metadata = ["_NUMBER_OF_BUCKETS_"]
 
         if not append:
-            for key in hdoutfile.attr.keys():
+            for key in hdoutfile.attrs.keys():
                 if key not in non_metadata:
                     del hdoutfile.attrs[key]
 
