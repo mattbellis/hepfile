@@ -134,7 +134,7 @@ def test_pack():
     assert len(bucket['obj/myfloat']) == 0
     assert len(bucket['obj/myint']) == 0
     assert len(bucket['obj/mystr']) == 0
-    assert bucket['obj/nobj'] is 0
+    assert bucket['obj/nobj'] == 0
 
     # AUTO_SET_COUNTER = False
     bucket['obj/myfloat'].append(2.0)
