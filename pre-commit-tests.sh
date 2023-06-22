@@ -29,7 +29,8 @@ if [[ $verbose == $(true) ]]; then
     echo -e "\tPython tests finished with exit code $ERR"
 fi
     
-# run linter
+# check for debug statements (we don't want these clogging our code)
+echo -e "\n"
 if [[ $verbose == $(true) ]]; then
     echo "2) Checking for superfluous debug statements"
 fi
@@ -40,6 +41,12 @@ if [[ $(grep "pdb" src/hepfile/*.py) ]]; then
     ERR=1
 else
     echo -e "\tNo debug statements found! Continuing..."
+fi
+
+# run a linter
+echo -e "\n"
+if [[ $verbose == $(true) ]]; then
+    echo "3) Running pylint"
 fi
 
 ##################################################
