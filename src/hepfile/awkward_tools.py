@@ -1,11 +1,13 @@
+'''
+These are tools to make working with and translating between awkward arrays
+and hepfile data objects easier.
+'''
 from __future__ import annotations
 
 import warnings
 import awkward as ak
-import numpy as np
-from .write import *
-from .constants import protected_names
-from .errors import *
+from .write import initialize, create_group, create_dataset, write_to_file
+from .errors import AwkwardStructureError, InputError
 
 
 ################################################################################
@@ -57,36 +59,38 @@ def hepfile_to_awkward(
             num = data[nkey]
             vals = data[dataset]
 
-            if len(vals) > 0 and type(vals[0]) is str:
+            if len(vals) > 0 and isinstance(vals[0], str):
                 vals = vals.astype(str)
             ak_array = ak.unflatten(list(vals), list(num))
 
-            if group not in ak_arrays.keys():
+            if group not in ak_arrays:
                 ak_arrays[group] = {}
             ak_arrays[group][dset] = ak_array
 
     try:
         awk = ak.Array(ak_arrays)
-    except ValueError as e:
+    except ValueError:
         warnings.warn(
-            "Cannot convert to an Awkward Array because dict arrays have different lengths! Returning an Awkward Record instead."
+            "Cannot convert to an Awkward Array because dict arrays have" +
+            " different lengths! Returning an Awkward Record instead."
         )
         awk = ak.Record(ak_arrays)
 
     try:
         _is_valid_awkward(awk)
-    except AwkwardStructureError as e:
-        print(e)
+    except AwkwardStructureError as err:
+        print(err)
         raise AwkwardStructureError(
-            "Cannot convert to proper awkward array because of the above error! Check your input hepfile format"
-        )
+            "Cannot convert to proper awkward array because of the above \
+            error! Check your input hepfile format"
+        ) from err
 
     return awk
 
 
 ################################################################################
 def awkward_to_hepfile(
-    ak_array: ak.Record, outfile: str = None, write_hepfile: bool = True, **kwargs
+    ak_array: ak.Record, outfile: str = None, write_hepfile: bool = True
 ) -> dict:
     """
     Converts a dictionary of awkward arrays to a hepfile
@@ -94,7 +98,8 @@ def awkward_to_hepfile(
     Args:
         ak_array (Awkward Array): dictionary of Awkward Arrays to write to a hepfile
         outfile (str): path to write output hdf5 file to
-        write_hepfile (bool): if True, writes data to outfile. If False, just converts to hepfile format and returns
+        write_hepfile (bool): if True, writes data to outfile.
+                              If False, just converts to hepfile format and returns
         **kwargs (None): Passed to `hepfile.write.write_to_file`
 
     Returns:
@@ -105,23 +110,21 @@ def awkward_to_hepfile(
 
     _is_valid_awkward(ak_array)
 
-    if write_hepfile == True and outfile is None:
+    if write_hepfile is True and outfile is None:
         raise InputError("Please provide an outfile path if write_hepfile=True!")
 
-    if write_hepfile == False and outfile is not None:
+    if write_hepfile is False and outfile is not None:
         warnings.warn(
-            "You set write_hepfile to False but provided an output file path. This output file path will not be used!"
+            "You set write_hepfile to False but provided an output file path. \
+            This output file path will not be used!"
         )
 
     data = initialize()
-    singleton = False
-
     for group in ak_array.fields:
         counter = f"n{group}"
         counter_key = f"{group}/{counter}"
 
         if len(ak_array[group].fields) == 0:
-            singleton = True
 
             dtype = _get_awkward_type(ak_array[group])
             create_dataset(data, group, dtype=dtype)
@@ -130,7 +133,7 @@ def awkward_to_hepfile(
             continue
 
         create_group(data, group, counter=counter)
-        for ii, dataset in enumerate(ak_array[group].fields):
+        for i, dataset in enumerate(ak_array[group].fields):
             if len(ak_array[group][dataset][0]) == 0:
                 dtype = None
             else:
@@ -147,7 +150,7 @@ def awkward_to_hepfile(
             name = f"{group}/{dataset_name}"
             for data_subset in ak_array[group][dataset]:
                 data[name].append(data_subset)
-                if ii == 0:
+                if i == 0:
                     data[counter_key].append(len(data_subset))
 
             data[name] = ak.flatten(ak.Array(data[name]))
@@ -161,7 +164,7 @@ def awkward_to_hepfile(
 
     if write_hepfile:
         print("Writing the hdf5 file from the awkward array...")
-        hdfile = write_to_file(outfile, data)
+        write_to_file(outfile, data)
 
     return data
 
@@ -170,10 +173,10 @@ def _awkward_depth(ak_array: ak.Record) -> int:
     max_depth = 0
     for item in ak_array.to_list():
         item_depth = -1
-        for s in str(item):
-            if s == "{":
+        for string in str(item):
+            if string == "{":
                 item_depth += 1
-            if s == "}":
+            if string == "}":
                 item_depth -= 1
         if item_depth > max_depth:
             max_depth = item_depth
@@ -195,14 +198,16 @@ def _is_valid_awkward(ak_array: ak.Record):
 
     if ak_array.fields == 0:
         raise AwkwardStructureError(
-            "Your input Awkward Array must be a Record. This means it needs to have fields in it."
+            "Your input Awkward Array must be a Record. \
+            This means it needs to have fields in it."
         )
 
     # check input array only has a "depth" of 2
     # this can be removed once hepfiles support unlimited depth of groups!
     if _awkward_depth(ak_array) > 2:
         raise AwkwardStructureError(
-            "Hepfile only supports awkward arrays with a depth <= 2! Please ensure your input follows this guideline."
+            "Hepfile only supports awkward arrays with a depth <= 2! \
+            Please ensure your input follows this guideline."
         )
 
 
@@ -213,5 +218,4 @@ def _get_awkward_type(ak_array: ak.Record) -> type:
 
     if ndim == 1:
         return type(ak_array[0])
-    else:
-        return type(ak_array[0][0])
+    return type(ak_array[0][0])

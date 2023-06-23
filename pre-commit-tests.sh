@@ -72,7 +72,7 @@ if [[ $ERR == 0 ]]; then
 	echo "4) Running pylint"
     fi
     
-    PYLINT_RESULT=$(pylint --errors-only hepfile | tr "\n" "|" | sed s/"|"/"\n\t"/)
+    PYLINT_RESULT=$(pylint hepfile | tr "\n" "|" | sed s/"|"/"\n\t"/)
     if [[ $PYLINT_RESULT ]]; then
 	if [[ $verbose = true ]]; then
 	    echo -e "\tWARNING!!!!!!!!!!!!!!!!!!!!!!!!!!!"

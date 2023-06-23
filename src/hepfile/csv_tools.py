@@ -4,12 +4,11 @@ Tools to help with managing csvs with hepfile
 from __future__ import annotations
 
 import os
-import numpy as np
+from typing import Optional
+
 import pandas as pd
 import awkward as ak
 from .awkward_tools import awkward_to_hepfile
-from typing import Optional
-
 
 def csv_to_awkward(
     csvpaths: list[str], common_key: str, group_names: Optional[list] = None
@@ -20,8 +19,10 @@ def csv_to_awkward(
 
     Args:
         csvpaths (list[str]): list of absolute paths to the csvs to convert to a hepfile
-        common_key (str): The above list of csvs should have a common column name, give the name of this column
-        group_names (list): the names for the groups in the hepfile. Default is None and the groups are based on the filenames
+        common_key (str): The above list of csvs should have a common column name,
+                          give the name of this column
+        group_names (list): the names for the groups in the hepfile. Default is
+                            None and the groups are based on the filenames
 
     Returns:
         Awkward array record of the csvs
@@ -31,8 +32,8 @@ def csv_to_awkward(
         group_names = [os.path.split(file)[-1] for file in csvpaths]
 
     for_ak = {}
-    for f, group_name in zip(csvpaths, group_names):
-        csv = pd.read_csv(f)
+    for infile, group_name in zip(csvpaths, group_names):
+        csv = pd.read_csv(infile)
 
         groups = csv.groupby(common_key)
         split_groups = []
@@ -42,12 +43,12 @@ def csv_to_awkward(
         subdict = {}
         for grouping in split_groups:
             for colname in grouping.columns:
-                if colname in subdict.keys():
+                if colname in subdict:
                     subdict[colname].append(list(grouping[colname].values))
                 else:
                     subdict[colname] = [list(grouping[colname].values)]
 
-        for key in subdict.keys():
+        for key in subdict:
             subdict[key] = ak.Array(subdict[key])
 
         for_ak[group_name] = subdict
@@ -70,9 +71,12 @@ def csv_to_hepfile(
 
     Args:
         csvpaths (list[str]): list of absolute paths to the csvs to convert to a hepfile
-        common_key (str): The above list of csvs should have a common column name, give the name of this column
-        outfile (str): The output file name, if None data is written to the first filepath in csvpaths with 'csv' replaced with 'h5'
-        group_names (list): the names for the groups in the hepfile. Default is None and the groups are based on the filenames
+        common_key (str): The above list of csvs should have a common column
+                          name, give the name of this column
+        outfile (str): The output file name, if None data is written to the
+                       first filepath in csvpaths with 'csv' replaced with 'h5'
+        group_names (list): the names for the groups in the hepfile. Default is
+                            None and the groups are based on the filenames
         write_hepfile: (bool): if True, write the hepfile. Default is True.
 
     Returns:

@@ -1,6 +1,7 @@
 """
-A file description modeled after the ROOT analysis toolkit and common use-cases in High Energy Physics.
-Implemented in HDF5, hepfile stands for Heterogeneous Entries in Parallel-file.
+A file description modeled after the ROOT analysis toolkit and common use-cases
+in High Energy Physics. Implemented in HDF5, hepfile stands for Heterogeneous
+Entries in Parallel-file.
 
 See hepfile.readthedocs.io for detailed documentation!
 """

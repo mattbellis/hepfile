@@ -5,12 +5,13 @@ from __future__ import annotations
 
 import awkward as ak
 from .awkward_tools import awkward_to_hepfile, _is_valid_awkward
-from .errors import *
+from .errors import AwkwardStructureError, DictStructureError, InputError
 
 
 def dictlike_to_hepfile(dict_list: list[dict], outfile: str, **kwargs) -> ak.Record:
     """
-    This wraps on `hepfile.awkward_tools.awkward_to_hepfile` to write a list of dictionaries to a hepfile.
+    This wraps on `hepfile.awkward_tools.awkward_to_hepfile`
+    and writes a list of dictionaries to a hepfile.
 
     Writes a list of dictlike object to a hepfile. Must have a specific format:
     - each dictlike object is a "event"
@@ -41,8 +42,8 @@ def dictlike_to_hepfile(dict_list: list[dict], outfile: str, **kwargs) -> ak.Rec
     # catch an awkward structure error and instead return a dictionary structure error
     try:
         awkward_to_hepfile(out_ak, outfile, **kwargs)
-    except AwkwardStructureError as e:
-        raise DictStructureError(e)
+    except AwkwardStructureError as err:
+        raise DictStructureError(err) from err
 
     return out_ak
 
@@ -62,7 +63,8 @@ def append(ak_dict: ak.Record, new_dict: dict) -> ak.Record:
 
     if sorted(list(new_dict.keys())) != sorted(ak_dict.fields):
         raise InputError(
-            f"Keys of new array do not match keys of existing array!\nExisting Array Keys: {ak_dict.fields}\nNew Dictionary Keys: {new_dict.keys()}"
+            f"Keys of new array do not match keys of existing array!\nExisting \
+            Array Keys: {ak_dict.fields}\nNew Dictionary Keys: {new_dict.keys()}"
         )
 
     ak_list = ak.to_list(ak_dict)
