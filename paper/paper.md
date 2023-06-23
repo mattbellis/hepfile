@@ -14,15 +14,15 @@ authors:
   - name: Matt Bellis
     orcid: 0000-0002-6353-6043
     affiliation: 1
+  - name: Noah Franz
+    orcid: 0000-0003-4537-3575
+    affiliation: 1
   - name: Matt Dreyer
     orcid: 0000-0002-7877-2858
     affiliation: 2
   - name: Willow Hagen
     orcid: 0000-0001-6637-2112
     affiliation: "3,1"
-  - name: Noah Franz
-    orcid: 0000-0003-4537-3575
-    affiliation: 1
 affiliations:
  - name: Siena College
    index: 1
@@ -39,21 +39,21 @@ bibliography: paper.bib
 
 High Energy Physics (HEP) datasets are
 challenging for many file formats because of the inhomogeneous nature
-of the dataset: one event may have 3 jets and 2 muons and the next
-event may have 12 jets and no muons. Most file formats excel when the
-data exists in some simple, homogenous n x m block structure. 
+of the dataset: one beam-collision interaction may product 3 electrons and 2 muons and the next
+interaction may produce 12 electrons and no muons. Most file formats excel when the
+data exist in some simple, homogenous n x m block structure. 
 The TFile and TTree
 objects in ROOT handle these datasets incredibly well but require users
 to import the entire ROOT ecosystem just to read the files, locking out
 users from other communities that do not use ROOT. `hepfile` 
 (Heterogeneous Entries in Parallel - file) is a data description for
-organizing this type of data, a API definition for interfacing with these data,
+organizing these types of datasets, a API definition for interfacing with these data,
 and a description of how to pack this into a file. These abstract definitions
-have been implemented with a python API and making use of the HDF5 file format.wrapper to the HDF5 format
-that gives users access to the ROOT functionality without ROOT and
+have been implemented with a python API and making use of the HDF5 file format as the underlying
+file structure. 
+This gives users access to a ROOT-file-like functionality without touching ROOT, all the while
 making use of native python tools. The performance of this tool and its
-application to non-HEP datasets will be presented.
-
+application to both HEP and non-HEP datasets are presented.
 
 # Statement of need
 

@@ -1,16 +1,18 @@
-'''
+"""
 Functions to help convert dictionaries into hepfiles
-'''
+"""
 from __future__ import annotations
 
 import awkward as ak
 from .awkward_tools import awkward_to_hepfile, _is_valid_awkward
-from .errors import *
+from .errors import AwkwardStructureError, DictStructureError, InputError
 
-def dictlike_to_hepfile(dict_list:list[dict], outfile:str, **kwargs) -> ak.Record:
-    '''
-    This wraps on `hepfile.awkward_tools.awkward_to_hepfile` to write a list of dictionaries to a hepfile.
-    
+
+def dictlike_to_hepfile(dict_list: list[dict], outfile: str, **kwargs) -> ak.Record:
+    """
+    This wraps on `hepfile.awkward_tools.awkward_to_hepfile`
+    and writes a list of dictionaries to a hepfile.
+
     Writes a list of dictlike object to a hepfile. Must have a specific format:
     - each dictlike object is a "event"
     - first level of dict keys are the groups
@@ -24,41 +26,47 @@ def dictlike_to_hepfile(dict_list:list[dict], outfile:str, **kwargs) -> ak.Recor
         **kwargs: passed to `hepfile.write.write_to_file`
     Returns:
         Dictionary of Awkward Arrays with the data stored in outfile
-    '''
-    
+    """
+
     # validate input dictionary
     keys = dict_list[0].keys()
     for item in dict_list:
         if item.keys() != keys:
-            raise InputError('Keys must match across the entire input dictionary list!!!')
-    
+            raise InputError(
+                "Keys must match across the entire input dictionary list!!!"
+            )
+
     # convert dictionary list to  an awkward array and write to hepfile
     out_ak = ak.Array(dict_list)
 
     # catch an awkward structure error and instead return a dictionary structure error
     try:
         awkward_to_hepfile(out_ak, outfile, **kwargs)
-    except AwkwardStructureError as e:
-        raise DictStructureError(e)
-    
+    except AwkwardStructureError as err:
+        raise DictStructureError(err) from err
+
     return out_ak
 
-def append(ak_dict:ak.Record, new_dict:dict) -> ak.Record:
-    '''
+
+def append(ak_dict: ak.Record, new_dict: dict) -> ak.Record:
+    """
     Append a new event to an existing awkward dictionary with events
-    
+
     Args:
         ak_dict (ak.Record): awkward Record of data
         new_dict (dict): Dictionary of value to append to ak_dict. All keys must match ak_dict!
     Return:
         Awkward Record of awkward arrays with the new_dict appended
-    '''
+    """
 
     _is_valid_awkward(ak_dict)
-    
+
     if sorted(list(new_dict.keys())) != sorted(ak_dict.fields):
-        raise InputError(f'Keys of new array do not match keys of existing array!\nExisting Array Keys: {ak_dict.fields}\nNew Dictionary Keys: {new_dict.keys()}')
-        
+        raise InputError(
+            f"Keys of new array do not match keys of existing array!\nExisting \
+            Array Keys: {ak_dict.fields}\nNew Dictionary Keys: {new_dict.keys()}"
+        )
+
     ak_list = ak.to_list(ak_dict)
     ak_list.append(new_dict)
     return ak.Array(ak_list)
