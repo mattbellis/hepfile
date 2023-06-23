@@ -35,21 +35,20 @@ if [[ $ERR == 0 ]]; then
     [ $verbose = true ] && echo -e "\n"
 
     if [[ $verbose = true ]]; then
-	echo "2) Checking for superfluous debug statements"
+	    echo "2) Checking for superfluous debug statements"
     fi
 
     GREP_RESULT=$(grep "pdb" src/hepfile/*.py | tr "\n" "|" | sed s/"|"/"\n\t"/)
     if [[ $GREP_RESULT ]]; then
-	if [[ $verbose = true ]]; then
-	    echo -e "\tFound a pdb statement:" 
-	    echo -e "\t$GREP_RESULT"
-	fi	 
-	ERR=1
+	    if [[ $verbose = true ]]; then
+	      echo -e "\tFound a pdb statement:" 
+	      echo -e "\t$GREP_RESULT"
+	    fi	 
+	    ERR=1
     else
-	[ $verbose = true ] && echo -e "\tNo debug statements found! Continuing..."
+	    [ $verbose = true ] && echo -e "\tNo debug statements found! Continuing..."
     fi
 fi
-
 ##################################################
 # run black code formatter
 if [[ $ERR == 0 ]]; then
@@ -83,6 +82,7 @@ if [[ $ERR == 0 ]]; then
 	fi
 	#ERR=1
     else
+
 	if [[ $verbose = true ]]; then
 	    echo -e "\tpylint was run with the --errors-only flag"
 	    echo -e "\tNo errors were found! Continuing..."
@@ -100,6 +100,7 @@ fi
 
 # check RESULT and exit based on it
 [ verbose = true ] && echo -e "\n"
+
 if [[ $ERR -ne 0 ]]; then
     if [[ verbose = true ]]; then
 	echo "-------------------------------------------"
