@@ -9,6 +9,8 @@
 
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/mattbellis/hepfile/HEAD?urlpath=lab/tree/docs/example_nb)
 
+[![DOI](https://zenodo.org/badge/91502190.svg)](https://zenodo.org/badge/latestdoi/91502190)
+
 [![GitHub Discussion][github-discussions-badge]][github-discussions-link]
 [![Gitter][gitter-badge]][gitter-link]
 
