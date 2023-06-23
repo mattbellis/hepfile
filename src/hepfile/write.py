@@ -10,9 +10,10 @@ import hepfile
 from . import constants
 from .errors import *
 
+
 ################################################################################
 def initialize() -> dict:
-    """ Creates an empty data dictionary
+    """Creates an empty data dictionary
 
     Returns:
 
@@ -27,7 +28,9 @@ def initialize() -> dict:
 
     # For singleton entries, variables with only one entry per bucket.
     data["_GROUPS_"]["_SINGLETONS_GROUP_"] = ["COUNTER"]
-    data["_MAP_DATASETS_TO_COUNTERS_"]["_SINGLETONS_GROUP_"] = "_SINGLETONS_GROUP_/COUNTER"
+    data["_MAP_DATASETS_TO_COUNTERS_"][
+        "_SINGLETONS_GROUP_"
+    ] = "_SINGLETONS_GROUP_/COUNTER"
     data["_LIST_OF_COUNTERS_"].append("_SINGLETONS_GROUP_/COUNTER")
 
     data["_SINGLETONS_GROUP_/COUNTER"] = []
@@ -40,25 +43,24 @@ def initialize() -> dict:
 
 
 ################################################################################
-def clear_bucket(bucket:dict) -> None:
-    """ Clears the data from the bucket dictionary - should the name of the function change?
+def clear_bucket(bucket: dict) -> None:
+    """Clears the data from the bucket dictionary - should the name of the function change?
 
     Args:
         bucket (dict): The dictionary to be cleared. This is designed to clear the data from
                       the lists in the bucket dictionary, but theoretically, it would
-                      clear out the lists from any dictionary. 
+                      clear out the lists from any dictionary.
 
     """
 
     for key in bucket.keys():
-
-        if key == '_LIST_OF_COUNTERS_':
+        if key == "_LIST_OF_COUNTERS_":
             continue
 
         if type(bucket[key]) == list:
             bucket[key].clear()
         elif type(bucket[key]) == int:
-            if key in bucket['_LIST_OF_COUNTERS_']:
+            if key in bucket["_LIST_OF_COUNTERS_"]:
                 bucket[key] = 0
             else:
                 bucket[key] = -999
@@ -72,8 +74,8 @@ def clear_bucket(bucket:dict) -> None:
 # Create a single bucket (dictionary) that will eventually be used to fill
 # the overall dataset
 ################################################################################
-def create_single_bucket(data:dict) -> dict:
-    """ Creates an bucket dictionary that will be used to collect data and then
+def create_single_bucket(data: dict) -> dict:
+    """Creates an bucket dictionary that will be used to collect data and then
     packed into the the master data dictionary.
 
     Args:
@@ -84,10 +86,10 @@ def create_single_bucket(data:dict) -> dict:
 
     """
 
-    bucket = {k:data[k].copy() for k in data.keys()}
+    bucket = {k: data[k].copy() for k in data.keys()}
     for k in bucket["_LIST_OF_COUNTERS_"]:
         bucket[k] = 0
-        
+
     return bucket
 
 
@@ -95,8 +97,8 @@ def create_single_bucket(data:dict) -> dict:
 # This adds a group in the dictionary, similar to
 # a la CreateBranch in ROOT
 ################################################################################
-def create_group(data:dict, group_name:str, counter:str=None, verbose=False):
-    """ Adds a group in the dictionary
+def create_group(data: dict, group_name: str, counter: str = None, verbose=False):
+    """Adds a group in the dictionary
 
     Args:
         data (dict): Dictionary to which the group will be added
@@ -108,17 +110,19 @@ def create_group(data:dict, group_name:str, counter:str=None, verbose=False):
     """
     # check that group_name isn't in protected_names
     if group_name in constants.protected_names:
-        raise InputError(f"{group_name} is protected, please choose a different group name!")
-    
+        raise InputError(
+            f"{group_name} is protected, please choose a different group name!"
+        )
+
     # Check for slashes in the group name. We can't have them.
-    if '/' in group_name: 
-        new_group_name = group_name.replace('/','-')
+    if "/" in group_name:
+        new_group_name = group_name.replace("/", "-")
         print("----------------------------------------------------")
         print(f"Slashes / are not allowed in group names")
         print(f"Replacing / with - in group name {group_name}")
         print(f"The new name will be {new_group_name}")
         print("----------------------------------------------------")
-        group_name = new_group_name 
+        group_name = new_group_name
 
     # Change name of variable, just to keep code more understandable
     counter_name = counter
@@ -126,22 +130,21 @@ def create_group(data:dict, group_name:str, counter:str=None, verbose=False):
     # Create a counter_name if the user has not specified one
     if counter_name is None:
         print("----------------------------------------------------")
-        print(
-            f"There is no counter to go with group \033[1m{group_name}\033[0m")
+        print(f"There is no counter to go with group \033[1m{group_name}\033[0m")
         print("Are you sure that's what you want?")
         counter_name = f"N_{group_name}"
         print(f"Creating a counter called \033[1m{counter_name}\033[0m")
         print("-----------------------------------------------------")
 
     # Check for slashes in the counter name. We can't have them.
-    if '/' in counter_name: 
-        new_counter_name = counter_name.replace('/','-')
+    if "/" in counter_name:
+        new_counter_name = counter_name.replace("/", "-")
         print("----------------------------------------------------")
         print(f"Slashes / are not allowed in counter names")
         print(f"Replacing / with - in counter name {counter_name}")
         print(f"The new name will be {new_counter_name}")
         print("----------------------------------------------------")
-        counter_name = new_counter_name 
+        counter_name = new_counter_name
 
     keys = data.keys()
 
@@ -150,9 +153,8 @@ def create_group(data:dict, group_name:str, counter:str=None, verbose=False):
     if group_name in keys:
         print(f"\033[1m{group_name}\033[0m is already in the dictionary!")
         keyfound = True
-        
-    if keyfound == False:
 
+    if keyfound == False:
         data["_GROUPS_"][group_name] = []
         if verbose:
             print(f"Adding group \033[1m{group_name}\033[0m")
@@ -168,11 +170,15 @@ def create_group(data:dict, group_name:str, counter:str=None, verbose=False):
 
         data[full_counter_name] = []
         if verbose:
-            print(f"Adding a counter for \033[1m{group_name}\033[0m as \033[1m{counter_name}\033[0m")
+            print(
+                f"Adding a counter for \033[1m{group_name}\033[0m as \033[1m{counter_name}\033[0m"
+            )
 
     return 0
 
+
 ################################################################################
+
 
 ################################################################################
 # This adds a dataset to the dictionary, similar to
@@ -180,8 +186,10 @@ def create_group(data:dict, group_name:str, counter:str=None, verbose=False):
 #
 # This can also add a dataset that is not associate with a group
 ################################################################################
-def create_dataset(data:dict, datasets:list, group:str=None, dtype:type=float, verbose=False):
-    """ Adds a dataset to a group in a dictionary. If the group does not exist, it will be created.
+def create_dataset(
+    data: dict, datasets: list, group: str = None, dtype: type = float, verbose=False
+):
+    """Adds a dataset to a group in a dictionary. If the group does not exist, it will be created.
 
     Args:
         data (dict): Dictionary that contains the group
@@ -190,7 +198,7 @@ def create_dataset(data:dict, datasets:list, group:str=None, dtype:type=float, v
 
         group (string): Name of group the dataset will be added to.  None by default
 
-        dtype (type): The data type. None by default - I don't think this is every used 
+        dtype (type): The data type. None by default - I don't think this is every used
 
     Returns:
         -1: If the group is None
@@ -206,35 +214,40 @@ def create_dataset(data:dict, datasets:list, group:str=None, dtype:type=float, v
 
         # check that tempname isn't in protected_names
         if tempname in constants.protected_names:
-            raise InputError(f"{tempname} is protected, please choose a different dataset name!")
-        
-        if '/' in tempname:
-            new_dataset_name = tempname.replace('/','-')
+            raise InputError(
+                f"{tempname} is protected, please choose a different dataset name!"
+            )
+
+        if "/" in tempname:
+            new_dataset_name = tempname.replace("/", "-")
             print("----------------------------------------------------")
             print(f"Slashes / are not allowed in dataset names")
             print(f"Replacing / with - in dataset name {tempname}")
             print(f"The new name will be {new_dataset_name}")
             print("----------------------------------------------------")
-            datasets[i] = new_dataset_name 
+            datasets[i] = new_dataset_name
 
     keys = data.keys()
 
     # These will be entries for the SINGLETON_GROUP, if there is no group passed in
     if group is None:
-
         for dataset in datasets:
             keyfound = False
 
-            if dataset in data["_GROUPS_"]["_SINGLETONS_GROUP_"]:    
+            if dataset in data["_GROUPS_"]["_SINGLETONS_GROUP_"]:
                 print(f"\033[1m{dataset}\033[0m is already in the dictionary!")
                 keyfound = True
 
             if keyfound == False:
                 if verbose:
-                    print(f"Adding dataset \033[1m{dataset}\033[0m to the dictionary as a SINGLETON.")
+                    print(
+                        f"Adding dataset \033[1m{dataset}\033[0m to the dictionary as a SINGLETON."
+                    )
                 data["_GROUPS_"]["_SINGLETONS_GROUP_"].append(dataset)
                 data[dataset] = []
-                data["_MAP_DATASETS_TO_COUNTERS_"][dataset] = "_SINGLETONS_GROUP_/COUNTER"
+                data["_MAP_DATASETS_TO_COUNTERS_"][
+                    dataset
+                ] = "_SINGLETONS_GROUP_/COUNTER"
 
                 data["_MAP_DATASETS_TO_DATA_TYPES_"][dataset] = dtype
 
@@ -242,11 +255,13 @@ def create_dataset(data:dict, datasets:list, group:str=None, dtype:type=float, v
 
     # Put the counter in the dictionary first.
     keyfound = group in data["_GROUPS_"]
-    
+
     # NEED TO FIX THIS PART SO THAT IT FINDS THE RIGHT COUNTER FROM THE GROUP
     if keyfound == False:
         counter = f"N_{group}"
-        warnings.warn(f"Your group, \033[1m{group}\033[0m is not in the dictionary yet! Adding it, along with a counter of \033[1m{counter}\033[0m")
+        warnings.warn(
+            f"Your group, \033[1m{group}\033[0m is not in the dictionary yet! Adding it, along with a counter of \033[1m{counter}\033[0m"
+        )
         create_group(data, group, counter=counter)
 
     for dataset in datasets:
@@ -255,15 +270,21 @@ def create_dataset(data:dict, datasets:list, group:str=None, dtype:type=float, v
 
         # check that tempname isn't in protected_names
         if name in constants.protected_names:
-            raise InputError(f"{name} is protected, please choose a different dataset or group name!")
-        
+            raise InputError(
+                f"{name} is protected, please choose a different dataset or group name!"
+            )
+
         if name in keys:
-            warnings.warn(f"\033[1m{name}\033[0m is already in the dictionary! Skipping!!!")
+            warnings.warn(
+                f"\033[1m{name}\033[0m is already in the dictionary! Skipping!!!"
+            )
             keyfound = True
 
         if keyfound == False:
             if verbose:
-                print(f"Adding dataset \033[1m{dataset}\033[0m to the dictionary under group \033[1m{group}\033[0m.")
+                print(
+                    f"Adding dataset \033[1m{dataset}\033[0m to the dictionary under group \033[1m{group}\033[0m."
+                )
             data[name] = []
             data["_GROUPS_"][group].append(dataset)
 
@@ -276,9 +297,10 @@ def create_dataset(data:dict, datasets:list, group:str=None, dtype:type=float, v
 
     return 0
 
+
 ###############################################################################
-def add_meta(data:dict, name:str, meta_data:list):
-    '''
+def add_meta(data: dict, name: str, meta_data: list):
+    """
     Create metadata for a group (or singleton) and add it to data
 
     Args:
@@ -286,18 +308,28 @@ def add_meta(data:dict, name:str, meta_data:list):
         name (str): name of either a group, singleton, or dataset the metadata corresponds to.
                     if passing a dataset name, make sure it is the full path (group/dataset)!
         meta_data (list): list of metadata to write to that group/dataset/singleton
-    '''
+    """
 
-    if name in data['_META_'].keys():
-        warnings.warn(f'This name {name} already has metadata in the hepfile data, skipping!')
+    if name in data["_META_"].keys():
+        warnings.warn(
+            f"This name {name} already has metadata in the hepfile data, skipping!"
+        )
         return
-        
-    data['_META_'][name] = meta_data # empty list for metadata
-    
+
+    data["_META_"][name] = meta_data  # empty list for metadata
+
+
 ################################################################################
-def pack(data:dict, bucket:dict, AUTO_SET_COUNTER:bool=True, EMPTY_OUT_BUCKET:bool=True, STRICT_CHECKING:bool=False, verbose:bool=False):
-    """ Takes the data from an bucket and packs it into the data dictionary, 
-    intelligently, so that it can be stored and extracted efficiently. 
+def pack(
+    data: dict,
+    bucket: dict,
+    AUTO_SET_COUNTER: bool = True,
+    EMPTY_OUT_BUCKET: bool = True,
+    STRICT_CHECKING: bool = False,
+    verbose: bool = False,
+):
+    """Takes the data from an bucket and packs it into the data dictionary,
+    intelligently, so that it can be stored and extracted efficiently.
     (This is analagous to the ROOT TTree::Fill() member function).
 
     Args:
@@ -307,8 +339,8 @@ def pack(data:dict, bucket:dict, AUTO_SET_COUNTER:bool=True, EMPTY_OUT_BUCKET:bo
 
         EMPTY_OUT_BUCKET (bool): If this is `True` then empty out the `bucket`
                                 container in preparation for the next iteration. We used to ask the users to do
-                                this "by hand" but now do it automatically by default. We allow the user to 
-                                not do this, if they are running some sort of debugging. 
+                                this "by hand" but now do it automatically by default. We allow the user to
+                                not do this, if they are running some sort of debugging.
 
     """
 
@@ -316,14 +348,13 @@ def pack(data:dict, bucket:dict, AUTO_SET_COUNTER:bool=True, EMPTY_OUT_BUCKET:bo
     # value of that counter
     # This is all done in bucket
     if AUTO_SET_COUNTER:
-        for group in data['_GROUPS_']:
-
+        for group in data["_GROUPS_"]:
             if verbose:
                 print(f"group: {group}")
 
-            datasets = data['_GROUPS_'][group]
-            counter = data['_MAP_DATASETS_TO_COUNTERS_'][group]
-            if counter == '_SINGLETONS_GROUP_/COUNTER':
+            datasets = data["_GROUPS_"][group]
+            counter = data["_MAP_DATASETS_TO_COUNTERS_"][group]
+            if counter == "_SINGLETONS_GROUP_/COUNTER":
                 continue
 
             # Here we will calculate the values for the counters, based
@@ -355,22 +386,25 @@ def pack(data:dict, bucket:dict, AUTO_SET_COUNTER:bool=True, EMPTY_OUT_BUCKET:bo
                         elif counter_value != temp_counter_value:
                             # In this case, we found two groups of different length!
                             # Print this to help the user identify their error
-                            err = ''
+                            err = ""
                             for tempd in datasets:
                                 temp_full_dataset_name = group + "/" + tempd
                                 # Don't worry about the dataset
                                 if counter == temp_full_dataset_name:
                                     continue
-                                err += f"{tempd}: {len(bucket[temp_full_dataset_name])}\n"
+                                err += (
+                                    f"{tempd}: {len(bucket[temp_full_dataset_name])}\n"
+                                )
 
                             # Raise an exception for the external program to catch.
-                            raise DatasetSizeDiscrepancy(f"Oh no!!!! Two datasets in group {group} have different sizes! {err}")
-                            
+                            raise DatasetSizeDiscrepancy(
+                                f"Oh no!!!! Two datasets in group {group} have different sizes! {err}"
+                            )
+
     # Then pack the bucket into the data
     keys = list(bucket.keys())
 
     for key in keys:
-
         if (
             key == "_MAP_DATASETS_TO_COUNTERS_"
             or key == "_GROUPS_"
@@ -394,8 +428,10 @@ def pack(data:dict, bucket:dict, AUTO_SET_COUNTER:bool=True, EMPTY_OUT_BUCKET:bo
             # This is for counters and SINGLETONS
             if key in data["_GROUPS_"]["_SINGLETONS_GROUP_"]:
                 if bucket[key] == None:
-                    raise MissingSingletonValue(f"\n\033[1m{key}\033[0m is part of the SINGLETON group and is expected to have a value for each bucket. However it is None!")
-                    
+                    raise MissingSingletonValue(
+                        f"\n\033[1m{key}\033[0m is part of the SINGLETON group and is expected to have a value for each bucket. However it is None!"
+                    )
+
                 # Append the single value from the singletons
                 else:
                     data[key].append(bucket[key])
@@ -409,11 +445,12 @@ def pack(data:dict, bucket:dict, AUTO_SET_COUNTER:bool=True, EMPTY_OUT_BUCKET:bo
 
     return 0
 
+
 ################################################################################
 
 
-def _convert_list_and_key_to_string_data(datalist:list[any], key:str) -> str:
-    """ Converts data dictionary to a string
+def _convert_list_and_key_to_string_data(datalist: list[any], key: str) -> str:
+    """Converts data dictionary to a string
 
     Args:
         datalist (list): A list to be saved as a string.
@@ -440,9 +477,10 @@ def _convert_list_and_key_to_string_data(datalist:list[any], key:str) -> str:
 
 ################################################################################
 
+
 ################################################################################
-def _convert_dict_to_string_data(dictionary:dict) -> str:
-    """ Converts data dictionary to a string
+def _convert_dict_to_string_data(dictionary: dict) -> str:
+    """Converts data dictionary to a string
 
     Args:
         dictionary (dict): Dictionary to be converted to a string
@@ -468,17 +506,22 @@ def _convert_dict_to_string_data(dictionary:dict) -> str:
 ################################################################################
 # This function writes default attributes and metadata to a file.
 ################################################################################
-def write_file_metadata(filename:str, mydict:dict={}, write_default_values:bool=True, append:bool=True) -> h5.File:
-    """ Writes file metadata in the attributes of an HDF5 file
+def write_file_metadata(
+    filename: str,
+    mydict: dict = {},
+    write_default_values: bool = True,
+    append: bool = True,
+) -> h5.File:
+    """Writes file metadata in the attributes of an HDF5 file
 
     Args:
     filename (string): Name of output file
 
     mydict (dictionary): Metadata desired by user
 
-    write_default_values (boolean): True if user wants to write/update the 
-                                        default metadata: date, hepfile version, 
-                                        h5py version, numpy version, and Python 
+    write_default_values (boolean): True if user wants to write/update the
+                                        default metadata: date, hepfile version,
+                                        h5py version, numpy version, and Python
                                         version, false if otherwise.
 
     append (boolean): True if user wants to keep older metadata, false otherwise.
@@ -489,8 +532,7 @@ def write_file_metadata(filename:str, mydict:dict={}, write_default_values:bool=
     """
 
     with h5.File(filename, "a") as hdoutfile:
-
-        #hdoutfile = h5.File(filename, "a")
+        # hdoutfile = h5.File(filename, "a")
 
         non_metadata = ["_NUMBER_OF_BUCKETS_"]
 
@@ -506,24 +548,25 @@ def write_file_metadata(filename:str, mydict:dict={}, write_default_values:bool=
             hdoutfile.attrs["h5py_version"] = h5.__version__
             hdoutfile.attrs["awkward_version"] = ak.__version__
             hdoutfile.attrs["python_version"] = sys.version
-        
+
         for key in mydict:
             hdoutfile.attrs[key] = mydict[key]
 
-        #hdoutfile.close()
+        # hdoutfile.close()
 
     print("Metadata added")
     return hdoutfile
 
+
 ################################################################################
-# This function writes a set of user-defined header information to the 
+# This function writes a set of user-defined header information to the
 # hepfile
 ################################################################################
-def write_file_header(filename:str, mydict:dict) -> h5.File:
-    """ Writes header data to a protected group in an HDF5 file.
+def write_file_header(filename: str, mydict: dict) -> h5.File:
+    """Writes header data to a protected group in an HDF5 file.
 
         If there is already header information, it is overwritten
-        by this function. 
+        by this function.
 
     Args:
     filename (string): Name of file to write to (file should already exist
@@ -537,37 +580,37 @@ def write_file_header(filename:str, mydict:dict) -> h5.File:
     """
 
     if len(mydict.keys()) == 0:
-        raise InputError('Please provide header data to write to the header!')
+        raise InputError("Please provide header data to write to the header!")
 
     with h5.File(filename, "a") as hdoutfile:
-
-        # We are going to write *all* the values as strings. The user can 
+        # We are going to write *all* the values as strings. The user can
         # change the type upon reading, if they so choose.
-        dt = h5.string_dtype(encoding='utf-8')
+        dt = h5.string_dtype(encoding="utf-8")
 
-        # If the _HEADER_ group exists, delete it. 
+        # If the _HEADER_ group exists, delete it.
         header_group = None
-        if '_HEADER_' in hdoutfile:
-            del hdoutfile['_HEADER_']
+        if "_HEADER_" in hdoutfile:
+            del hdoutfile["_HEADER_"]
 
-        header_group = hdoutfile.create_group('_HEADER_')
+        header_group = hdoutfile.create_group("_HEADER_")
 
         for key in mydict.keys():
-            
             values = mydict[key]
 
             # check that values can be converted to a np.array
             try:
                 values = np.array(values)
             except:
-                raise InputError('Unable to convert header data to a numpy array!')
-            
+                raise InputError("Unable to convert header data to a numpy array!")
+
             # If value is just a str, int, or float, make it an array
-            if type(values)==str or type(values)==float or type(values)==int:
+            if type(values) == str or type(values) == float or type(values) == int:
                 values = values.astype(str)
-                    
+
             # When we pass in the values, we need to do it as a list (NOT SURE WHY?)
-            header_group.create_dataset(key,(len(values),1),dtype=dt, data=values.tolist())
+            header_group.create_dataset(
+                key, (len(values), 1), dtype=dt, data=values.tolist()
+            )
 
     # DO WE WANT TO DO THIS HERE?
     hdoutfile.close()
@@ -580,11 +623,17 @@ def write_file_header(filename:str, mydict:dict) -> h5.File:
 
 ################################################################################
 
+
 ################################################################################
 def write_to_file(
-    filename:str, data:dict, comp_type:str=None, comp_opts:list=None, force_single_precision:bool=True,  verbose:bool=False
+    filename: str,
+    data: dict,
+    comp_type: str = None,
+    comp_opts: list = None,
+    force_single_precision: bool = True,
+    verbose: bool = False,
 ) -> h5.File:
-    """ Writes the selected data to an HDF5 file
+    """Writes the selected data to an HDF5 file
 
     Args:
         filename (string): Name of output file
@@ -596,11 +645,11 @@ def write_to_file(
         force_single_precision (boolean): True if data should be written in single precision
 
     Returns:
-        hdoutfile (HDF5): File to which the data has been written 
+        hdoutfile (HDF5): File to which the data has been written
 
     """
 
-    #hdoutfile = h5.File(filename, "w")
+    # hdoutfile = h5.File(filename, "w")
 
     with h5.File(filename, "w") as hdoutfile:
         _GROUPS_ = data["_GROUPS_"].keys()
@@ -631,19 +680,16 @@ def write_to_file(
         )
 
         for group in _GROUPS_:
-            
             hdoutfile.create_group(group)
             hdoutfile[group].attrs["counter"] = np.string_(
                 data["_MAP_DATASETS_TO_COUNTERS_"][group]
             )
 
             if group in data["_META_"].keys():
-                hdoutfile[group].attrs["meta"] = np.string_(
-                    data["_META_"][group]
-                )
-                
+                hdoutfile[group].attrs["meta"] = np.string_(data["_META_"][group])
+
             datasets = data["_GROUPS_"][group]
-        
+
             for dataset in datasets:
                 name = None
                 if group == "_SINGLETONS_GROUP_" and dataset != "COUNTER":
@@ -653,11 +699,11 @@ def write_to_file(
 
                 if verbose is True:
                     print(f"Writing {name} to file")
-                
+
                 x = data[name]
 
-                dataset_dtype = data['_MAP_DATASETS_TO_DATA_TYPES_'][name]
-            
+                dataset_dtype = data["_MAP_DATASETS_TO_DATA_TYPES_"][name]
+
                 if type(x) == list:
                     if verbose is True:
                         print("\tConverting list to array...")
@@ -665,7 +711,6 @@ def write_to_file(
 
                 # Do single precision only, unless specified
                 if force_single_precision == True:
-
                     # different type calls depending on input datastructure
                     if isinstance(x, np.ndarray):
                         dtype = x.dtype
@@ -673,8 +718,10 @@ def write_to_file(
                         dtype = x.type
                     else:
                         dtype = None
-                        warnings.warn('Not a proper data type to convert to single precision, skipping!')
-                
+                        warnings.warn(
+                            "Not a proper data type to convert to single precision, skipping!"
+                        )
+
                     if dtype == np.float64:
                         if verbose is True:
                             print("\tConverting array to single precision...")
@@ -682,12 +729,15 @@ def write_to_file(
                         dataset_dtype = np.float32
 
                 if dataset_dtype is not str:
-
                     if verbose is True:
                         print("\tWriting to file...")
 
                     hdoutfile.create_dataset(
-                        name, data=x, compression=comp_type, compression_opts=comp_opts, dtype=dataset_dtype
+                        name,
+                        data=x,
+                        compression=comp_type,
+                        compression_opts=comp_opts,
+                        dtype=dataset_dtype,
                     )
                 else:
                     # For writing strings, we need to make sure our strings are ascii and not Unicode
@@ -697,17 +747,20 @@ def write_to_file(
                     # https://stackoverflow.com/questions/68500454/can-i-use-h5py-to-write-strings-to-an-hdf5-file-in-one-line-rather-than-looping
                     dataset_dtype = h5.special_dtype(vlen=str)
                     longest_word = len(max(x, key=len))
-                    arr = np.array(x, dtype='S'+str(longest_word))
+                    arr = np.array(x, dtype="S" + str(longest_word))
                     hdoutfile.create_dataset(
-                        name, data=arr, dtype=dataset_dtype,  compression=comp_type, compression_opts=comp_opts)
+                        name,
+                        data=arr,
+                        dtype=dataset_dtype,
+                        compression=comp_type,
+                        compression_opts=comp_opts,
+                    )
 
                 # write the dataset metadata if there is some
-                if name in data['_META_']:
-                    hdoutfile[name].attrs["meta"] = np.string_(
-                    data["_META_"][name]
-                    )
-                
-                if (verbose):
+                if name in data["_META_"]:
+                    hdoutfile[name].attrs["meta"] = np.string_(data["_META_"][name])
+
+                if verbose:
                     print(f"Writing to file {name} as type {str(dataset_dtype)}")
 
         # Get the number of buckets
@@ -721,7 +774,9 @@ def write_to_file(
                 print(f"{countername:<32s} has {ncounter:<12d} entries")
 
             if i > 0 and ncounter != _NUMBER_OF_BUCKETS_:
-                warnings.warn(f"{countername} and {prevcounter} have differing numbers of entries!")
+                warnings.warn(
+                    f"{countername} and {prevcounter} have differing numbers of entries!"
+                )
                 # SHOULD WE EXIT ON THIS?
 
             if _NUMBER_OF_BUCKETS_ < ncounter:
@@ -730,8 +785,8 @@ def write_to_file(
             prevcounter = countername
 
         hdoutfile.attrs["_NUMBER_OF_BUCKETS_"] = _NUMBER_OF_BUCKETS_
-        #hdoutfile.close()
+        # hdoutfile.close()
 
-    write_file_metadata(filename) #, mydict=data['_META_'])
+    write_file_metadata(filename)  # , mydict=data['_META_'])
 
     return hdoutfile
