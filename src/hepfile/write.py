@@ -464,7 +464,6 @@ def _convert_list_and_key_to_string_data(datalist: list[any], key: str) -> str:
                       and this will be the key for the list in that dictionary.
 
     """
-
     stra = np.string_(key)
 
     mydataset = []
@@ -672,6 +671,7 @@ def write_to_file(
         mydataset = _convert_list_and_key_to_string_data(
             data["_GROUPS_"]["_SINGLETONS_GROUP_"], "_SINGLETONSGROUPFORSTORAGE_"
         )
+
         hdoutfile.create_dataset(
             "_SINGLETONSGROUPFORSTORAGE_",
             data=mydataset,

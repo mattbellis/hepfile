@@ -6,6 +6,7 @@ from __future__ import annotations
 
 import warnings
 import awkward as ak
+import numpy as np
 from .write import initialize, create_group, create_dataset, write_to_file
 from .errors import AwkwardStructureError, InputError
 
@@ -41,17 +42,27 @@ def hepfile_to_awkward(
 
     for group in groups:
         for dset in data["_GROUPS_"][group]:
-            dataset = f"{group}/{dset}"
+            if dset in singletons_group:
+                dataset = dset
+            else:
+                dataset = f"{group}/{dset}"
 
             if dataset in list_of_counters:
                 continue
 
-            if dset in singletons_group:
-                if dset in data.keys():  # skip if it isn't in data
-                    ak_arrays[dset] = ak.Array(data[dset])
+            if dataset not in data.keys():
                 continue
 
-            if dataset not in data.keys():
+            if (
+                len(data[dataset]) != 0
+                and isinstance(data[dataset], np.ndarray)
+                and isinstance(data[dataset][0], bytes)
+            ):
+                data[dataset] = np.array([val.decode() for val in data[dataset]])
+
+            if dataset in singletons_group:
+                if dataset in data.keys():  # skip if it isn't in data
+                    ak_arrays[dataset] = ak.Array(data[dataset])
                 continue
 
             nkey = data["_MAP_DATASETS_TO_COUNTERS_"][dataset]

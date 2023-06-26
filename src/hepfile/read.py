@@ -135,9 +135,8 @@ def load(
         ############################################################################
         # Pull out the SINGLETON datasets
         ############################################################################
-        singletons_group = infile["_SINGLETONSGROUPFORSTORAGE_"][
-            0
-        ]  # This is a numpy array of strings
+        # This is a numpy array of strings
+        singletons_group = infile["_SINGLETONSGROUPFORSTORAGE_"][0]
         decoded_string = singletons_group[1].decode()
 
         vals = decoded_string.split("__:__")
@@ -316,7 +315,6 @@ def load(
     groups = {}
 
     groups["_SINGLETONS_GROUP_"] = data["_SINGLETONS_GROUP_"]  # copy over the data
-
     for key in np.unique(allgroups):
         if key in singletons_group:
             continue
