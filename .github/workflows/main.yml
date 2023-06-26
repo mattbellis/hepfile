@@ -37,6 +37,8 @@ jobs:
     - name: Test package
       run: python -m pytest
 
+  update-readme:
+    runs-on: ubuntu-latest
     - name: dynamic pylint badge
       uses: Silleellie/pylint-github-action@v1
       with:
