@@ -57,8 +57,13 @@ if [[ $ERR == 0 ]]; then
     BLACK_RESULT="$(black --target-version=py37 ./src/hepfile/*.py 2>&1)"
     if [[ $verbose = true ]]; then
 	echo "3) Running black"
-	echo -e "\t$BLACK_RESULT" | tr "\n" "*" | sed s/\*/"\n\t"/
-    
+	echo -e "\t$BLACK_RESULT" | tr "\n" "*" | sed s/\*/"\n\t"/    
+    fi
+
+    if [[ $(grep "reformatted" <<< $BLACK_RESULT) ]]; then
+	echo "\n\tBlack was run and reformatted code"
+	echo "\tPlease add new changes using 'git add' before continuing"
+	ERR=1 
     fi
 fi
     

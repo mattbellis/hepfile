@@ -149,6 +149,10 @@ dist/
 *.hdf5
 *.h5
 *.fastq
+*.fits
 
 # no html files that were generated for testing
 html/
+
+# flymake files (from emacs + pylint)
+*flymake*
