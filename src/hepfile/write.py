@@ -556,6 +556,7 @@ def write_file_metadata(
     print("Metadata added")
     return hdoutfile
 
+
 ################################################################################
 # This function writes a set of user-defined header information to the
 # hepfile
