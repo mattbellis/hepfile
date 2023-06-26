@@ -4,7 +4,7 @@
 [![Documentation Status][rtd-badge]][rtd-link]
 
 [![Code style: black][black-badge]][black-link]
-![pylint]()
+![linting: pylint](https://github.com/mattbellis/hepfile/actions/workflows/main.yml/badge.svg)
 
 [![PyPI version][pypi-version]][pypi-link]
 [![PyPI platforms][pypi-platforms]][pypi-link]

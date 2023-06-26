@@ -39,10 +39,10 @@ jobs:
 
   update-readme:
     runs-on: ubuntu-latest
-    - name: dynamic pylint badge
-      uses: Silleellie/pylint-github-action@v1
-      with:
-	package-path: src/hepfile
-	python-version: 3.11
-    	requirements-path: .binder/requirements.txt
-	readme-path: README.md
+    name: pylint run
+    steps:
+    - name: Install pylint
+      run: python -m pip install pylint
+
+    - name: pylint run
+      run: pylint hepfile
