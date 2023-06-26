@@ -462,7 +462,7 @@ def _convert_list_and_key_to_string_data(datalist: list[any], key: str) -> str:
     Returns:
         key (string): We will assume that this will be unpacked as a dictionary,
                       and this will be the key for the list in that dictionary.
-
+        length (int): length of the dataset (needed for writing strings to h5 files)
     """
     stra = np.string_(key)
 
@@ -475,7 +475,7 @@ def _convert_list_and_key_to_string_data(datalist: list[any], key: str) -> str:
             strb += np.string_("__:__")
     mydataset.append([stra, strb])
 
-    return mydataset
+    return mydataset, len(strb)
 
 
 ################################################################################
@@ -494,12 +494,17 @@ def _convert_dict_to_string_data(dictionary: dict) -> str:
     """
 
     mydataset = []
+    longest_str_length = 0
     for key in dictionary:
         astr = np.string_(key)
+        longest_str_length = max(len(astr), longest_str_length)
+
         bstr = np.string_(dictionary[key])
+        longest_str_length = max(len(bstr), longest_str_length)
+
         mydataset.append([astr, bstr])
 
-    return mydataset
+    return mydataset, longest_str_length
 
 
 ################################################################################
@@ -657,25 +662,27 @@ def write_to_file(
         # Convert this to a 2xN array for writing to the hdf5 file.
         # This gives us one small list of informtion if we need to pull out
         # small chunks of data
-        mydataset = _convert_dict_to_string_data(data["_MAP_DATASETS_TO_COUNTERS_"])
+        mydataset, length = _convert_dict_to_string_data(
+            data["_MAP_DATASETS_TO_COUNTERS_"]
+        )
         hdoutfile.create_dataset(
             "_MAP_DATASETS_TO_COUNTERS_",
             data=mydataset,
-            dtype="S256",
+            dtype=f"S{length}",
             compression=comp_type,
             compression_opts=comp_opts,
         )
 
         # Convert this to a 2xN array for writing to the hdf5 file.
         # This has the _GROUPS_ and the datasets in them.
-        mydataset = _convert_list_and_key_to_string_data(
+        mydataset, length = _convert_list_and_key_to_string_data(
             data["_GROUPS_"]["_SINGLETONS_GROUP_"], "_SINGLETONSGROUPFORSTORAGE_"
         )
 
         hdoutfile.create_dataset(
             "_SINGLETONSGROUPFORSTORAGE_",
             data=mydataset,
-            dtype="S256",
+            dtype=f"S{length}",
             compression=comp_type,
             compression_opts=comp_opts,
         )
