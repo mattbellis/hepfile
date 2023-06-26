@@ -1,6 +1,6 @@
-'''
+"""
 Functions to assist in reading and accessing information in hepfiles.
-'''
+"""
 
 from __future__ import annotations
 
@@ -11,6 +11,7 @@ import pandas as pd
 from . import constants
 from .errors import RangeSubsetError, InputError, MetadataNotFound, HeaderNotFound
 from .awkward_tools import hepfile_to_awkward
+
 
 ################################################################################
 def load(
@@ -354,9 +355,9 @@ def load(
 
 ################################################################################
 def calculate_index_from_counters(counters: int) -> int:
-    '''
+    """
     Calculates an index array from the counters
-    '''
+    """
     index = np.add.accumulate(counters) - counters
 
     return index
@@ -420,7 +421,8 @@ def get_nbuckets_in_file(filename: str) -> int:
 
         num_buckets = attr.get("_NUMBER_OF_BUCKETS_")
         return num_buckets
-    
+
+
 ################################################################################
 def get_nbuckets_in_data(data: dict) -> int:
     """Get the number of buckets in the data dictionary.
@@ -438,6 +440,7 @@ def get_nbuckets_in_data(data: dict) -> int:
         )
     num_buckets = data["_NUMBER_OF_BUCKETS_"]
     return num_buckets
+
 
 ################################################################################
 def get_file_metadata(filename: str) -> dict:
@@ -484,7 +487,7 @@ def get_file_header(filename: str, return_type: str = "dict") -> dict:
             raise HeaderNotFound(
                 f"No header data in file {filename}! File has no _HEADER_ group.\n"
             )
-            
+
         header_group = infile["_HEADER_"]
 
         header = {}

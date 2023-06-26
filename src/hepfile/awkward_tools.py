@@ -1,7 +1,7 @@
-'''
+"""
 These are tools to make working with and translating between awkward arrays
 and hepfile data objects easier.
-'''
+"""
 from __future__ import annotations
 
 import warnings
@@ -71,8 +71,8 @@ def hepfile_to_awkward(
         awk = ak.Array(ak_arrays)
     except ValueError:
         warnings.warn(
-            "Cannot convert to an Awkward Array because dict arrays have" +
-            " different lengths! Returning an Awkward Record instead."
+            "Cannot convert to an Awkward Array because dict arrays have"
+            + " different lengths! Returning an Awkward Record instead."
         )
         awk = ak.Record(ak_arrays)
 
@@ -125,7 +125,6 @@ def awkward_to_hepfile(
         counter_key = f"{group}/{counter}"
 
         if len(ak_array[group].fields) == 0:
-
             dtype = _get_awkward_type(ak_array[group])
             create_dataset(data, group, dtype=dtype)
 

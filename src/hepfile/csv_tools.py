@@ -10,6 +10,7 @@ import pandas as pd
 import awkward as ak
 from .awkward_tools import awkward_to_hepfile
 
+
 def csv_to_awkward(
     csvpaths: list[str], common_key: str, group_names: Optional[list] = None
 ) -> ak.Record:

@@ -1,6 +1,6 @@
-'''
+"""
 Functions to assist in writing a hepfile "from scratch"
-'''
+"""
 
 from __future__ import annotations
 
@@ -216,7 +216,6 @@ def create_dataset(
 
     # Check for slashes in the dataset name. We can't have them.
     for i, tempname in enumerate(datasets):
-
         # check that tempname isn't in protected_names
         if tempname in constants.protected_names:
             raise InputError(
@@ -375,10 +374,10 @@ def pack(
                 # Skip any counters
                 if counter == full_dataset_name:
                     continue
-                
+
                 # Grab the size of the first dataset
                 temp_counter_value = len(bucket[full_dataset_name])
-                
+
                 # If we're not STRICT_CHECKING, then use that value for the
                 # counter and break the loop over the datasets, moving on
                 # to the next group.
@@ -399,9 +398,7 @@ def pack(
                         # Don't worry about the dataset
                         if counter == temp_full_dataset_name:
                             continue
-                        err += (
-                            f"{tempd}: {len(bucket[temp_full_dataset_name])}\n"
-                        )
+                        err += f"{tempd}: {len(bucket[temp_full_dataset_name])}\n"
 
                     # Raise an exception for the external program to catch.
                     raise DatasetSizeDiscrepancy(
@@ -412,13 +409,14 @@ def pack(
     keys = list(bucket.keys())
 
     for key in keys:
-        if key in {"_MAP_DATASETS_TO_COUNTERS_",
-                   "_GROUPS_",
-                   "_LIST_OF_COUNTERS_",
-                   "_MAP_DATASETS_TO_DATA_TYPES_",
-                   "_META_",
-                   "_PROTECTED_NAMES_"
-                   }:
+        if key in {
+            "_MAP_DATASETS_TO_COUNTERS_",
+            "_GROUPS_",
+            "_LIST_OF_COUNTERS_",
+            "_MAP_DATASETS_TO_DATA_TYPES_",
+            "_META_",
+            "_PROTECTED_NAMES_",
+        }:
             continue
 
         # The singletons will only have 1 entry per bucket
@@ -426,7 +424,7 @@ def pack(
             data[key].append(1)
             continue
 
-        if isinstance(bucket[key],  list):
+        if isinstance(bucket[key], list):
             value = bucket[key]
             if len(value) > 0:
                 data[key] += value
@@ -510,7 +508,7 @@ def _convert_dict_to_string_data(dictionary: dict) -> str:
 ################################################################################
 def write_file_metadata(
     filename: str,
-    mydict: dict=None,
+    mydict: dict = None,
     write_default_values: bool = True,
     append: bool = True,
 ) -> h5.File:
@@ -558,6 +556,7 @@ def write_file_metadata(
     print("Metadata added")
     return hdoutfile
 
+
 ################################################################################
 # This function writes a set of user-defined header information to the
 # hepfile
@@ -601,7 +600,9 @@ def write_file_header(filename: str, mydict: dict) -> h5.File:
             try:
                 values = np.array(values)
             except Exception as err:
-                raise InputError("Unable to convert header data to a numpy array!") from err
+                raise InputError(
+                    "Unable to convert header data to a numpy array!"
+                ) from err
 
             # If value is just a str, int, or float, make it an array
             if isinstance(values, (str, float, int)):
