@@ -37,7 +37,8 @@ jobs:
     - name: Test package
       run: python -m pytest
 
-    - uses: Silleellie/pylint-github-action@v1
+    - name: dynamic pylint badge
+      uses: Silleellie/pylint-github-action@v1
       with:
 	package-path: src/hepfile
 	python-version: 3.11
