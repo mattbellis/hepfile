@@ -36,3 +36,10 @@ jobs:
 
     - name: Test package
       run: python -m pytest
+
+    - uses: Silleellie/pylint-github-action@v1
+      with:
+	package-path: src/hepfile
+	python-version: 3.11
+    	requirements-path: .binder/requirements.txt
+	readme-path: README.md
