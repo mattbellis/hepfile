@@ -61,8 +61,8 @@ if [[ $ERR == 0 ]]; then
     fi
 
     if [[ $(grep "reformatted" <<< $BLACK_RESULT) ]]; then
-	echo "Black was run and reformatted code"
-	echo "Please add new changes using 'git add' before continuing"
+	echo "\n\tBlack was run and reformatted code"
+	echo "\tPlease add new changes using 'git add' before continuing"
 	ERR=1 
     fi
 fi
