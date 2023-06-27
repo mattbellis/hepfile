@@ -6,15 +6,15 @@ hepfile
 .. include:: introduction.rst
 
 .. toctree::
-   :hidden: 
+   :hidden:
 
-   introduction
-   fundamentals
-   usage
-   examples
-   source
-   citations
-   contributors
+   introduction/introduction
+   fundamentals/fundamentals
+   usage/usage
+   examples/examples
+   source/source
+   citations/citations
+   contributors/contributors
 
 
 

@@ -566,19 +566,20 @@ def write_file_metadata(
 # hepfile
 ################################################################################
 def write_file_header(filename: str, mydict: dict) -> h5.File:
-    """Writes header data to a protected group in an HDF5 file.
+    """
+    Writes header data to a protected group in an HDF5 file.
 
-        If there is already header information, it is overwritten
-        by this function.
+    If there is already header information, it is overwritten
+    by this function.
 
     Args:
-    filename (string): Name of file to write to (file should already exist
-                       and the group will be appended to it.)
+        filename (string): Name of file to write to (file should already exist
+                           and the group will be appended to it.)
 
-    mydict (dictionary): Header data passed in by user
+        mydict (dictionary): Header data passed in by user
 
     Returns:
-    hdoutfile (HDF5): Returns the file with new metadata
+        hdoutfile (HDF5): Returns the file with new metadata
 
     """
 
