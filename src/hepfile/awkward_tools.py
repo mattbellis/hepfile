@@ -223,9 +223,28 @@ def _is_valid_awkward(ak_array: ak.Record):
 
 def _get_awkward_type(ak_array: ak.Record) -> type:
     ndim = ak_array.ndim
-    if ndim > 2 or ndim < 1:
-        raise InputError("Cannot check type with depth > 2 or depth <1")
+    if ndim < 1:
+        raise InputError("Cannot check type with depth < 1")
+    try:
+        if isinstance(ak_array[0], (ak.Record, ak.Array)):
+            arr = ak_array
+            type_str = ak_array.type.content
+            if isinstance(type_str, ak.types.NumpyType):
+                dtype = type_str.primitive
+            else:
+                dtype = str(type_str).rsplit("*", maxsplit=1)[-1].strip()
+        else:
+            arr = np.array(ak_array)
+            dtype = arr.dtype
 
-    if ndim == 1:
-        return type(ak_array[0])
-    return type(ak_array[0][0])
+        if dtype == "string":
+            dtype = np.dtype("<U1")
+
+        np_dtype = np.dtype(dtype)
+        if np_dtype.char == "U":
+            np_dtype = str
+
+    except Exception as exc:
+        raise InputError("Cannot convert input value to a numpy data type!") from exc
+
+    return np_dtype
