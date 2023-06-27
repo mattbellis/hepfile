@@ -27,7 +27,7 @@ if __name__ == '__main__':
     args = p.parse_args()
 
     warnings.simplefilter("ignore") # suppress warnings
-    
+
     # run all tests
     for module in MODULES:
         
