@@ -6,9 +6,19 @@ from __future__ import annotations
 import awkward as ak
 from .awkward_tools import awkward_to_hepfile, _is_valid_awkward
 from .errors import AwkwardStructureError, DictStructureError, InputError
+from .write import (
+    initialize,
+    write_to_file,
+    create_dataset,
+    create_group,
+    pack,
+    create_single_bucket,
+)
 
 
-def dictlike_to_hepfile(dict_list: list[dict], outfile: str, **kwargs) -> ak.Record:
+def dictlike_to_hepfile(
+    dict_list: list[dict], outfile: str = None, how_to_pack="awkward", **kwargs
+) -> ak.Record:
     """
     This wraps on `hepfile.awkward_tools.awkward_to_hepfile`
     and writes a list of dictionaries to a hepfile.
@@ -21,12 +31,26 @@ def dictlike_to_hepfile(dict_list: list[dict], outfile: str, **kwargs) -> ak.Rec
     - data entries in the first level of the dict are singleton objects
 
     Args:
-        dict_list (list): list of dictionaries where each dictionary holds information on an event
+        dict_list (list): list of dictionaries or dataframes where each dictionary/df
+                          holds information on an event
         outfile (str): path to write output hepfile to
+        how_to_pack (str): how to pack the input dataset. Options are 'awkward' or 'classic'.
+                      'awkward' called awkward_to_hepfile, 'classic' does it more traditional.
+                      default is 'awkward'.
         **kwargs: passed to `hepfile.write.write_to_file`
     Returns:
         Dictionary of Awkward Arrays with the data stored in outfile
     """
+
+    # check if it is a list of dictionaries or dataframe
+    if not isinstance(dict_list, list):
+        try:  # try convert from dataframe to list of dictionaries
+            dict_list = [dict_list[key].to_dict() for key in dict_list.to_dict()]
+        except Exception as exc:
+            raise InputError(
+                "Please input either a dataframe or list \
+            of dictionaries"
+            ) from exc
 
     # validate input dictionary
     keys = dict_list[0].keys()
@@ -36,6 +60,68 @@ def dictlike_to_hepfile(dict_list: list[dict], outfile: str, **kwargs) -> ak.Rec
                 "Keys must match across the entire input dictionary list!!!"
             )
 
+    if how_to_pack == "awkward":
+        return _awkward(dict_list, outfile, **kwargs)
+
+    if how_to_pack == "classic":
+        return _classic(dict_list, outfile)
+
+    raise InputError("how_to_pack should either be 'awkward' or 'classic'")
+
+
+def _classic(dict_list: dict, outfile: str) -> ak.Record:
+    """Private method to convert a list of events to a hepfile using the traditional method"""
+
+    if outfile is None:
+        raise InputError(
+            "outfile name can not be None for the classic writing algorithm"
+        )
+
+    # first create the group names and dataset names
+    data = initialize()
+    for group_name in dict_list[0]:
+        temp_dict = dict_list[0]
+
+        if not isinstance(temp_dict[group_name], dict):
+            # this is a singleton
+            if len(temp_dict[group_name]) == 0:
+                dtype = None
+            else:
+                dtype = type(temp_dict[group_name][0])
+            create_dataset(data, group_name, dtype=dtype)
+            continue
+
+        create_group(data, group_name, counter=f"n_{group_name}")
+        for dataset_name in temp_dict[group_name]:
+            if not isinstance(temp_dict[group_name][dataset_name], list):
+                raise DictStructureError("Subdictionaries must be made up of lists!")
+
+            if len(temp_dict[group_name]) == 0:
+                dtype = None
+            else:
+                dtype = type(temp_dict[group_name][dataset_name][0])
+            create_dataset(data, dataset_name, group=group_name, dtype=dtype)
+
+    # now pack the data from each data dictionary
+    for data_dict in dict_list:
+        bucket = create_single_bucket(data)
+        for group in data_dict:
+            if group in bucket["_GROUPS_"]["_SINGLETONS_GROUP_"]:
+                bucket[group] = data_dict[group]
+                continue
+
+            for dataset in data_dict[group]:
+                name = f"{group}/{dataset}"
+                bucket[name] = data_dict[group][dataset]
+        pack(data, bucket)
+
+    # finally write the data out to a file
+    write_to_file(outfile, data)
+    return data
+
+
+def _awkward(dict_list: list[dict], outfile: str = None, **kwargs):
+    """Private method to convert a list of events to a hepfile using awkward arrays"""
     # convert dictionary list to  an awkward array and write to hepfile
     out_ak = ak.Array(dict_list)
 
