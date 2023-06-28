@@ -18,6 +18,7 @@ The following tutorials are examples of basic operation of the hepfile software.
    example_nb/write_hepfiles_from_scratch.ipynb
    example_nb/add_metadata.ipynb
    example_nb/awkward_arrays.ipynb
+   example_nb/histogram_to_hepfile.ipynb
 
 File Conversion Examples
 ^^^^^^^^^^^^^^^^^^^^^^^^
@@ -26,4 +27,5 @@ The following tutorials show examples of converting other file types to a hepfil
 .. toctree::
    example_nb/housing.ipynb
    example_nb/converting_json_to_hepfile.ipynb
+   example_nb/working_with_fasta_files.ipynb
    example_nb/fits_tutorial.ipynb
