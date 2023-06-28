@@ -48,11 +48,10 @@ def test_awkward_to_hepfile():
 
     # convert it to an awkward array (this has already been tested so should be safe)
     awk = hf.awkward_tools.hepfile_to_awkward(data)
-
-    print(awk.muons)
+    
     # now try converting it back to a hepfile
     newdata = hf.awkward_tools.awkward_to_hepfile(awk, write_hepfile=False)
-
+    print(data['_GROUPS_'], newdata['_GROUPS_'])
     # check that they are the same
     assert ak.all(data['METpy'] == newdata['METpy'])
     assert ak.all(data['METpx'] == newdata['METpx'])

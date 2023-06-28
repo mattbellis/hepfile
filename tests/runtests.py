@@ -23,7 +23,9 @@ if __name__ == '__main__':
 
     p = argparse.ArgumentParser()
     p.add_argument('--verbose', dest='verbose', action='store_true')
+    p.add_argument('--debug', dest='debug', action='store_true')
     p.set_defaults(verbose=False)
+    p.set_defaults(debug=False)
     args = p.parse_args()
 
     warnings.simplefilter("ignore") # suppress warnings
@@ -45,5 +47,8 @@ if __name__ == '__main__':
                 if args.verbose:
                     print(f'\t\tRunning {objname}')
 
-                with open(os.devnull, "w") as f, contextlib.redirect_stdout(f):
+                if args.debug:
                     obj()
+                else:
+                    with open(os.devnull, "w") as f, contextlib.redirect_stdout(f):
+                        obj()

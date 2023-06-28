@@ -84,14 +84,20 @@ def _classic(dict_list: dict, outfile: str) -> ak.Record:
 
         if not isinstance(temp_dict[group_name], dict):
             # this is a singleton
-            if len(temp_dict[group_name]) == 0:
+
+            test_list = temp_dict[group_name]
+            if not isinstance(temp_dict[group_name], list):
+                test_list = [temp_dict[group_name]]
+
+            if len(test_list) == 0:
                 dtype = None
             else:
-                dtype = type(temp_dict[group_name][0])
+                dtype = type(test_list[0])
             create_dataset(data, group_name, dtype=dtype)
+
             continue
 
-        create_group(data, group_name, counter=f"n_{group_name}")
+        create_group(data, group_name, counter=f"n{group_name}")
         for dataset_name in temp_dict[group_name]:
             if not isinstance(temp_dict[group_name][dataset_name], list):
                 raise DictStructureError("Subdictionaries must be made up of lists!")
@@ -106,12 +112,14 @@ def _classic(dict_list: dict, outfile: str) -> ak.Record:
     for data_dict in dict_list:
         bucket = create_single_bucket(data)
         for group in data_dict:
+            group_name = group.replace("/", "-")
             if group in bucket["_GROUPS_"]["_SINGLETONS_GROUP_"]:
-                bucket[group] = data_dict[group]
+                bucket[group_name] = data_dict[group]
                 continue
 
             for dataset in data_dict[group]:
-                name = f"{group}/{dataset}"
+                dataset_name = dataset.replace("/", "-")
+                name = f"{group}/{dataset_name}"
                 bucket[name] = data_dict[group][dataset]
         pack(data, bucket)
 

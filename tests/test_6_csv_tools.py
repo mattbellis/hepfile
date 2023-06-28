@@ -19,7 +19,8 @@ def test_csv_to_hepfile():
     group_names = ['People.csv', 'Residences.csv', 'Vehicles.csv']
     for group in group_names:
         assert group in data['_GROUPS_'].keys()
-        assert 'Household ID' in data['_GROUPS_'][group]
+
+    assert 'Household ID' in data['_GROUPS_']['_SINGLETONS_GROUP_']
 
     assert 'Age' in data['_GROUPS_']['People.csv']
 

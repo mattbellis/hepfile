@@ -8,10 +8,10 @@ from typing import Optional
 
 import pandas as pd
 import awkward as ak
-from .awkward_tools import awkward_to_hepfile
+from .dict_tools import dictlike_to_hepfile
 
 
-def csv_to_awkward(
+def csv_to_lists(
     csvpaths: list[str], common_key: str, group_names: Optional[list] = None
 ) -> ak.Record:
     """
@@ -32,29 +32,51 @@ def csv_to_awkward(
     if group_names is None:
         group_names = [os.path.split(file)[-1] for file in csvpaths]
 
-    for_ak = {}
+    # organize into events
+    out = {}
+    all_subkeys = {}
     for infile, group_name in zip(csvpaths, group_names):
         csv = pd.read_csv(infile)
 
+        all_subkeys[group_name] = set(csv.columns)
+
         groups = csv.groupby(common_key)
-        split_groups = []
-        for item in groups.groups:
-            split_groups.append(groups.get_group(item))
+        split_groups = [groups.get_group(item) for item in groups.groups]
 
-        subdict = {}
         for grouping in split_groups:
+            key = grouping[common_key].values[0]
+            if key not in out:
+                out[key] = {}
+
+            if group_name not in out[key]:
+                out[key][group_name] = {}
+
             for colname in grouping.columns:
-                if colname in subdict:
-                    subdict[colname].append(list(grouping[colname].values))
+                if colname == common_key:
+                    to_write = key
+                    out[key][colname] = to_write
                 else:
-                    subdict[colname] = [list(grouping[colname].values)]
+                    to_write = list(grouping[colname].values)
+                    out[key][group_name][colname] = to_write
 
-        for key in subdict:
-            subdict[key] = ak.Array(subdict[key])
+    out = list(out.values())
 
-        for_ak[group_name] = subdict
+    # check that the keys of each event are the same
+    for event in out:
+        missing1 = list(all_subkeys.keys() - event.keys())
+        for key1 in missing1:
+            if key1 != common_key:
+                event[key1] = {}
 
-    return ak.Record(for_ak)
+        for group_name in event:
+            if group_name == common_key:
+                continue
+            missing = list(all_subkeys[group_name] - event[group_name].keys())
+            for key in missing:
+                if key != common_key:
+                    event[group_name][key] = []
+
+    return out
 
 
 def csv_to_hepfile(
@@ -88,8 +110,8 @@ def csv_to_hepfile(
         outpath = csvpaths[0]
         outfile = outpath.replace(".csv", ".h5")
 
-    awk = csv_to_awkward(csvpaths, common_key, group_names=group_names)
+    event_dict = csv_to_lists(csvpaths, common_key, group_names=group_names)
 
-    return outfile, awkward_to_hepfile(
-        awk, outfile=outfile, write_hepfile=write_hepfile
+    return outfile, dictlike_to_hepfile(
+        event_dict, outfile=outfile, how_to_pack="classic", write_hepfile=write_hepfile
     )
