@@ -3,7 +3,9 @@ Functions to help convert dictionaries into hepfiles
 """
 from __future__ import annotations
 
+import warnings
 import awkward as ak
+
 from .awkward_tools import awkward_to_hepfile, _is_valid_awkward
 from .errors import AwkwardStructureError, DictStructureError, InputError
 from .write import (
@@ -37,7 +39,8 @@ def dictlike_to_hepfile(
         how_to_pack (str): how to pack the input dataset. Options are 'awkward' or 'classic'.
                       'awkward' called awkward_to_hepfile, 'classic' does it more traditional.
                       default is 'awkward'.
-        **kwargs: passed to `hepfile.write.write_to_file`
+        **kwargs: passed to `hepfile.write.write_to_file` if 'awkward'. Can only be
+                  'write_to_hepfile' if 'classic'.
     Returns:
         Dictionary of Awkward Arrays with the data stored in outfile
     """
@@ -64,18 +67,28 @@ def dictlike_to_hepfile(
         return _awkward(dict_list, outfile, **kwargs)
 
     if how_to_pack == "classic":
-        return _classic(dict_list, outfile)
+        # check kwargs
+        test = {}
+        test.update(**kwargs)
+        try:
+            test.pop("write_hepfile")
+        except KeyError:
+            pass
+        if len(test) > 0:
+            warnings.warn(
+                "Since how_to_pack=classic, only write_hepfile will be passed along!"
+            )
+
+        return _classic(dict_list, outfile, **kwargs)
 
     raise InputError("how_to_pack should either be 'awkward' or 'classic'")
 
 
-def _classic(dict_list: dict, outfile: str) -> ak.Record:
+def _classic(dict_list: dict, outfile: str = None, write_hepfile=True) -> ak.Record:
     """Private method to convert a list of events to a hepfile using the traditional method"""
 
-    if outfile is None:
-        raise InputError(
-            "outfile name can not be None for the classic writing algorithm"
-        )
+    if outfile is None and write_hepfile:
+        raise InputError("if write_hepfile is True, and outfile name must be provided")
 
     # first create the group names and dataset names
     data = initialize()
@@ -124,7 +137,8 @@ def _classic(dict_list: dict, outfile: str) -> ak.Record:
         pack(data, bucket)
 
     # finally write the data out to a file
-    write_to_file(outfile, data)
+    if write_hepfile:
+        write_to_file(outfile, data)
     return data
 
 
