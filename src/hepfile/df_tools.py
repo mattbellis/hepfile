@@ -55,11 +55,6 @@ def hepfile_to_df(
     for group in groups:
         datasets = data["_GROUPS_"][group]
 
-        if group == "_SINGLETONS_GROUP_":
-            name = "singletons"
-        else:
-            name = group
-
         # put the data for that group in a dictionary
         for_df = {}
         dataset = None
@@ -86,7 +81,7 @@ def hepfile_to_df(
 
         group_df = group_df[group_df.event_num.isin(events)]
 
-        dfs[name] = group_df
+        dfs[group] = group_df
 
     if len(dfs) == 1:
         return dfs[list(dfs.keys())[0]]
@@ -183,9 +178,12 @@ def df_to_hepfile(
     """
 
     out = groupDF_to_eventDF(df_dict, event_num_col)
-
     return dictlike_to_hepfile(
-        out, outfile=outfile, how_to_pack="classic", write_hepfile=write_hepfile
+        out,
+        outfile=outfile,
+        how_to_pack="classic",
+        write_hepfile=write_hepfile,
+        ignore_protected=True,
     )
 
 
@@ -203,7 +201,8 @@ def groupDF_to_eventDF(
     out = {}
     all_subkeys = {}
     for group_name, data in df_dict.items():
-        all_subkeys[group_name] = set(data.columns)
+        if group_name != "_SINGLETONS_GROUP_":
+            all_subkeys[group_name] = set(data.columns)
 
         if event_num_col not in data.columns:
             raise InputError(
@@ -218,12 +217,19 @@ def groupDF_to_eventDF(
             if key not in out:
                 out[key] = {}
 
-            if group_name not in out[key]:
+            if group_name != "_SINGLETONS_GROUP_" and group_name not in out[key]:
                 out[key][group_name] = {}
 
             for colname in grouping.columns:
                 if colname == event_num_col:
                     to_write = key
+                    out[key][colname] = to_write
+                elif group_name == "_SINGLETONS_GROUP_":
+                    vals = grouping[colname].values
+                    if len(vals) == 1:
+                        to_write = vals[0]
+                    else:
+                        to_write = vals
                     out[key][colname] = to_write
                 else:
                     to_write = list(grouping[colname].values)
@@ -239,11 +245,10 @@ def groupDF_to_eventDF(
                 event[key1] = {}
 
         for group_name in event:
-            if group_name == event_num_col:
+            if group_name == event_num_col or not isinstance(event[group_name], dict):
                 continue
             missing = list(all_subkeys[group_name] - event[group_name].keys())
             for key in missing:
                 if key != event_num_col:
                     event[group_name][key] = []
-
     return out

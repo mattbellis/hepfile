@@ -41,7 +41,7 @@ def dictlike_to_hepfile(
                       'awkward' called awkward_to_hepfile, 'classic' does it more traditional.
                       default is 'awkward'.
         **kwargs: passed to `hepfile.write.write_to_file` if 'awkward'. Can only be
-                  'write_to_hepfile' if 'classic'.
+                  'write_to_hepfile' and 'ignore_protected' if 'classic'.
     Returns:
         Dictionary of Awkward Arrays with the data stored in outfile
     """
@@ -75,6 +75,10 @@ def dictlike_to_hepfile(
             test.pop("write_hepfile")
         except KeyError:
             pass
+        try:
+            test.pop("ignore_protected")
+        except KeyError:
+            pass
         if len(test) > 0:
             warnings.warn(
                 "Since how_to_pack=classic, only write_hepfile will be passed along!"
@@ -85,7 +89,9 @@ def dictlike_to_hepfile(
     raise InputError("how_to_pack should either be 'awkward' or 'classic'")
 
 
-def _classic(dict_list: dict, outfile: str = None, write_hepfile=True) -> ak.Record:
+def _classic(
+    dict_list: dict, outfile: str = None, write_hepfile=True, ignore_protected=False
+) -> ak.Record:
     """Private method to convert a list of events to a hepfile using the traditional method"""
 
     if outfile is None and write_hepfile:
@@ -104,7 +110,9 @@ def _classic(dict_list: dict, outfile: str = None, write_hepfile=True) -> ak.Rec
                 test_list = [temp_dict[group_name]]
 
             dtype = _get_dtype(test_list)
-            create_dataset(data, group_name, dtype=dtype)
+            create_dataset(
+                data, group_name, dtype=dtype, ignore_protected=ignore_protected
+            )
 
             continue
 
@@ -127,10 +135,11 @@ def _classic(dict_list: dict, outfile: str = None, write_hepfile=True) -> ak.Rec
                 bucket[group_name] = data_dict[group]
                 continue
 
-            for dataset in data_dict[group]:
-                dataset_name = dataset.replace("/", "-")
-                name = f"{group}/{dataset_name}"
-                bucket[name] = data_dict[group][dataset]
+            if isinstance(data_dict, dict):  # make sure this isn't a singleton
+                for dataset in data_dict[group]:
+                    dataset_name = dataset.replace("/", "-")
+                    name = f"{group}/{dataset_name}"
+                    bucket[name] = data_dict[group][dataset]
         pack(data, bucket)
 
     # finally write the data out to a file
