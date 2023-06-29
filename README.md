@@ -36,26 +36,23 @@
 [rtd-link]:                 https://hepfile.readthedocs.io/en/latest/?badge=latest
 [sk-badge]:                 https://scikit-hep.org/assets/images/Scikit--HEP-Project-blue.svg
 
-For local builds for testing. 
+### User Installation
+For non-developers, `hepfile` can be installed using `pip`:
 ```
-/home/bellis/.local/bin/flit install
+pip install hepfile
 ```
+The documentation for hepfile can be found at hepfile.readthedocs.io.
 
-or 
-
+### Developer Installation
+For local builds for testing follow these steps:
+1. Clone this repo
+2. Navigate to the top-level directory of this project (probably called hepfile)
+3. Run:
 ```
 pip install -e .
 ```
-
-Install the following packages using `pip`:
-
-```
-flit
-autodocs # for sphinx
-```
-
-Then, run the following commands to setup the pre-commit git hook
-to automatically run tests before committing!
+4. Then, run the following commands to setup the pre-commit git hook
+to automatically run our tests before committing!
 ```
 chmod a+x pre-commit-tests.sh
 ln -s ../../pre-commit-tests.sh .git/hooks/pre-commit
