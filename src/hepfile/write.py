@@ -740,7 +740,6 @@ def write_to_file(
                 if dataset_dtype is not str:
                     if verbose is True:
                         print("\tWriting to file...")
-
                     hdoutfile.create_dataset(
                         name,
                         data=x,

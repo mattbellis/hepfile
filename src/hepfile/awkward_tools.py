@@ -146,7 +146,6 @@ def awkward_to_hepfile(
         if len(ak_array[group].fields) == 0:
             dtype = _get_awkward_type(ak_array[group])
             create_dataset(data, group, dtype=dtype)
-            print(group, dtype)
             continue
 
         create_group(data, group, counter=counter)
@@ -155,7 +154,6 @@ def awkward_to_hepfile(
                 dtype = None
             else:
                 dtype = _get_awkward_type(ak_array[group][dataset])
-            print(group, dataset, dtype)
             create_dataset(data, dataset, group=group, dtype=dtype)
 
     # then pack data from the awkward array

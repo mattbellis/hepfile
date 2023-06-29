@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import warnings
 import awkward as ak
+import numpy as np
 
 from .awkward_tools import awkward_to_hepfile, _is_valid_awkward
 from .errors import AwkwardStructureError, DictStructureError, InputError
@@ -99,26 +100,22 @@ def _classic(dict_list: dict, outfile: str = None, write_hepfile=True) -> ak.Rec
             # this is a singleton
 
             test_list = temp_dict[group_name]
-            if not isinstance(temp_dict[group_name], list):
+            if not isinstance(temp_dict[group_name], (list, np.ndarray)):
                 test_list = [temp_dict[group_name]]
 
-            if len(test_list) == 0:
-                dtype = None
-            else:
-                dtype = type(test_list[0])
+            dtype = _get_dtype(test_list)
             create_dataset(data, group_name, dtype=dtype)
 
             continue
 
         create_group(data, group_name, counter=f"n{group_name}")
         for dataset_name in temp_dict[group_name]:
-            if not isinstance(temp_dict[group_name][dataset_name], list):
+            if not isinstance(temp_dict[group_name][dataset_name], (list, np.ndarray)):
                 raise DictStructureError("Subdictionaries must be made up of lists!")
 
-            if len(temp_dict[group_name]) == 0:
-                dtype = None
-            else:
-                dtype = type(temp_dict[group_name][dataset_name][0])
+            test_list = temp_dict[group_name][dataset_name]
+
+            dtype = _get_dtype(test_list)
             create_dataset(data, dataset_name, group=group_name, dtype=dtype)
 
     # now pack the data from each data dictionary
@@ -178,3 +175,15 @@ def append(ak_dict: ak.Record, new_dict: dict) -> ak.Record:
     ak_list = ak.to_list(ak_dict)
     ak_list.append(new_dict)
     return ak.Array(ak_list)
+
+
+def _get_dtype(test: list[any]) -> type:
+    """get the datatype of a list"""
+
+    if not isinstance(test, np.ndarray):
+        test = np.array(test)
+    np_dtype = test.dtype
+    if np_dtype.char == "U":
+        np_dtype = str
+
+    return np_dtype
