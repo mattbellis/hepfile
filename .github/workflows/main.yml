@@ -21,6 +21,10 @@ jobs:
         - ubuntu-latest
         - windows-latest
         - macos-latest
+        exclude:
+        # numpy 1.22 doesn't support python 3.11
+        - python-version: 3.11
+          numpy-version: 1.22
     
     runs-on: ${{ matrix.os }}
     
