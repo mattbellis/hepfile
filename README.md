@@ -1,7 +1,5 @@
-# hepfile
-
 <!-- begin-logo -->
-![](docs/images/hepfile-logo.png)
+<img src=https://github.com/mattbellis/hepfile/blob/main/docs/images/hepfile-logo.png width=50% height=50%>
 <!-- end-logo -->
 
 [![Actions Status][actions-badge]][actions-link]
