@@ -8,14 +8,19 @@ on:
 
 jobs:
   tests:
-    runs-on: [ubuntu-latest, windows-latest, macos-latest]
+
+    runs-on: ${{ matrix.os }}
+
     strategy:
       fail-fast: false
       matrix:
+	os: [ubuntu-latest, windows-latest, macos-latest]
         python-version:
         - 3.9
         - 3.11
-    name: Check Python ${{ matrix.python-version }}
+
+    name: Check OS: ${{ matrix.os  }} with Python ${{ matrix.python-version }}
+
     steps:
     - uses: actions/checkout@v2
       with:
