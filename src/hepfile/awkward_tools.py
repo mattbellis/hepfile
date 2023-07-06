@@ -7,7 +7,14 @@ from __future__ import annotations
 import warnings
 import awkward as ak
 import numpy as np
-from .write import initialize, create_group, create_dataset, write_to_file
+from .write import (
+    initialize,
+    create_group,
+    create_dataset,
+    write_to_file,
+    create_single_bucket,
+    pack,
+)
 from .errors import AwkwardStructureError, InputError
 
 
@@ -131,47 +138,38 @@ def awkward_to_hepfile(
         )
 
     data = initialize()
+    # first create the named groups and datasets
     for group in ak_array.fields:
         counter = f"n{group}"
-        counter_key = f"{group}/{counter}"
 
+        # check for singletons
         if len(ak_array[group].fields) == 0:
             dtype = _get_awkward_type(ak_array[group])
             create_dataset(data, group, dtype=dtype)
-
-            data[group] = ak_array[group]
             continue
 
         create_group(data, group, counter=counter)
-        for i, dataset in enumerate(ak_array[group].fields):
+        for dataset in ak_array[group].fields:
             if len(ak_array[group][dataset][0]) == 0:
                 dtype = None
             else:
                 dtype = _get_awkward_type(ak_array[group][dataset])
-
             create_dataset(data, dataset, group=group, dtype=dtype)
 
-            # check if dataset name has /'s in it
-            if dataset.find("/") >= 0:
-                dataset_name = dataset.replace("/", "-")
-            else:
-                dataset_name = dataset
+    # then pack data from the awkward array
+    for data_dict in ak_array:
+        bucket = create_single_bucket(data)
+        for group in data_dict.fields:
+            if group in bucket["_GROUPS_"]["_SINGLETONS_GROUP_"]:
+                bucket[group] = data_dict[group]
+                continue
 
-            name = f"{group}/{dataset_name}"
-            for data_subset in ak_array[group][dataset]:
-                data[name].append(data_subset)
-                if i == 0:
-                    data[counter_key].append(len(data_subset))
+            for dataset in data_dict[group].fields:
+                name = f"{group}/{dataset}"
+                bucket[name] = data_dict[group][dataset].to_list()
+        pack(data, bucket)
 
-            data[name] = ak.flatten(ak.Array(data[name]))
-
-        data[counter_key] = ak.Array(data[counter_key])
-
-    if len(data["_GROUPS_"]["_SINGLETONS_GROUP_"]) > 1:
-        data["_SINGLETONS_GROUP_/COUNTER"] = [1] * len(
-            data[data["_GROUPS_"]["_SINGLETONS_GROUP_"][1]]
-        )
-
+    # then write it out to a file
     if write_hepfile:
         print("Writing the hdf5 file from the awkward array...")
         write_to_file(outfile, data)

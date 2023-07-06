@@ -16,4 +16,4 @@ from hepfile.write import *
 import hepfile.awkward_tools
 import hepfile.dict_tools
 import hepfile.csv_tools
-import hepfile
+import hepfile.df_tools

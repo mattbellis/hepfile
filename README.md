@@ -1,18 +1,15 @@
-# hepfile
+<!-- begin-logo -->
+<img src=https://github.com/mattbellis/hepfile/blob/main/docs/images/hepfile-logo.png width=35% height=35%>
+<!-- end-logo -->
 
 [![Actions Status][actions-badge]][actions-link]
 [![Documentation Status][rtd-badge]][rtd-link]
-
 [![Code style: black][black-badge]][black-link]
 [![linting: pylint](https://img.shields.io/badge/linting-pylint-yellowgreen)](https://github.com/pylint-dev/pylint)
-
 [![PyPI version][pypi-version]][pypi-link]
 [![PyPI platforms][pypi-platforms]][pypi-link]
-
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/mattbellis/hepfile/HEAD?urlpath=lab/tree/docs/example_nb)
-
 [![DOI](https://zenodo.org/badge/378834559.svg)](https://zenodo.org/badge/latestdoi/378834559)
-
 [![GitHub Discussion][github-discussions-badge]][github-discussions-link]
 [![Gitter][gitter-badge]][gitter-link]
 
@@ -36,26 +33,23 @@
 [rtd-link]:                 https://hepfile.readthedocs.io/en/latest/?badge=latest
 [sk-badge]:                 https://scikit-hep.org/assets/images/Scikit--HEP-Project-blue.svg
 
-For local builds for testing. 
+### User Installation
+For non-developers, `hepfile` can be installed using `pip`:
 ```
-/home/bellis/.local/bin/flit install
+pip install hepfile
 ```
+The documentation for hepfile can be found at hepfile.readthedocs.io.
 
-or 
-
+### Developer Installation
+For local builds for testing follow these steps:
+1. Clone this repo
+2. Navigate to the top-level directory of this project (probably called hepfile)
+3. Run:
 ```
 pip install -e .
 ```
-
-Install the following packages using `pip`:
-
-```
-flit
-autodocs # for sphinx
-```
-
-Then, run the following commands to setup the pre-commit git hook
-to automatically run tests before committing!
+4. Then, run the following commands to setup the pre-commit git hook
+to automatically run our tests before committing!
 ```
 chmod a+x pre-commit-tests.sh
 ln -s ../../pre-commit-tests.sh .git/hooks/pre-commit

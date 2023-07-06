@@ -3,7 +3,10 @@ Functions to help convert dictionaries into hepfiles
 """
 from __future__ import annotations
 
+import warnings
 import awkward as ak
+import numpy as np
+
 from .awkward_tools import awkward_to_hepfile, _is_valid_awkward
 from .errors import AwkwardStructureError, DictStructureError, InputError
 from .write import (
@@ -37,7 +40,8 @@ def dictlike_to_hepfile(
         how_to_pack (str): how to pack the input dataset. Options are 'awkward' or 'classic'.
                       'awkward' called awkward_to_hepfile, 'classic' does it more traditional.
                       default is 'awkward'.
-        **kwargs: passed to `hepfile.write.write_to_file`
+        **kwargs: passed to `hepfile.write.write_to_file` if 'awkward'. Can only be
+                  'write_to_hepfile' and 'ignore_protected' if 'classic'.
     Returns:
         Dictionary of Awkward Arrays with the data stored in outfile
     """
@@ -64,18 +68,34 @@ def dictlike_to_hepfile(
         return _awkward(dict_list, outfile, **kwargs)
 
     if how_to_pack == "classic":
-        return _classic(dict_list, outfile)
+        # check kwargs
+        test = {}
+        test.update(**kwargs)
+        try:
+            test.pop("write_hepfile")
+        except KeyError:
+            pass
+        try:
+            test.pop("ignore_protected")
+        except KeyError:
+            pass
+        if len(test) > 0:
+            warnings.warn(
+                "Since how_to_pack=classic, only write_hepfile will be passed along!"
+            )
+
+        return _classic(dict_list, outfile, **kwargs)
 
     raise InputError("how_to_pack should either be 'awkward' or 'classic'")
 
 
-def _classic(dict_list: dict, outfile: str) -> ak.Record:
+def _classic(
+    dict_list: dict, outfile: str = None, write_hepfile=True, ignore_protected=False
+) -> ak.Record:
     """Private method to convert a list of events to a hepfile using the traditional method"""
 
-    if outfile is None:
-        raise InputError(
-            "outfile name can not be None for the classic writing algorithm"
-        )
+    if outfile is None and write_hepfile:
+        raise InputError("if write_hepfile is True, and outfile name must be provided")
 
     # first create the group names and dataset names
     data = initialize()
@@ -84,39 +104,47 @@ def _classic(dict_list: dict, outfile: str) -> ak.Record:
 
         if not isinstance(temp_dict[group_name], dict):
             # this is a singleton
-            if len(temp_dict[group_name]) == 0:
-                dtype = None
-            else:
-                dtype = type(temp_dict[group_name][0])
-            create_dataset(data, group_name, dtype=dtype)
+
+            test_list = temp_dict[group_name]
+            if not isinstance(temp_dict[group_name], (list, np.ndarray)):
+                test_list = [temp_dict[group_name]]
+
+            dtype = _get_dtype(test_list)
+            create_dataset(
+                data, group_name, dtype=dtype, ignore_protected=ignore_protected
+            )
+
             continue
 
-        create_group(data, group_name, counter=f"n_{group_name}")
+        create_group(data, group_name, counter=f"n{group_name}")
         for dataset_name in temp_dict[group_name]:
-            if not isinstance(temp_dict[group_name][dataset_name], list):
+            if not isinstance(temp_dict[group_name][dataset_name], (list, np.ndarray)):
                 raise DictStructureError("Subdictionaries must be made up of lists!")
 
-            if len(temp_dict[group_name]) == 0:
-                dtype = None
-            else:
-                dtype = type(temp_dict[group_name][dataset_name][0])
+            test_list = temp_dict[group_name][dataset_name]
+
+            dtype = _get_dtype(test_list)
             create_dataset(data, dataset_name, group=group_name, dtype=dtype)
 
     # now pack the data from each data dictionary
     for data_dict in dict_list:
         bucket = create_single_bucket(data)
         for group in data_dict:
+            group_name = group.replace("/", "-")
             if group in bucket["_GROUPS_"]["_SINGLETONS_GROUP_"]:
-                bucket[group] = data_dict[group]
+                bucket[group_name] = data_dict[group]
                 continue
 
-            for dataset in data_dict[group]:
-                name = f"{group}/{dataset}"
-                bucket[name] = data_dict[group][dataset]
+            if isinstance(data_dict, dict):  # make sure this isn't a singleton
+                for dataset in data_dict[group]:
+                    dataset_name = dataset.replace("/", "-")
+                    name = f"{group}/{dataset_name}"
+                    bucket[name] = data_dict[group][dataset]
         pack(data, bucket)
 
     # finally write the data out to a file
-    write_to_file(outfile, data)
+    if write_hepfile:
+        write_to_file(outfile, data)
     return data
 
 
@@ -156,3 +184,15 @@ def append(ak_dict: ak.Record, new_dict: dict) -> ak.Record:
     ak_list = ak.to_list(ak_dict)
     ak_list.append(new_dict)
     return ak.Array(ak_list)
+
+
+def _get_dtype(test: list[any]) -> type:
+    """get the datatype of a list"""
+
+    if not isinstance(test, np.ndarray):
+        test = np.array(test)
+    np_dtype = test.dtype
+    if np_dtype.char == "U":
+        np_dtype = str
+
+    return np_dtype
