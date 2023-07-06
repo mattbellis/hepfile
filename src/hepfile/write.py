@@ -435,8 +435,10 @@ def pack(
             data[key].append(1)
             continue
 
-        if isinstance(bucket[key], list):
+        if isinstance(bucket[key], (list, np.ndarray)):
             value = bucket[key]
+            if isinstance(value, np.ndarray):
+                value = value.tolist()
             if len(value) > 0:
                 data[key] += value
         else:
@@ -747,7 +749,7 @@ def write_to_file(
                             print("\tConverting array to single precision...")
                         x = x.astype(np.float32)
                         dataset_dtype = np.float32
-
+        
                 if dataset_dtype is not str:
                     if verbose is True:
                         print("\tWriting to file...")
