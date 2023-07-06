@@ -749,7 +749,7 @@ def write_to_file(
                             print("\tConverting array to single precision...")
                         x = x.astype(np.float32)
                         dataset_dtype = np.float32
-        
+
                 if dataset_dtype is not str:
                     if verbose is True:
                         print("\tWriting to file...")
