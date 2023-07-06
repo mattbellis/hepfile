@@ -1,20 +1,15 @@
 <!-- begin-logo -->
-<img src=https://github.com/mattbellis/hepfile/blob/main/docs/images/hepfile-logo.png width=50% height=50%>
+<img src=https://github.com/mattbellis/hepfile/blob/main/docs/images/hepfile-logo.png width=35% height=35%>
 <!-- end-logo -->
 
 [![Actions Status][actions-badge]][actions-link]
 [![Documentation Status][rtd-badge]][rtd-link]
-
 [![Code style: black][black-badge]][black-link]
 [![linting: pylint](https://img.shields.io/badge/linting-pylint-yellowgreen)](https://github.com/pylint-dev/pylint)
-
 [![PyPI version][pypi-version]][pypi-link]
 [![PyPI platforms][pypi-platforms]][pypi-link]
-
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/mattbellis/hepfile/HEAD?urlpath=lab/tree/docs/example_nb)
-
 [![DOI](https://zenodo.org/badge/378834559.svg)](https://zenodo.org/badge/latestdoi/378834559)
-
 [![GitHub Discussion][github-discussions-badge]][github-discussions-link]
 [![Gitter][gitter-badge]][gitter-link]
 
