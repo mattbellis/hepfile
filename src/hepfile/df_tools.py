@@ -1,6 +1,7 @@
 """
 Tools to work with Pandas DataFrames and Hepfile data
 """
+from __future__ import annotations
 
 import pandas as pd
 import awkward as ak
