@@ -435,8 +435,10 @@ def pack(
             data[key].append(1)
             continue
 
-        if isinstance(bucket[key], list):
+        if isinstance(bucket[key], (list, np.ndarray)):
             value = bucket[key]
+            if isinstance(value, np.ndarray):
+                value = value.tolist()
             if len(value) > 0:
                 data[key] += value
         else:

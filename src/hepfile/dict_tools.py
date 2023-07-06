@@ -193,6 +193,5 @@ def _get_dtype(test: list[any]) -> type:
         test = np.array(test)
     np_dtype = test.dtype
     if np_dtype.char == "U":
-        np_dtype = str
-
-    return np_dtype
+        return str
+    return np_dtype.type

@@ -6,7 +6,7 @@ import pandas as pd
 import awkward as ak
 import hepfile as hf
 
-def io(return_type='classic'):
+def io(return_type='dictionary'):
     '''
     wrapper to load in data for testing
 
@@ -16,10 +16,7 @@ def io(return_type='classic'):
         either dict or awkward array of data
     '''
 
-    if return_type == 'awkward':
-        data, _ = hf.load('FOR_TESTS.hdf5', return_awkward=True)
-    else:
-        data, _ =  hf.load('FOR_TESTS.hdf5')
+    data, _ =  hf.load('FOR_TESTS.hdf5', return_type=return_type)
     return data
         
 def test_hepfile_to_df():
