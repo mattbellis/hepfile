@@ -10,6 +10,7 @@ Thank you!
 Contributors include:
 
 - Matt Bellis
+- Noah Franz
 - Matt Dreyer
 - Willow Hagen
 - Ryan Mikulec
