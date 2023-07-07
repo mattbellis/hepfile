@@ -43,6 +43,20 @@ body:
     label: "Other Relevant Package Versions"
     description: "Please list any other relevant package versions (ex. awkward, pandas, etc.)"
 
+- type: dropdown
+    id: where
+    attributes:
+      label: "Which documentation?"
+      description: |
+        In the [documentation website](https://hepfile.readthedocs.io), the [GitHub README.md](https://github.com/mattbellis/hepfile/blob/main/README.md), or Python docstrings?
+      options:
+        - Documentation website
+        - GitHub README.md
+        - Python docstrings
+        - Other (please explain)?
+    validations:
+      required: true
+
 - type: textarea
   id: description
   attributes:
