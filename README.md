@@ -1,23 +1,19 @@
-# hepfile
+<!-- begin-logo -->
+<img src=https://github.com/mattbellis/hepfile/blob/main/docs/images/hepfile-logo.png width=35% height=35%>
+<!-- end-logo -->
 
 [![Actions Status][actions-badge]][actions-link]
 [![Documentation Status][rtd-badge]][rtd-link]
-
-[![Code style: black][black-badge]][black-link]
-[![linting: pylint](https://img.shields.io/badge/linting-pylint-yellowgreen)](https://github.com/pylint-dev/pylint)
-
 [![PyPI version][pypi-version]][pypi-link]
 [![PyPI platforms][pypi-platforms]][pypi-link]
-
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/mattbellis/hepfile/HEAD?urlpath=lab/tree/docs/example_nb)
-
-[![DOI](https://zenodo.org/badge/378834559.svg)](https://zenodo.org/badge/latestdoi/378834559)
-
 [![GitHub Discussion][github-discussions-badge]][github-discussions-link]
+
+[![codecov](https://codecov.io/gh/mattbellis/hepfile/branch/main/graph/badge.svg?token=4OADJIUAPU)](https://codecov.io/gh/mattbellis/hepfile)
+[![Code style: black][black-badge]][black-link]
+[![linting: pylint](https://img.shields.io/badge/linting-pylint-yellowgreen)](https://github.com/pylint-dev/pylint)
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/mattbellis/hepfile/HEAD?urlpath=lab/tree/docs/examples/example_nb)
+[![DOI](https://zenodo.org/badge/378834559.svg)](https://zenodo.org/badge/latestdoi/378834559)
 [![Gitter][gitter-badge]][gitter-link]
-
-
-
 
 [actions-badge]:            https://github.com/mattbellis/hepfile/workflows/CI/badge.svg
 [actions-link]:             https://github.com/mattbellis/hepfile/actions

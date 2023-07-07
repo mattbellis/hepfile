@@ -1,6 +1,7 @@
 """
 Tools to work with Pandas DataFrames and Hepfile data
 """
+from __future__ import annotations
 
 import pandas as pd
 import awkward as ak
@@ -59,12 +60,14 @@ def hepfile_to_df(
         for_df = {}
         dataset = None
         for dataset in datasets:
-            if f"{group}/{dataset}" in counters:
+            name = f"{group}/{dataset}"
+            if name in counters:
                 continue
-            if group == "_SINGLETONS_GROUP_":
+            if group == "_SINGLETONS_GROUP_" and dataset in data:
                 for_df[dataset] = data[dataset]
             else:
-                for_df[dataset] = data[f"{group}/{dataset}"]
+                if name in data:
+                    for_df[dataset] = data[name]
 
         # compute the event numbers
         counter_name = data["_MAP_DATASETS_TO_COUNTERS_"][group]
