@@ -3,11 +3,11 @@ Functions to help convert dictionaries into hepfiles
 """
 from __future__ import annotations
 
+import sys
 import warnings
 import awkward as ak
 import numpy as np
 
-from .awkward_tools import awkward_to_hepfile, _is_valid_awkward
 from .errors import AwkwardStructureError, DictStructureError, InputError
 from .write import (
     initialize,
@@ -55,6 +55,12 @@ def dictlike_to_hepfile(
                 "Please input either a dataframe or list \
             of dictionaries"
             ) from exc
+
+    if how_to_pack == "awkward" and "awkward" not in sys.modules:
+        raise InputError(
+            'Packing using awkward arrays is not supported with this \
+                          installation! Please reinstall with "pip install hepfile[awkward]"'
+        )
 
     # validate input dictionary
     keys = dict_list[0].keys()
@@ -150,6 +156,8 @@ def _classic(
 
 def _awkward(dict_list: list[dict], outfile: str = None, **kwargs):
     """Private method to convert a list of events to a hepfile using awkward arrays"""
+    from .awkward_tools import awkward_to_hepfile, _is_valid_awkward
+
     # convert dictionary list to  an awkward array and write to hepfile
     out_ak = ak.Array(dict_list)
 
@@ -172,6 +180,13 @@ def append(ak_dict: ak.Record, new_dict: dict) -> ak.Record:
     Return:
         Awkward Record of awkward arrays with the new_dict appended
     """
+    if "awkward" in sys.modules:
+        from .awkward_tools import awkward_to_hepfile, _is_valid_awkward
+    else:
+        raise Exception(
+            'You can not use this tool with the current installation \
+        of hepfile. Please reinstall with "pip install hepfile[awkward]"'
+        )
 
     _is_valid_awkward(ak_dict)
 

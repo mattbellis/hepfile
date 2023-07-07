@@ -1,5 +1,6 @@
 import argparse
 import os
+import sys
 import contextlib
 import warnings
 from inspect import getmembers, isfunction
@@ -7,19 +8,46 @@ from inspect import getmembers, isfunction
 import test_1_package
 import test_2_read
 import test_3_write
-import test_4_awkward_tools
-import test_5_dict_tools
-import test_6_csv_tools
-import test_7_df_tools
 
-MODULES = [test_1_package,
-           test_2_read,
-           test_3_write,
-           test_4_awkward_tools,
-           test_5_dict_tools,
-           test_6_csv_tools,
-           test_7_df_tools
-           ]
+if 'awkward' in sys.modules:
+    import test_4_awkward_tools
+
+import test_5_dict_tools
+
+if 'pandas' in sys.modules:
+    import test_6_csv_tools
+    import test_7_df_tools
+
+if 'pandas' in sys.modules and 'awkward' in sys.modules:
+    MODULES = [test_1_package,
+               test_2_read,
+               test_3_write,
+               test_4_awkward_tools,
+               test_5_dict_tools,
+               test_6_csv_tools,
+               test_7_df_tools
+               ]
+elif 'awkward' not in sys.modules and 'pandas' in sys.modules:
+    MODULES = [test_1_package,
+               test_2_read,
+               test_3_write,
+               test_5_dict_tools,
+               test_6_csv_tools,
+               test_7_df_tools
+               ]
+elif 'awkward' in sys.modules and 'pandas' not in sys.modules:
+    MODULES = [test_1_package,
+               test_2_read,
+               test_3_write,
+               test_4_awkward_tools,
+               test_5_dict_tools,
+               ]
+else:
+    MODULES = [test_1_package,
+               test_2_read,
+               test_3_write,
+               test_5_dict_tools,
+               ]
 
 if __name__ == '__main__':
 
@@ -34,9 +62,15 @@ if __name__ == '__main__':
 
     # run all tests
     for module in MODULES:
+
+        name = module.__name__
+
+        if name == 'test_6_csv_tools' or name == 'test_7_df_tools':
+            if 'pandas' not in sys.modules:
+                continue
         
         if args.verbose:
-            print(f'\tRunning {module.__name__}')
+            print(f'\tRunning {name}')
 
         for func in getmembers(module, isfunction):
 

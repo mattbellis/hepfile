@@ -6,6 +6,7 @@ Entries in Parallel-file.
 See hepfile.readthedocs.io for detailed documentation!
 """
 from __future__ import annotations
+import sys
 
 from ._version import __version__
 
@@ -13,7 +14,11 @@ __all__ = ("__version__",)
 
 from hepfile.read import *
 from hepfile.write import *
-import hepfile.awkward_tools
 import hepfile.dict_tools
-import hepfile.csv_tools
-import hepfile.df_tools
+
+if "awkward" in sys.modules:
+    import hepfile.awkward_tools
+
+if "pandas" in sys.modules:
+    import hepfile.df_tools
+    import hepfile.csv_tools
