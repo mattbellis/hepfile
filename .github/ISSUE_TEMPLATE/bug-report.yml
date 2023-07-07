@@ -31,12 +31,14 @@ body:
   validations:
     required: true
 
-- type: input
+- type: textarea
+  id: other-packages
   attributes:
     label: "Other Relevant Package Versions"
     description: "Please list any other relevant package versions (ex. awkward, pandas, etc.)"
 
-- type: input
+- type: textarea
+  id: description
   attributes:
     label: "Describe the Bug"
     description: |

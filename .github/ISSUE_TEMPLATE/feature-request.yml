@@ -17,7 +17,8 @@ body:
   validations:
     required: true
     
-- type: input
+- type: textarea
+  id: description
   attributes:
     label: "Describe the Feature"
     description: |
