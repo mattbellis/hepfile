@@ -13,7 +13,6 @@ body:
 - type: input
   attributes:
     label: "Version of `hepfile`"
-    description: |
     placeholder: "XX.YY.ZZ"
   validations:
     required: true
