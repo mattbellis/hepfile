@@ -13,11 +13,6 @@ body:
 - type: input
   attributes:
     label: "Version of `hepfile`"
-    description: |
-    ```python
-    import hepfile as hf
-    print(hf.__version__)
-    ```
     placeholder: "XX.YY.ZZ"
   validations:
     required: true
@@ -25,11 +20,6 @@ body:
 - type: input
   attributes:
     label: "Version of `NumPy`"
-    description: |
-    ```python
-    import numpy as np
-    print(np.__version__)
-    ```
     placeholder: "XX.YY.ZZ"
   validations:
     required: true
@@ -37,11 +27,6 @@ body:
 - type: input
   attributes:
     label: "Version of `h5py`"
-    description: |
-    ```python
-    import h5py
-    print(h5py.__version__)
-    ```
     placeholder: "XX.YY.ZZ"
   validations:
     required: true
