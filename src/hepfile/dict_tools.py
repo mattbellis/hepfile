@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import warnings
 import awkward as ak
+import numpy as np
 
 from .awkward_tools import awkward_to_hepfile, _is_valid_awkward
 from .errors import AwkwardStructureError, DictStructureError, InputError
@@ -40,7 +41,7 @@ def dictlike_to_hepfile(
                       'awkward' called awkward_to_hepfile, 'classic' does it more traditional.
                       default is 'awkward'.
         **kwargs: passed to `hepfile.write.write_to_file` if 'awkward'. Can only be
-                  'write_to_hepfile' if 'classic'.
+                  'write_to_hepfile' and 'ignore_protected' if 'classic'.
     Returns:
         Dictionary of Awkward Arrays with the data stored in outfile
     """
@@ -74,6 +75,10 @@ def dictlike_to_hepfile(
             test.pop("write_hepfile")
         except KeyError:
             pass
+        try:
+            test.pop("ignore_protected")
+        except KeyError:
+            pass
         if len(test) > 0:
             warnings.warn(
                 "Since how_to_pack=classic, only write_hepfile will be passed along!"
@@ -84,7 +89,9 @@ def dictlike_to_hepfile(
     raise InputError("how_to_pack should either be 'awkward' or 'classic'")
 
 
-def _classic(dict_list: dict, outfile: str = None, write_hepfile=True) -> ak.Record:
+def _classic(
+    dict_list: dict, outfile: str = None, write_hepfile=True, ignore_protected=False
+) -> ak.Record:
     """Private method to convert a list of events to a hepfile using the traditional method"""
 
     if outfile is None and write_hepfile:
@@ -99,26 +106,24 @@ def _classic(dict_list: dict, outfile: str = None, write_hepfile=True) -> ak.Rec
             # this is a singleton
 
             test_list = temp_dict[group_name]
-            if not isinstance(temp_dict[group_name], list):
+            if not isinstance(temp_dict[group_name], (list, np.ndarray)):
                 test_list = [temp_dict[group_name]]
 
-            if len(test_list) == 0:
-                dtype = None
-            else:
-                dtype = type(test_list[0])
-            create_dataset(data, group_name, dtype=dtype)
+            dtype = _get_dtype(test_list)
+            create_dataset(
+                data, group_name, dtype=dtype, ignore_protected=ignore_protected
+            )
 
             continue
 
         create_group(data, group_name, counter=f"n{group_name}")
         for dataset_name in temp_dict[group_name]:
-            if not isinstance(temp_dict[group_name][dataset_name], list):
+            if not isinstance(temp_dict[group_name][dataset_name], (list, np.ndarray)):
                 raise DictStructureError("Subdictionaries must be made up of lists!")
 
-            if len(temp_dict[group_name]) == 0:
-                dtype = None
-            else:
-                dtype = type(temp_dict[group_name][dataset_name][0])
+            test_list = temp_dict[group_name][dataset_name]
+
+            dtype = _get_dtype(test_list)
             create_dataset(data, dataset_name, group=group_name, dtype=dtype)
 
     # now pack the data from each data dictionary
@@ -130,10 +135,11 @@ def _classic(dict_list: dict, outfile: str = None, write_hepfile=True) -> ak.Rec
                 bucket[group_name] = data_dict[group]
                 continue
 
-            for dataset in data_dict[group]:
-                dataset_name = dataset.replace("/", "-")
-                name = f"{group}/{dataset_name}"
-                bucket[name] = data_dict[group][dataset]
+            if isinstance(data_dict, dict):  # make sure this isn't a singleton
+                for dataset in data_dict[group]:
+                    dataset_name = dataset.replace("/", "-")
+                    name = f"{group}/{dataset_name}"
+                    bucket[name] = data_dict[group][dataset]
         pack(data, bucket)
 
     # finally write the data out to a file
@@ -178,3 +184,14 @@ def append(ak_dict: ak.Record, new_dict: dict) -> ak.Record:
     ak_list = ak.to_list(ak_dict)
     ak_list.append(new_dict)
     return ak.Array(ak_list)
+
+
+def _get_dtype(test: list[any]) -> type:
+    """get the datatype of a list"""
+
+    if not isinstance(test, np.ndarray):
+        test = np.array(test)
+    np_dtype = test.dtype
+    if np_dtype.char == "U":
+        return str
+    return np_dtype.type

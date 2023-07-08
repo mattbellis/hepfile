@@ -103,7 +103,13 @@ def create_single_bucket(data: dict) -> dict:
 # This adds a group in the dictionary, similar to
 # a la CreateBranch in ROOT
 ################################################################################
-def create_group(data: dict, group_name: str, counter: str = None, verbose=False):
+def create_group(
+    data: dict,
+    group_name: str,
+    counter: str = None,
+    verbose=False,
+    ignore_protected=False,
+):
     """Adds a group in the dictionary
 
     Args:
@@ -115,7 +121,7 @@ def create_group(data: dict, group_name: str, counter: str = None, verbose=False
 
     """
     # check that group_name isn't in protected_names
-    if group_name in constants.protected_names:
+    if not ignore_protected and group_name in constants.protected_names:
         raise InputError(
             f"{group_name} is protected, please choose a different group name!"
         )
@@ -193,7 +199,12 @@ def create_group(data: dict, group_name: str, counter: str = None, verbose=False
 # This can also add a dataset that is not associate with a group
 ################################################################################
 def create_dataset(
-    data: dict, datasets: list, group: str = None, dtype: type = float, verbose=False
+    data: dict,
+    datasets: list,
+    group: str = None,
+    dtype: type = float,
+    verbose=False,
+    ignore_protected=False,
 ):
     """Adds a dataset to a group in a dictionary. If the group does not exist, it will be created.
 
@@ -217,7 +228,7 @@ def create_dataset(
     # Check for slashes in the dataset name. We can't have them.
     for i, tempname in enumerate(datasets):
         # check that tempname isn't in protected_names
-        if tempname in constants.protected_names:
+        if not ignore_protected and tempname in constants.protected_names:
             raise InputError(
                 f"{tempname} is protected, please choose a different dataset name!"
             )
@@ -274,7 +285,7 @@ def create_dataset(
         name = f"{group}/{dataset}"
 
         # check that tempname isn't in protected_names
-        if name in constants.protected_names:
+        if not ignore_protected and name in constants.protected_names:
             raise InputError(
                 f"{name} is protected, please choose a different dataset or group name!"
             )
@@ -424,8 +435,10 @@ def pack(
             data[key].append(1)
             continue
 
-        if isinstance(bucket[key], list):
+        if isinstance(bucket[key], (list, np.ndarray)):
             value = bucket[key]
+            if isinstance(value, np.ndarray):
+                value = value.tolist()
             if len(value) > 0:
                 data[key] += value
         else:
@@ -740,7 +753,6 @@ def write_to_file(
                 if dataset_dtype is not str:
                     if verbose is True:
                         print("\tWriting to file...")
-
                     hdoutfile.create_dataset(
                         name,
                         data=x,

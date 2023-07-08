@@ -1,7 +1,7 @@
 Installation quickstart 
 -----------------------
 
-You can install ``hepfile`` one of two different ways: using ``pip`` or ``flit``.
+You can install ``hepfile`` using ``pip``.
 
 ####
 pip
@@ -10,20 +10,21 @@ pip
 
     pip install hepfile
 
-####
-flit
-####
+###################
+Local Installations
+###################
 
-``flit`` is used to do a local install if you have downloaded the source
-code to your local machine. This is particularly useful if you are developing
-or extending ``hepfile``.
+To install locally for development, follow these steps:
+For local builds for testing follow these steps:
+   
+   1. Clone this repo
+   2. Navigate to the top-level directory of this project (probably called hepfile)
+   3. Run:
+      ::
+	 pip install -e .
+   4. Then, run the following commands to setup the pre-commit git hook
+      to automatically run our tests before committing!
+      ::
+	 chmod a+x pre-commit-tests.sh
+	 ln -s ../../pre-commit-tests.sh .git/hooks/pre-commit
 
-First make sure you have `flit <https://flit.readthedocs.io/en/latest/>`_ installed. 
-You will also need to have `autodoc <https://pypi.org/project/autodoc/>`_ installed for 
-the documentation to also be locally generated. 
-
-Once those are installed, clone the `hepfile <https://github.com/mattbellis/hepfile>`_ repository and go
-into the ``hepfile`` directory. From there run the command::
-
-
-    flit install

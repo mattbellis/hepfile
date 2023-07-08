@@ -10,13 +10,15 @@ import test_3_write
 import test_4_awkward_tools
 import test_5_dict_tools
 import test_6_csv_tools
+import test_7_df_tools
 
 MODULES = [test_1_package,
            test_2_read,
            test_3_write,
            test_4_awkward_tools,
            test_5_dict_tools,
-           test_6_csv_tools
+           test_6_csv_tools,
+           test_7_df_tools
            ]
 
 if __name__ == '__main__':

@@ -11,6 +11,7 @@ import pandas as pd
 from . import constants
 from .errors import RangeSubsetError, InputError, MetadataNotFound, HeaderNotFound
 from .awkward_tools import hepfile_to_awkward
+from .df_tools import hepfile_to_df
 
 
 ################################################################################
@@ -19,7 +20,7 @@ def load(
     verbose: bool = False,
     desired_groups: list[str] = None,
     subset: int = None,
-    return_awkward: bool = False,
+    return_type: str = "dictionary",
 ) -> tuple[dict, dict]:
     """
     Reads all, or a subset of the data, from the HDF5 file to fill a data dictionary.
@@ -34,7 +35,8 @@ def load(
 
         subset (int): Number of buckets to be read from input file
 
-        return_awkward (boolean): If True, returns an awkward array Record. Default is False
+        return_type (str): Type to return. Options are 'dictionary', 'awkward', and 'pandas'.
+                           Default is 'dictionary'.
 
     Returns:
         data (dict): Selected data from HDF5 file
@@ -42,6 +44,9 @@ def load(
         bucket (dict): An empty bucket dictionary to be filled by data from select buckets
 
     """
+
+    if return_type not in {"dictionary", "awkward", "pandas"}:
+        raise InputError("return_type must be dictionary, awkward, or pandas")
 
     with h5.File(filename, "r+") as infile:
         # Create the initial data and bucket dictionary to hold the data
@@ -342,8 +347,11 @@ def load(
     # 3) add _PROTECTED_NAMES_
     data["_PROTECTED_NAMES_"] = constants.protected_names
 
-    if return_awkward:
+    if return_type == "awkward":
         return hepfile_to_awkward(data), bucket
+
+    if return_type == "pandas":
+        return hepfile_to_df(data), bucket
 
     return data, bucket
 
