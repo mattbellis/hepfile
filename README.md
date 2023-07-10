@@ -1,5 +1,5 @@
 <!-- begin-logo -->
-<img src=https://github.com/mattbellis/hepfile/blob/main/docs/images/hepfile-logo.png width=35% height=35%>
+![](docs/images/hepfile-logo-small.png)
 <!-- end-logo -->
 
 [![Actions Status][actions-badge]][actions-link]
@@ -89,9 +89,9 @@ and residence all have different data associated with them. How would we record
 these data? Well, to first order, we might decide to record them in multiple spreadsheets or 
 multiple .csv files. 
 
-<img src="/images/household_example_spreadsheet_00.png width=35% height=35%>
-<img src="/images/household_example_spreadsheet_01.png width=35% height=35%>
-<img src="/images/household_example_spreadsheet_02.png width=35% height=35%>
+![](docs/images/household_example_spreadsheet_00.png)
+![](docs/images/household_example_spreadsheet_01.png)
+![](docs/images/household_example_spreadsheet_02.png)
 
 One could also imagine this data stored in a database with each of the csv files as tables.
 But the goal is to keep all of this data in one file, so that it is easier for someone to
@@ -119,14 +119,14 @@ The base package gives you the ability to read and write hepfiles using the more
 method and the dictionary tools. This is the "lightest" of the installation options and  is only dependent
 on `numpy` and `h5py`. To install the base package use:
 ```
-pip install hepfile
+python -m pip install hepfile
 ```
 
 You can also get the `awkward_tools` which is the hepfile integration with the awkward package. This is
 especially recommended for High Energy Physicists who are used to working with awkward arrays. The only
 dependency this add is `awkward`. To install this version of the package use:
 ```
-pip install hepfile[awkward]
+python -m pip install hepfile[awkward]
 ```
 
 You can get the more data science focused tools by installing the `df_tools` and `csv_tools`. These provide
@@ -134,13 +134,13 @@ integration with pandas and typical csv files. This is recommended for those who
 with pandas in python. This adds a a `pandas` dependency to the base installation. To install this \
 distribution use:
 ```
-pip install hepfile[pandas]
+python -m pip install hepfile[pandas]
 ```
 
 Finally, to get both the awkward and pandas integration with hepfile (which adds pandas and awkward
 to the base installation dependencies) use:
 ```
-pip install hepfile[all]
+python -m pip install hepfile[all]
 ```
 
 The documentation for hepfile can be found at hepfile.readthedocs.io.
@@ -151,7 +151,7 @@ For local builds for testing follow these steps:
 2. Navigate to the top-level directory of this project (probably called hepfile)
 3. We then recommend installing with the developer dependencies. To do this run:
 ```
-pip install -e .[dev]
+python -m pip install -e .[dev]
 ```
 4. Then, run the following commands to setup the pre-commit git hook
 to automatically run our tests before committing!

@@ -10,14 +10,14 @@ method and the dictionary tools. This is the "lightest" of the installation opti
 on `numpy` and `h5py`. To install the base package use:
 ::
    
-   pip install hepfile
+   python -m pip install hepfile
 
 You can also get the `awkward_tools` which is the hepfile integration with the awkward package. This is
 especially recommended for High Energy Physicists who are used to working with awkward arrays. The only
 dependency this add is `awkward`. To install this version of the package use:
 ::
    
-   pip install hepfile[awkward]
+   python -m pip install hepfile[awkward]
 
 You can get the more data science focused tools by installing the `df_tools` and `csv_tools`. These provide
 integration with pandas and typical csv files. This is recommended for those who are used to working
@@ -25,13 +25,13 @@ with pandas in python. This adds a a `pandas` dependency to the base installatio
 distribution use:
 ::
    
-   pip install hepfile[pandas]
+   python -m pip install hepfile[pandas]
 
 Finally, to get both the awkward and pandas integration with hepfile (which adds pandas and awkward
 to the base installation dependencies) use:
 ::
    
-   pip install hepfile[all]
+   python -m pip install hepfile[all]
 
 
 For a local installations, typically for developers, follow these steps:   
@@ -41,7 +41,7 @@ For a local installations, typically for developers, follow these steps:
 3. We then recommend installing with the developer dependencies. To do this run:
    ::
 
-      pip install -e .[dev]
+      python -m pip install -e .[dev]
 
 4. Then, run the following commands to setup the pre-commit git hook
    to automatically run our tests before committing!
