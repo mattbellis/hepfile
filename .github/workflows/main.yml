@@ -46,7 +46,7 @@ jobs:
           python -m pip install pytest-cov numpy==${{ matrix.numpy-version }} h5py
 
     - name: Build hepfile
-      run: pip install -e . 
+      run: pip install -e .[dev] 
 
     - name: Test package
       run: python -m pytest --cov=hepfile --cov-report=xml

@@ -9,14 +9,18 @@ import test_1_package
 import test_2_read
 import test_3_write
 
-if 'awkward' in sys.modules:
+try:
     import test_4_awkward_tools
-
+except ImportError:
+    pass
+    
 import test_5_dict_tools
 
-if 'pandas' in sys.modules:
+try:
     import test_6_csv_tools
     import test_7_df_tools
+except ImportError:
+    pass
 
 if 'pandas' in sys.modules and 'awkward' in sys.modules:
     MODULES = [test_1_package,

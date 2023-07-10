@@ -4,9 +4,9 @@ Tools to work with Pandas DataFrames and Hepfile data
 from __future__ import annotations
 
 import pandas as pd
-import awkward as ak
-from .errors import InputError
-from .dict_tools import dictlike_to_hepfile
+import hepfile as hf
+from hepfile.errors import InputError, MissingOptionalDependency
+from hepfile.dict_tools import dictlike_to_hepfile
 
 
 def hepfile_to_df(
@@ -109,6 +109,11 @@ def awkward_to_df(
         Dictionary of requested groups as dataframes where the keys are the group names.
         If only one group is requested then it just returns a dataframe of that group.
     """
+
+    if not hf._AWKWARD:
+        raise MissingOptionalDependency("awkward")
+
+    import awkward as ak
 
     dfs = {}  # list to of dataframes to return
 

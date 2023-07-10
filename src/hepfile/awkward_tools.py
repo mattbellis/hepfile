@@ -7,7 +7,7 @@ from __future__ import annotations
 import warnings
 import awkward as ak
 import numpy as np
-from .write import (
+from hepfile.write import (
     initialize,
     create_group,
     create_dataset,
@@ -15,7 +15,7 @@ from .write import (
     create_single_bucket,
     pack,
 )
-from .errors import AwkwardStructureError, InputError
+from hepfile.errors import AwkwardStructureError, InputError
 
 
 ################################################################################
@@ -172,6 +172,14 @@ def awkward_to_hepfile(
     # then write it out to a file
     if write_hepfile:
         print("Writing the hdf5 file from the awkward array...")
+
+        for key, item in data.items():
+            if isinstance(item, (ak.Record, ak.Array)):
+                try:
+                    data[key] = ak.to_numpy(item)
+                except:
+                    data[key] = ak.to_list(item)
+
         write_to_file(outfile, data)
 
     return data
@@ -201,7 +209,7 @@ def _is_valid_awkward(ak_array: ak.Record):
     """
 
     # validate input array
-    if not isinstance(ak_array, ak.Array) and not isinstance(ak_array, ak.Record):
+    if not isinstance(ak_array, (ak.Array, ak.Record)):
         raise AwkwardStructureError("Please input an Awkward Array or Awkward Record")
 
     if ak_array.fields == 0:

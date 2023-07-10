@@ -7,8 +7,16 @@ from __future__ import annotations
 import warnings
 import h5py as h5
 import numpy as np
-from . import constants
-from .errors import RangeSubsetError, InputError, MetadataNotFound, HeaderNotFound
+
+import hepfile as hf
+from hepfile import constants
+from hepfile.errors import (
+    RangeSubsetError,
+    InputError,
+    MetadataNotFound,
+    HeaderNotFound,
+    MissingOptionalDependency,
+)
 
 
 ################################################################################
@@ -45,11 +53,11 @@ def load(
     if return_type not in {"dictionary", "awkward", "pandas"}:
         raise InputError("return_type must be dictionary, awkward, or pandas")
 
-    if return_type != "dictionary" and return_type not in sys.modules:
-        raise InputError(
-            f'{return_type} is not supported with this installation of hepfile. \
-                          Please install with "pip install hepfile[{return_type}]"!'
-        )
+    if return_type == "awkward" and not hf._AWKWARD:
+        raise MissingOptionalDependency(return_type)
+
+    if return_type == "pandas" and not hf._PANDAS:
+        raise MissingOptionalDependency(return_type)
 
     with h5.File(filename, "r+") as infile:
         # Create the initial data and bucket dictionary to hold the data
@@ -351,12 +359,12 @@ def load(
     data["_PROTECTED_NAMES_"] = constants.protected_names
 
     if return_type == "awkward":
-        from .awkward_tools import hepfile_to_awkward
+        from hepfile.awkward_tools import hepfile_to_awkward
 
         return hepfile_to_awkward(data), bucket
 
     if return_type == "pandas":
-        from .df_tools import hepfile_to_df
+        from hepfile.df_tools import hepfile_to_df
 
         return hepfile_to_df(data), bucket
 
@@ -491,13 +499,9 @@ def get_file_header(filename: str, return_type: str = "dict") -> dict:
     """
 
     if return_type in {"df", "dataframe"}:
-        if "pandas" in sys.modules:
-            import pandas as pd
-        else:
-            raise InputError(
-                f'{return_type} is not supported with this installation of hepfile. \
-                          Please install with "pip install hepfile[{return_type}]"!'
-            )
+        if not hf._PANDAS:
+            raise MissingOptionalDependency("pandas")
+        import pandas as pd
 
     if return_type is not None and return_type not in ["dict", "df", "dataframe"]:
         print("'return_type' must be 'dict', 'df', or 'dataframe'")
