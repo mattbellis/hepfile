@@ -89,9 +89,9 @@ and residence all have different data associated with them. How would we record
 these data? Well, to first order, we might decide to record them in multiple spreadsheets or 
 multiple .csv files. 
 
-![](docs/images/household_example_spreadsheet_00.png)
-![](docs/images/household_example_spreadsheet_01.png)
-![](docs/images/household_example_spreadsheet_02.png)
+![](docs/images/household_example_spreadsheet_00_smaller.png)
+![](docs/images/household_example_spreadsheet_01_smaller.png)
+![](docs/images/household_example_spreadsheet_02_smaller.png)
 
 One could also imagine this data stored in a database with each of the csv files as tables.
 But the goal is to keep all of this data in one file, so that it is easier for someone to
