@@ -125,7 +125,7 @@ def test_pack():
     bucket['obj/nobj'] = 5
 
     test = hepfile.pack(data, bucket)
-    assert test == 0
+    assert test is None 
     assert len(data['obj/myfloat']) == 5
     assert len(data['obj/myint']) == 5
     assert len(data['obj/mystr']) == 5

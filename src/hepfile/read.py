@@ -82,10 +82,15 @@ def load(
                 subset = list(subset)
 
             if isinstance(subset, int):
-                print(
-                    "Single subset value of {subset} being interpreted as a high range"
-                )
-                print(f"subset being set to a range of (0,{subset})\n")
+                if verbose:
+                    warning = "\n".join(
+                        (
+                            "Single subset value of {subset} being interpreted as a high range",
+                            f"subset being set to a range of (0,{subset})\n",
+                        )
+                    )
+                    warnings.warn(warning)
+
                 subset = [0, subset]
 
             # If the user has specified `subset` incorrectly, then let's return
@@ -116,12 +121,13 @@ def load(
             data["_NUMBER_OF_BUCKETS_"] = subset[1] - subset[0]
             nbuckets = data["_NUMBER_OF_BUCKETS_"]
 
-            print("Will read in a subset of the file!")
-            print(
-                f"From bucket {subset[0]} (inclusive) through bucket {subset[1]-1} (inclusive)"
-            )
-            print(f"Bucket {subset[1]} is not read in")
-            print(f"Reading in {nbuckets} buckets\n")
+            if verbose:
+                print("Will read in a subset of the file!")
+                print(
+                    f"From bucket {subset[0]} (inclusive) through bucket {subset[1]-1} (inclusive)"
+                )
+                print(f"Bucket {subset[1]} is not read in")
+                print(f"Reading in {nbuckets} buckets\n")
 
         ############################################################################
         # Get the datasets and counters
@@ -191,7 +197,8 @@ def load(
                         break
 
                 if is_dropped is True:
-                    print(f"Not reading out {entry} from the file....")
+                    if verbose:
+                        print(f"Not reading out {entry} from the file....")
                     all_datasets.remove(entry)
 
                 i -= 1
@@ -216,9 +223,9 @@ def load(
         ############################################################################
         # Pull out the counters and build the indices
         ############################################################################
-        print("Building the indices...\n")
 
         if verbose:
+            print("Building the indices...\n")
             print("data.keys()")
             print(data.keys())
             print("\n")
@@ -266,9 +273,8 @@ def load(
             data[index_name] = subset_index
             full_file_indices[index_name] = index
 
-        print("Built the indices!")
-
         if verbose:
+            print("Built the indices!")
             print("full_file_index: ")
             print(f"{full_file_indices}\n")
 
@@ -318,7 +324,8 @@ def load(
             if name not in constants.protected_names and "meta" in dataset.attrs.keys():
                 data["_META_"][name] = dataset.attrs["meta"]
 
-    print("Data is read in and input file is closed.")
+    if verbose:
+        print("Data is read in and input file is closed.")
 
     # edit data so it matches the format of the data dict that was saved to the file
     # this makes it so that data can be directly passed to write_to_file
@@ -504,9 +511,7 @@ def get_file_header(filename: str, return_type: str = "dict") -> dict:
         import pandas as pd
 
     if return_type is not None and return_type not in ["dict", "df", "dataframe"]:
-        print("'return_type' must be 'dict', 'df', or 'dataframe'")
-        print("Not returning any header information")
-        return None
+        raise InputError("'return_type' must be 'dict', 'df', or 'dataframe!")
 
     with h5.File(filename, "r+") as infile:
         if "_HEADER_" not in infile:
@@ -543,7 +548,7 @@ def print_file_metadata(filename: str):
     try:
         metadata = get_file_metadata(filename)
     except MetadataNotFound:
-        print(f"No Metadata in {filename}!")
+        warnings.warn(f"No Metadata in {filename}!")
         return output
 
     keys = list(metadata.keys())
@@ -579,7 +584,6 @@ def print_file_metadata(filename: str):
         keys_already_printed.append(key)
 
     print(output)
-
     return output
 
 
