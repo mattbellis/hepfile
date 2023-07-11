@@ -1,6 +1,11 @@
 """
 These are tools to make working with and translating between awkward arrays
 and hepfile data objects easier.
+
+Note: The base installation package does not contain these tools!
+You must have installed hepfile with either
+1) 'python -m pip install hepfile[awkward]', or
+2) 'python -m pip install hepfile[all]'
 """
 from __future__ import annotations
 

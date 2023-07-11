@@ -41,7 +41,10 @@ def load(
         subset (int): Number of buckets to be read from input file
 
         return_type (str): Type to return. Options are 'dictionary', 'awkward', and 'pandas'.
-                           Default is 'dictionary'.
+                           Default is 'dictionary'. Note: the 'awkward' option requires
+                           hepfile to be installed with the awkward or all option and the
+                           'pandas' option requires hepfile to be installed with the pandas
+                           or all option!
 
     Returns:
         data (dict): Selected data from HDF5 file

@@ -43,7 +43,8 @@ def dictlike_to_hepfile(
         outfile (str): path to write output hepfile to
         how_to_pack (str): how to pack the input dataset. Options are 'awkward' or 'classic'.
                       'awkward' called awkward_to_hepfile, 'classic' does it more traditional.
-                      default is 'awkward'.
+                      default is 'classic'. To use how_to_pack='awkward', make sure you
+                      installed hepfile with the 'awkward' or 'all' optional dependency!
         **kwargs: passed to `hepfile.write.write_to_file` if 'awkward'. Can only be
                   'write_to_hepfile' and 'ignore_protected' if 'classic'.
     Returns:
@@ -179,6 +180,11 @@ def _awkward(dict_list: list[dict], outfile: str = None, **kwargs):
 def append(ak_dict: ak.Record, new_dict: dict) -> ak.Record:
     """
     Append a new event to an existing awkward dictionary with events
+
+    Note: This tool requires awkward to be installed. Make sure you installed with
+    either
+    1) 'python -m pip install hepfile[awkward]' or,
+    2) 'python -m pip install hepfile[all]'
 
     Args:
         ak_dict (ak.Record): awkward Record of data

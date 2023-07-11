@@ -1,5 +1,10 @@
 """
 Tools to work with Pandas DataFrames and Hepfile data
+
+Note: The base installation package does not contain these tools!
+You must have installed hepfile with either
+1) 'python -m pip install hepfile[pandas]', or
+2) 'python -m pip install hepfile[all]'
 """
 from __future__ import annotations
 
@@ -99,6 +104,8 @@ def awkward_to_df(
     """
     Converts an awkward array of hepfile data to a dataframe. Does the same thing
     as hepfile_to_df but given an awkward array.
+
+    Note: You must have installed with 'python -m pip install hepfile[all]' to use this tool!
 
     Args:
         ak_array [ak.Array]: awkward array in the format of a hepfile
