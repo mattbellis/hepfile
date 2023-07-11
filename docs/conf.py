@@ -68,7 +68,9 @@ html_title = f"hepfile {version}"
 html_theme_options = {
     'show_toc_level' : 2,
     'repository_url' : 'https://github.com/mattbellis/hepfile',
-    'use_repository_button': True
+    'use_repository_button': True,
+    "use_issues_button": True,
+    "use_edit_page_button": True
 }
 
 html_baseurl = "https://hepfile.readthedocs.io/en/latest/"
