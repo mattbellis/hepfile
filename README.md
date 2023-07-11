@@ -12,7 +12,7 @@
 [![codecov](https://codecov.io/gh/mattbellis/hepfile/branch/main/graph/badge.svg?token=4OADJIUAPU)](https://codecov.io/gh/mattbellis/hepfile)
 [![Code style: black][black-badge]][black-link]
 [![linting: pylint](https://img.shields.io/badge/linting-pylint-yellowgreen)](https://github.com/pylint-dev/pylint)
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/mattbellis/hepfile/HEAD?urlpath=lab/tree/docs/examples/example_nb)
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/mattbellis/hepfile/HEAD?urlpath=lab/tree/docs/example_nb)
 [![DOI](https://zenodo.org/badge/378834559.svg)](https://zenodo.org/badge/latestdoi/378834559)
 [![Gitter][gitter-badge]][gitter-link]
 
