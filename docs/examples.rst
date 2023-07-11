@@ -27,5 +27,4 @@ The following tutorials show examples of converting other file types to a hepfil
 .. toctree::
    example_nb/housing.ipynb
    example_nb/converting_json_to_hepfile.ipynb
-   example_nb/working_with_fasta_files.ipynb
    example_nb/fits_tutorial.ipynb

@@ -17,11 +17,10 @@ fi
 ##################################################
 # run pytest and give exit code 1 if not successful
 
+PYTEST=$(pytest -q --disable-warnings | tr "\n" "|" | sed s/"|"/"\n\t"/)
 if [[ $verbose = true ]]; then
-    echo "1) Running Python Unit Tests"
-    python tests/runtests.py --verbose 
-else
-    python tests/runtests.py 1>/dev/null
+    echo "1) Running Python Unit Tests"    
+    echo -e "\t$PYTEST"
 fi
 ERR=$?
 
@@ -82,8 +81,8 @@ if [[ $ERR == 0 ]]; then
 	    echo -e "\tWARNING!!!!!!!!!!!!!!!!!!!!!!!!!!!"
 	    echo -e "\tpylint found some possible errors!"
 	    echo -e "\tCommit will continue, but be cautious!"
-	    echo -e "\tPlease check the following pushing:"
-	    echo -e "\t$PYLINT_RESULT"
+	    echo -e "\tPlease check before pushing!"
+	    #echo -e "\t$PYLINT_RESULT"
 	fi
 	#ERR=1
     else
@@ -104,10 +103,10 @@ fi
 #fi
 
 # check RESULT and exit based on it
-[ verbose = true ] && echo -e "\n"
+[ $verbose = true ] && echo -e "\n"
 
 if [[ $ERR -ne 0 ]]; then
-    if [[ verbose = true ]]; then
+    if [[ $verbose = true ]]; then
 	echo "-------------------------------------------"
 	echo "    Pre-Commit Tests Found an Issue :(     "
 	echo "-------------------------------------------"
@@ -116,7 +115,7 @@ if [[ $ERR -ne 0 ]]; then
     exit 1
 fi
 
-if [[ verbose = true ]]; then
+if [[ $verbose = true ]]; then
     echo "-------------------------------------------"
     echo "        Pre-Commit Tests Finished!         "
     echo "-------------------------------------------"

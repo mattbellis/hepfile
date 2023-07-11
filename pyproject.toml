@@ -60,6 +60,8 @@ docs = [
   "nbsphinx>=0.9.1",
   "sphinx-book-theme>=0.0.33",
   "sphinx_copybutton",
+  "autodoc",
+  "ipykernel"
 ]
 
 [tool.pytest.ini_options]
