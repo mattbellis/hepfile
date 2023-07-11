@@ -1,13 +1,10 @@
-Fundamentals
-=========================
-   
-.. include:: toy_example.rst
+===========
+Basic Usage
+===========
 
-.. include:: schema.rst
+Basics of File Structure
+------------------------
 
-
-Basics of File Organization
-^^^^^^^^^^^^^^^^^^^^^^^^^^^
 In hepfile, all the data can be grouped into **buckets**, which in this case can be associated with
 households (and the Household ID). *people* and *vehicles* would be separate **groups**, with all their data
 being contained in **datasets** inside each group. With *houses*, there are two separate options:
@@ -16,10 +13,9 @@ one could either make a new group *houses*, or you could include all of its data
 entry from it. Because we require every household to only have one house, each household has only one entry
 from *# of bedrooms*, for example.
 
-To see how to read and write this data, see `this tutorial <../examples/example_nb/housing.ipynb>`. 
+.. include:: writing.rst
 
-.. toctree::
-   :hidden:
+.. include:: reading.rst
 
-   toy_example.rst
-   schema.rst
+
+

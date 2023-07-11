@@ -22,8 +22,13 @@ sys.path.insert(0, os.path.abspath("../src/hepfile")) # needed for autodocs
 project = "hepfile"
 copyright = "2021, Matt Bellis"
 author = "Matt Bellis"
-version = "0.2.0"
-release = "0.2.0"
+
+# version the docs correctly from the src/hepfile/_version.py file
+__import__(project)
+package = sys.modules[project]
+
+version = package.__version__
+release = package.__version__
 
 # The master toctree document.
 master_doc = 'index'

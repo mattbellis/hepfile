@@ -9,12 +9,11 @@ import sys
 import warnings
 
 import numpy as np
-import awkward as ak
 import h5py as h5
 
 import hepfile
-from . import constants
-from .errors import InputError, DatasetSizeDiscrepancy, MissingSingletonValue
+from hepfile import constants
+from hepfile.errors import InputError, DatasetSizeDiscrepancy, MissingSingletonValue
 
 
 ################################################################################
@@ -563,7 +562,6 @@ def write_file_metadata(
             hdoutfile.attrs["hepfile_version"] = hepfile.__version__
             hdoutfile.attrs["numpy_version"] = np.__version__
             hdoutfile.attrs["h5py_version"] = h5.__version__
-            hdoutfile.attrs["awkward_version"] = ak.__version__
             hdoutfile.attrs["python_version"] = sys.version
 
         if mydict is not None:
@@ -736,8 +734,6 @@ def write_to_file(
                     # different type calls depending on input datastructure
                     if isinstance(x, np.ndarray):
                         dtype = x.dtype
-                    elif isinstance(x, (ak.Array, ak.Record)):
-                        dtype = x.type
                     else:
                         dtype = None
                         warnings.warn(

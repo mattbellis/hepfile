@@ -1,5 +1,5 @@
-Examples
-========
+Further Examples
+================
 
 Here we will go through the steps involved in analyzing data using
 hepfile. There are many different tutorials to give as much information

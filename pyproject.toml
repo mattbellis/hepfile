@@ -1,16 +1,15 @@
 [build-system]
-requires = ["flit_core >=2,<4"]
+requires = ["flit_core >=3.2,<4"]
 build-backend = "flit_core.buildapi"
 
+[project]
+name = "hepfile"
+authors = [{name = "Matt Bellis", email = "mbellis@siena.edu"}]
+readme = "README.md"
+license = {file = "LICENSE"}
+dynamic = ["version", "description"]
 
-[tool.flit.metadata]
-module = "hepfile"
-author = "Matt Bellis"
-author-email = "matthew.bellis@gmail.com"
-home-page = "https://github.com/mattbellis/hepfile"
-maintainer = "Matt Bellis"
-maintainer-email = "matthew.bellis@gmail.com"
-description-file = "README.md"
+requires-python = ">=3.9"
 
 classifiers = [
   "License :: OSI Approved :: BSD License",
@@ -24,43 +23,48 @@ classifiers = [
   "Programming Language :: Python :: 3.9",
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
-  "Development Status :: 1 - Planning",
+  "Development Status :: 1 - Planning"
 ]
 
-requires-python = ">=3.9"
+dependencies = [
+  "numpy>=1.13.3",
+  "h5py"
+  ]
 
-requires = [
-  "numpy >=1.13.3",
-  "pandas",
-  "h5py",
-  "awkward >= 2.1.2",
-  "pre-commit",
-  "jupyter",
-  "mistune"
-]
+[project.urls]
+Documentation = "https://hepfile.github.io"
+Home = "https://github.com/mattbellis/hepfile"
 
-[tool.flit.metadata.requires-extra]
-test = [
-    "pytest >=6",
-]
+[project.optional-dependencies]
+pandas = ["pandas"]
+awkward = ["awkward"]
+learn = [
+      "hepfile[pandas,awkward]",
+      "astropy"
+      ]
+all = ["hepfile[pandas,awkward]"]
+
+# for developers
 dev = [
-  "pytest >=6",
-]
+    "hepfile[all]",
+    "pre-commit",
+    "jupyter",
+    "mistune",
+    "pytest"
+    ]
+
 docs = [
-  "Sphinx >=3.0.0",
+  "hepfile[all]",
+  "Sphinx>=3.0.0",
   "myst_parser>=0.13",
   "nbsphinx>=0.9.1",
   "sphinx-book-theme>=0.0.33",
   "sphinx_copybutton",
 ]
-awkward = [
-  "awkward >= 1.4",
-]
 
 [tool.pytest.ini_options]
 addopts = "-ra -Wd"
 testpaths = ["tests"]
-
 
 [tool.mypy]
 files = "src"
@@ -80,5 +84,3 @@ warn_unused_ignores = true
 warn_return_any = true
 no_implicit_reexport = true
 strict_equality = true
-
-

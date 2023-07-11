@@ -4,12 +4,16 @@ Functions to help convert dictionaries into hepfiles
 from __future__ import annotations
 
 import warnings
-import awkward as ak
 import numpy as np
 
-from .awkward_tools import awkward_to_hepfile, _is_valid_awkward
-from .errors import AwkwardStructureError, DictStructureError, InputError
-from .write import (
+import hepfile as hf
+from hepfile.errors import (
+    AwkwardStructureError,
+    DictStructureError,
+    InputError,
+    MissingOptionalDependency,
+)
+from hepfile.write import (
     initialize,
     write_to_file,
     create_dataset,
@@ -20,8 +24,8 @@ from .write import (
 
 
 def dictlike_to_hepfile(
-    dict_list: list[dict], outfile: str = None, how_to_pack="awkward", **kwargs
-) -> ak.Record:
+    dict_list: list[dict], outfile: str = None, how_to_pack="classic", **kwargs
+) -> dict:
     """
     This wraps on `hepfile.awkward_tools.awkward_to_hepfile`
     and writes a list of dictionaries to a hepfile.
@@ -55,6 +59,9 @@ def dictlike_to_hepfile(
                 "Please input either a dataframe or list \
             of dictionaries"
             ) from exc
+
+    if how_to_pack == "awkward" and not hf._AWKWARD:
+        raise MissingOptionalDependency("awkward")
 
     # validate input dictionary
     keys = dict_list[0].keys()
@@ -91,7 +98,7 @@ def dictlike_to_hepfile(
 
 def _classic(
     dict_list: dict, outfile: str = None, write_hepfile=True, ignore_protected=False
-) -> ak.Record:
+) -> dict:
     """Private method to convert a list of events to a hepfile using the traditional method"""
 
     if outfile is None and write_hepfile:
@@ -150,6 +157,13 @@ def _classic(
 
 def _awkward(dict_list: list[dict], outfile: str = None, **kwargs):
     """Private method to convert a list of events to a hepfile using awkward arrays"""
+
+    if not hf._AWKWARD:
+        raise MissingOptionalDependency("awkward")
+
+    import awkward as ak
+    from hepfile.awkward_tools import awkward_to_hepfile, _is_valid_awkward
+
     # convert dictionary list to  an awkward array and write to hepfile
     out_ak = ak.Array(dict_list)
 
@@ -172,6 +186,11 @@ def append(ak_dict: ak.Record, new_dict: dict) -> ak.Record:
     Return:
         Awkward Record of awkward arrays with the new_dict appended
     """
+    if not hf._AWKWARD:
+        raise MissingOptionalDependency("awkward")
+
+    import awkward as ak
+    from hepfile.awkward_tools import awkward_to_hepfile, _is_valid_awkward
 
     _is_valid_awkward(ak_dict)
 

@@ -7,7 +7,7 @@ import os
 from typing import Optional
 
 import pandas as pd
-from .df_tools import df_to_hepfile
+from hepfile.df_tools import df_to_hepfile
 
 
 def csv_to_hepfile(

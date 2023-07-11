@@ -35,7 +35,7 @@ def test_dictlike_to_hepfile():
 
     
     out = 'test.hdf5'
-    ak_dict = hf.dict_tools.dictlike_to_hepfile(d, out)
+    ak_dict = hf.dict_tools.dictlike_to_hepfile(d, out, how_to_pack='awkward')
 
     # some tests to check the keys
     for key in ak_dict.fields:
@@ -85,14 +85,14 @@ def test_dict_append():
 
     # convert to an awkward array
     out = 'test.hdf5'
-    ak_dict = hf.dict_tools.dictlike_to_hepfile(d, out, write_hepfile=False)
+    ak_dict = hf.dict_tools.dictlike_to_hepfile(d, out, write_hepfile=False, how_to_pack='awkward')
 
     # dictionary of data to append
     new_dict = {'jet': {'px': [10, 100], 'py': [0, 0]},
                 'muons': {'px': [5, 1000], 'py': [0, -1]},
                 'other': 2
                 }
-
+    print(ak_dict, new_dict)
     mod = hf.dict_tools.append(ak_dict, new_dict)
 
     # some tests to check the keys
