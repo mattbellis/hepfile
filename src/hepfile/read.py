@@ -249,13 +249,6 @@ def load(
                 print(f"full file counters: {full_file_counters}\n")
                 print(f"full file index: {full_file_index}\n")
 
-            # If we passed in subset, grab that slice of the data from the file
-            if subset is not None and subset[1] <= subset[0]:
-                raise RangeSubsetError(
-                    f"Unable to read anything in! High range of {subset[1]} is \
-                    less than or equal to low range of {subset[0]}"
-                )
-
             if subset is not None:
                 # We tack on +1 to the high range of subset when we pull out the counters
                 # and index because we want to get all of the entries for the last entry.

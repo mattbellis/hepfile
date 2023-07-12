@@ -1,6 +1,7 @@
 import hepfile as hf
 import awkward as ak
 import numpy as np
+import pytest
 
 def test_dictlike_to_hepfile():
     '''
@@ -85,7 +86,8 @@ def test_dict_append():
 
     # convert to an awkward array
     out = 'test.hdf5'
-    ak_dict = hf.dict_tools.dictlike_to_hepfile(d, out, write_hepfile=False, how_to_pack='awkward')
+    with pytest.warns(UserWarning):
+        ak_dict = hf.dict_tools.dictlike_to_hepfile(d, out, write_hepfile=False, how_to_pack='awkward')
 
     # dictionary of data to append
     new_dict = {'jet': {'px': [10, 100], 'py': [0, 0]},

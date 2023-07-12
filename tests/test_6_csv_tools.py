@@ -2,6 +2,7 @@ import os, glob
 import pandas as pd
 import numpy as np
 import hepfile as hf
+import pytest
 
 def test_csv_to_hepfile():
     '''
@@ -12,9 +13,10 @@ def test_csv_to_hepfile():
     datapath = os.path.join('docs', 'example_nb', '*.csv')
     files = glob.glob(datapath)
     common_key = 'Household ID'
+
+    with pytest.warns(UserWarning):
+        filename, data = hf.csv_tools.csv_to_hepfile(files, common_key, outfile='test-csv.h5')
     
-    filename, data = hf.csv_tools.csv_to_hepfile(files, common_key, outfile='test-csv.h5')
-    print(data)
     # check that they are consistent
     group_names = ['People.csv', 'Residences.csv', 'Vehicles.csv']
     for group in group_names:

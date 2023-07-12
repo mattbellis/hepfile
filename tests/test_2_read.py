@@ -1,6 +1,7 @@
 import numpy as np
 import h5py as h5
 import hepfile
+import pytest
 
 import time
 
@@ -55,8 +56,9 @@ def test_load():
     # Testing subsets
     assert len(test_data["jet/njet"]) == 5
 
-    test_data, test_bucket = hepfile.load(
-        filename, False, desired_datasets, 1000)
+    with pytest.warns(UserWarning):
+        test_data, test_bucket = hepfile.load(
+            filename, False, desired_datasets, 1000)
 
     assert len(test_data["jet/njet"]) == 10
 
@@ -76,34 +78,62 @@ def test_load():
         filename, False, desired_datasets, subset=subset)
     assert len(test_data["jet/njet"]) == 4
 
+    # test desired_groups as a string
+    test_data, test_bucket = hepfile.load(
+        filename, False, desired_groups='jet', subset=subset)
+    assert len(test_data["jet/njet"]) == 4
+    
     # Test for poor uses of subset
-    try:
+    with pytest.raises(hepfile.errors.RangeSubsetError):
         test_data, test_bucket = hepfile.load(
             filename, False, desired_datasets, [0,0])
-    except hepfile.errors.RangeSubsetError:
-        pass
-    else:
-        assert len(test_data['_LIST_OF_DATASETS_']) == 0
-        assert len(test_bucket.keys()) == 0
 
-    try:
+    with pytest.raises(hepfile.errors.RangeSubsetError):
         test_data, test_bucket = hepfile.load(
             filename, False, desired_datasets, [10,0])
-    except hepfile.errors.RangeSubsetError:
-        pass
-    else:
-        assert len(test_data['_LIST_OF_DATASETS_']) == 0
-        assert len(test_bucket.keys()) == 0
 
-    try:
+    with pytest.raises(hepfile.errors.RangeSubsetError):
         test_data, test_bucket = hepfile.load(
             filename, False, desired_datasets, subset=0)
-    except hepfile.errors.RangeSubsetError:
-        pass
-    else:
-        assert len(test_data['_LIST_OF_DATASETS_']) == 0
-        assert len(test_bucket.keys()) == 0
 
+    with pytest.raises(hepfile.errors.RangeSubsetError):
+        test_data, test_bucket = hepfile.load(
+            filename, False, desired_datasets, subset=(int(1e10), int(1e11)))
+
+    # test different return types
+    # this should throw an error
+    with pytest.raises(hepfile.errors.InputError):
+        test_data, test_bucket = hepfile.load(
+            filename, verbose=False, desired_groups=desired_datasets, return_type='foo'
+            )
+
+    # now with return_type='awkward'
+    awk, bucket = hepfile.load(
+        filename, return_type='awkward'
+    )
+
+    assert 'jet' in awk.fields
+    assert 'muons' in awk.fields
+    assert 'METpx' in awk.fields
+    assert 'METpy' in awk.fields
+
+    # and with return_type='pandas'
+    dfs, bucket = hepfile.load(
+        filename, return_type='pandas'
+        )
+    
+    for k in ('_SINGLETONS_GROUP_', 'jet'):
+        assert k in dfs.keys()
+        assert 'event_num' in dfs[k]
+
+    jet = dfs['jet']
+    assert len(jet.e[jet.event_num == 0]) == 5
+
+    # check that with verbose flags we get warnings
+    with pytest.warns(UserWarning):
+        test_data, test_bucket = hepfile.load(
+            filename, True, desired_datasets, subset=int(1e10))
+    
 def test_unpack():
 
     # This assumes you run nosetests from the h5hep directory and not
@@ -124,16 +154,33 @@ def test_get_nbuckets_in_file():
     # This assumes you run nosetests from the h5hep directory and not
     # the tests directory.
     filename = "FOR_TESTS.hdf5"
-
+    
     nbuckets = hepfile.get_nbuckets_in_file(filename)
 
     assert nbuckets == 10
 
+    # test that incorrect inputs throw custom errors
+    with pytest.raises(hepfile.errors.InputError):
+        nbuckets = hepfile.get_nbuckets_in_file(1)
 
+def test_get_nbuckets_in_data():
+
+    data, bucket = hepfile.load("FOR_TESTS.hdf5")
+    nbuckets = hepfile.get_nbuckets_in_data(data)
+    assert nbuckets == 10
+
+    # test incorrect input
+    with pytest.raises(hepfile.errors.InputError):
+        nbuckets = hepfile.get_nbuckets_in_data([])
+
+    # test missing key in data dictionary
+    del data['_NUMBER_OF_BUCKETS_']
+    with pytest.raises(AttributeError):
+        nbuckets = hepfile.get_nbuckets_in_data(data)
+        
 def test_get_file_metadata():
 
     filename = "FOR_TESTS.hdf5"
-
     metadata = hepfile.get_file_metadata(filename)
 
     assert 'date' in metadata
@@ -148,3 +195,63 @@ def test_get_file_metadata():
     assert isinstance(metadata['h5py_version'], str)
     assert isinstance(metadata['numpy_version'], str)
     assert isinstance(metadata['python_version'], str)
+
+    # just test printing the file metadata to make sure it runs
+    meta = hepfile.print_file_metadata(filename)
+
+
+def test_get_file_header():
+
+
+    filename = "FOR_TESTS.hdf5"
+
+    # before we add the header check if it throws an error
+    with pytest.raises(hepfile.errors.HeaderNotFound):
+        h = hepfile.get_file_header(filename)
+    
+    # add some header information to the test file
+    hdr = {'Author': 'Your Name',
+       'Institution': 'Siena College',
+       'Phone Number': 1234567890}
+    hepfile.write_file_header(filename, hdr)
+
+    # first test with return_type="dict"
+    hdr_dict = hepfile.get_file_header(filename)
+
+    assert 'Author' in hdr_dict.keys()
+    assert 'Institution' in hdr_dict.keys()
+    assert 'Phone Number' in hdr_dict.keys()
+
+    assert hdr_dict['Author'] == 'Your Name'
+    assert hdr_dict['Institution'] == 'Siena College'
+    assert hdr_dict['Phone Number'] == '1234567890'
+
+    # test with return_type='df'
+    hdr_df = hepfile.get_file_header(filename, return_type='df')
+
+    assert 'Author' in hdr_df.columns
+    assert 'Institution' in hdr_df.columns
+    assert 'Phone Number' in hdr_df.columns
+
+    assert hdr_df['Author'].iloc[0] == 'Your Name'
+    assert hdr_df['Institution'].iloc[0] == 'Siena College'
+    assert hdr_df['Phone Number'].iloc[0] == '1234567890'
+
+    
+    # test with return_type='dataframe'
+    hdr_df = hepfile.get_file_header(filename, return_type='dataframe')
+
+    assert 'Author' in hdr_df.columns
+    assert 'Institution' in hdr_df.columns
+    assert 'Phone Number' in hdr_df.columns
+
+    assert hdr_df['Author'].iloc[0] == 'Your Name'
+    assert hdr_df['Institution'].iloc[0] == 'Siena College'
+    assert hdr_df['Phone Number'].iloc[0] == '1234567890'
+    
+    # test other common errors
+    with pytest.raises(hepfile.errors.InputError):
+        hepfile.get_file_header(filename, return_type=0)
+
+    # just test printing the file header to make sure it runs
+    hdr = hepfile.print_file_header(filename)
