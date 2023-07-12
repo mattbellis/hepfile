@@ -175,7 +175,7 @@ def create_group(
     keys = data.keys()
 
     # Then put the group and any datasets in there next.
-    if group_name in keys:
+    if group_name in data["_GROUPS_"]:
         raise ValueError(f"\033[1m{group_name}\033[0m is already in the dictionary!")
 
     data["_GROUPS_"][group_name] = []
@@ -431,18 +431,27 @@ def pack(
             "_MAP_DATASETS_TO_DATA_TYPES_",
             "_META_",
             "_PROTECTED_NAMES_",
+            "_MAP_DATASETS_TO_INDEX_",
+            "_LIST_OF_DATASETS",
+            "_SINGLETONS_GROUP_",
+            "_HEADER_",
+            "_NUMBER_OF_BUCKETS_",
         }:
             continue
+
+        if isinstance(data[key], np.ndarray):
+            data[key] = data[key].tolist()
+
+        if isinstance(bucket[key], np.ndarray):
+            bucket[key] = bucket[key].tolist()
 
         # The singletons will only have 1 entry per bucket
         if key == "_SINGLETONS_GROUP_/COUNTER":
             data[key].append(1)
             continue
 
-        if isinstance(bucket[key], (list, np.ndarray)):
+        if isinstance(bucket[key], list):
             value = bucket[key]
-            if isinstance(value, np.ndarray):
-                value = value.tolist()
             if len(value) > 0:
                 data[key] += value
         else:

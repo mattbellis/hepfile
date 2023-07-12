@@ -40,9 +40,6 @@ def hepfile_to_awkward(
         ak_arrays (dict): dictionary of awkward arrays with the data.
     """
 
-    if datasets is None:
-        datasets = data["_LIST_OF_DATASETS_"]
-
     if groups is None:
         groups = list(data["_GROUPS_"].keys())
 
@@ -50,7 +47,7 @@ def hepfile_to_awkward(
 
     # turn a few things into sets for faster searching
     list_of_counters = set(data["_LIST_OF_COUNTERS_"])
-    singletons_group = set(data["_SINGLETONS_GROUP_"])
+    singletons_group = set(data["_GROUPS_"]["_SINGLETONS_GROUP_"])
 
     for group in groups:
         for dset in data["_GROUPS_"][group]:
@@ -63,6 +60,9 @@ def hepfile_to_awkward(
                 continue
 
             if dataset not in data.keys():
+                continue
+
+            if datasets is not None and dataset not in datasets:
                 continue
 
             if (
@@ -83,6 +83,8 @@ def hepfile_to_awkward(
             vals = data[dataset]
 
             if len(vals) > 0 and isinstance(vals[0], str):
+                if isinstance(vals, list):
+                    vals = np.array(vals)
                 vals = vals.astype(str)
             ak_array = ak.unflatten(list(vals), list(num))
 
@@ -99,6 +101,8 @@ def hepfile_to_awkward(
         )
         awk = ak.Record(ak_arrays)
 
+    print(awk.fields)
+    print(awk.fields)
     try:
         _is_valid_awkward(awk)
     except AwkwardStructureError as err:
@@ -193,14 +197,16 @@ def awkward_to_hepfile(
 def _awkward_depth(ak_array: ak.Record) -> int:
     max_depth = 0
     for item in ak_array.to_list():
-        item_depth = -1
+        item_depth = 0
         for string in str(item):
             if string == "{":
                 item_depth += 1
+
+            if item_depth > max_depth:
+                max_depth = item_depth
+
             if string == "}":
                 item_depth -= 1
-        if item_depth > max_depth:
-            max_depth = item_depth
 
     return max_depth
 

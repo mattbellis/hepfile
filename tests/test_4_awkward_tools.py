@@ -1,5 +1,6 @@
 import hepfile as hf
 import awkward as ak
+import pytest
 
 def test_hepfile_to_awkward():
     '''
@@ -21,7 +22,7 @@ def test_hepfile_to_awkward():
     assert "muons" in awk.fields
     assert "METpx" in awk.fields
     assert "METpy" in awk.fields
-
+    
     # check the second level keys
     for group in hepfile['_GROUPS_'].keys():
         for key in hepfile['_GROUPS_'][group]:
@@ -37,6 +38,13 @@ def test_hepfile_to_awkward():
     assert ak.all(hepfile['jet/e'] == ak.flatten(awk.jet.e))
     assert ak.all(hepfile['muons/px'] == ak.flatten(awk.muons.px))
 
+    # trigger an Awkward Structure Error
+    with pytest.raises(hf.errors.AwkwardStructureError):
+        data = hf.initialize()
+        hf.create_dataset(data, 'x')
+        data['x'] = {'w':{'z':{'y':[1]}}}
+        a = hf.awkward_tools.hepfile_to_awkward(data)
+        
 def test_awkward_to_hepfile():
     '''
     Tests hf.awkward_tools.awkward_to_hepfile
@@ -58,3 +66,16 @@ def test_awkward_to_hepfile():
     assert ak.all(data['jet/e'] == newdata['jet/e'])
     assert ak.all(data['muons/px'] == newdata['muons/px'])
     assert ak.all(ak.sort(data['_GROUPS_']['jet']) == ak.sort(newdata['_GROUPS_']['jet']))
+
+    # raise some errors
+    with pytest.raises(hf.errors.InputError):
+        hf.awkward_tools.awkward_to_hepfile(awk, write_hepfile=True)
+
+    with pytest.raises(hf.errors.AwkwardStructureError):
+        hf.awkward_tools.awkward_to_hepfile([])
+
+    with pytest.raises(hf.errors.AwkwardStructureError):
+        hf.awkward_tools.awkward_to_hepfile(ak.Array[1])
+
+
+         

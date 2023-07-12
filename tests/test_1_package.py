@@ -1,5 +1,7 @@
 import hepfile as m
 
 def test_version():
-    print('test')
+
+    assert m._PANDAS
+    assert m._AWKWARD
     assert m.__version__

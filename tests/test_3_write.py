@@ -2,6 +2,7 @@ import numpy as np
 import hepfile
 import h5py as h5
 
+import pytest
 import time
 
 import sys
@@ -58,7 +59,8 @@ def test_clear_bucket():
     desired_datasets = ['jet', 'muon']
     subset = 1000
 
-    data, bucket = hepfile.load(filename, False, desired_datasets, subset)
+    with pytest.warns(UserWarning):
+        data, bucket = hepfile.load(filename, False, desired_datasets, subset)
 
     hepfile.clear_bucket(bucket)
 
@@ -96,15 +98,28 @@ def test_create_group():
     assert isEmpty(data['_GROUPS_']) == False
     assert 'jet/njet' in data.keys()
 
-    hepfile.create_group(data,"test/slash",counter='ntest/slash')
+    with pytest.warns(UserWarning):
+        hepfile.create_group(data,"test/slash",counter='ntest/slash', verbose=True)
 
     assert 'test-slash' in data['_GROUPS_']
     assert 'test-slash/ntest-slash' in data.keys()
 
+    # try adding a protected group
+    with pytest.raises(hepfile.errors.InputError):
+        hepfile.create_group(data, '_META_', counter='n')
+
+    # try not giving a counter and catch the warning
+    with pytest.warns(UserWarning):
+        hepfile.create_group(data, 'test')
+
+    # try adding a key that is already there
+    with pytest.raises(ValueError):
+        hepfile.create_group(data, 'jet', counter='njet')
+
+    
 ################################################################################
 
 ################################################################################
-
 
 def test_pack():
 
@@ -113,7 +128,8 @@ def test_pack():
     hepfile.create_dataset(data, ['myfloat'], group='obj', dtype=float)
     hepfile.create_dataset(data, ['myint'], group='obj', dtype=int)
     hepfile.create_dataset(data, ['mystr'], group='obj', dtype=str)
-
+    hepfile.create_dataset(data, ['myarray'], group='obj', dtype=str)
+    
     bucket = hepfile.create_single_bucket(data)
 
     # Normal packing test
@@ -140,7 +156,8 @@ def test_pack():
     bucket['obj/myfloat'].append(2.0)
     bucket['obj/myint'].append(2)
     bucket['obj/mystr'].append('two')
-
+    bucket['obj/myarray'] = np.array([1,2])
+    
     # Is the mistake propagated?
     bucket['obj/nobj'] = 2
 
@@ -187,7 +204,7 @@ def test_create_dataset():
     hepfile.create_group(data, 'jet', counter='njet')
     hepfile.create_dataset(
         data, ['e', 'px', 'py', 'pz'], group='jet', dtype=float)
-    hepfile.create_dataset(data, 'METpx', dtype=int)
+    hepfile.create_dataset(data, 'METpx', dtype=int, verbose=True)
 
     assert isEmpty(data['_GROUPS_']) == False
     assert 'jet/njet' in data.keys()
@@ -200,37 +217,132 @@ def test_create_dataset():
     assert 'METpx' in data["_GROUPS_"]["_SINGLETONS_GROUP_"]
     assert data["_MAP_DATASETS_TO_COUNTERS_"]['METpx'] == "_SINGLETONS_GROUP_/COUNTER"
     assert data["_MAP_DATASETS_TO_DATA_TYPES_"]['METpx'] == int
+
+    # check that we protect the protected names
+    with pytest.raises(hepfile.errors.InputError):
+        hepfile.create_dataset(
+            data, '_META_', dtype=float)
+
+    # check that datasets that are already in there don't get added again
+    with pytest.warns(UserWarning):
+        hepfile.create_dataset(
+            data, 'e', group='jet', dtype=float)
+    
+    
 ################################################################################
 
+def test_add_meta():
+    # tests adding metadata to a group and dataset
+    data = hepfile.initialize()
+    hepfile.create_group(data, 'jet', counter='njet')
+    hepfile.create_dataset(
+        data, ['e', 'px', 'py', 'pz'], group='jet', dtype=float)
+    hepfile.create_dataset(data, 'METpx', dtype=int, verbose=True)
 
+    hepfile.add_meta(data, 'jet', 'This is one piece of data with units x')
+    hepfile.add_meta(data, 'jet/e', 123)
+    hepfile.add_meta(data, 'METpx', ['x', 'y', 'z'])
+
+    assert 'jet' in data['_META_']
+    assert 'jet/e' in data['_META_']
+    assert 'METpx' in data['_META_']
+
+    meta = data['_META_']
+    assert meta['jet'] == 'This is one piece of data with units x'
+    assert meta['jet/e'] == 123
+    assert len(meta['METpx']) == 3
+    
 ################################################################################
 def test_write_file_metadata():
 
     filename = "FOR_TESTS.hdf5"
-    file = h5.File(filename, "r")
+    with h5.File(filename, "r") as file:
 
-    # Check default attribute existence
-    assert 'date' in file.attrs.keys()
-    assert 'hepfile_version' in file.attrs.keys()
-    assert 'h5py_version' in file.attrs.keys()
-    assert 'numpy_version' in file.attrs.keys()
-    assert 'python_version' in file.attrs.keys()
-
-    # Check default attributes are strings
-    assert isinstance(file.attrs['date'], str)
-    assert isinstance(file.attrs['hepfile_version'], str)
-    assert isinstance(file.attrs['h5py_version'], str)
-    assert isinstance(file.attrs['numpy_version'], str)
-    assert isinstance(file.attrs['python_version'], str)
-
-    file.close()
+        # Check default attribute existence
+        assert 'date' in file.attrs.keys()
+        assert 'hepfile_version' in file.attrs.keys()
+        assert 'h5py_version' in file.attrs.keys()
+        assert 'numpy_version' in file.attrs.keys()
+        assert 'python_version' in file.attrs.keys()
+        
+        # Check default attributes are strings
+        assert isinstance(file.attrs['date'], str)
+        assert isinstance(file.attrs['hepfile_version'], str)
+        assert isinstance(file.attrs['h5py_version'], str)
+        assert isinstance(file.attrs['numpy_version'], str)
+        assert isinstance(file.attrs['python_version'], str)
 
     # Adding a new attribute
-    hepfile.write_file_metadata(filename, {'author': 'John Doe'})
-    file = h5.File(filename, "r")
+    hepfile.write_file_metadata(filename, {'author': 'John Doe'}, verbose=True)
+    with h5.File(filename, "r") as file:
+        assert 'author' in file.attrs.keys()
+        assert file.attrs['author'] == 'John Doe'
 
-    assert 'author' in file.attrs.keys()
-    assert file.attrs['author'] == 'John Doe'
-
-    file.close()
+    # try not appending, just overwriting
+    hepfile.write_file_metadata(filename, {'author': 'Jane Doe'},
+                                append=False, write_default_values=False)
+    with h5.File(filename, "r") as file:
+        assert 'author' in file.attrs.keys()
+        assert file.attrs['author'] == 'Jane Doe'        
+        assert 'date' not in file.attrs.keys()
+        assert 'hepfile_version' not in file.attrs.keys()
+        
 ################################################################################
+
+def test_write_file_header():
+
+    filename = "FOR_TESTS.hdf5"
+
+        # add some header information to the test file
+    hdr = {'Author': 'Your Name',
+       'Institution': 'Siena College',
+           'Phone Number': 1234567890,
+           'Other Info': [1, 2, 3]
+           }
+    hepfile.write_file_header(filename, hdr, verbose=True)
+
+    # first test with return_type="dict"
+    hdr_dict = hepfile.get_file_header(filename)
+
+    assert 'Author' in hdr_dict.keys()
+    assert 'Institution' in hdr_dict.keys()
+    assert 'Phone Number' in hdr_dict.keys()
+
+    assert hdr_dict['Author'] == 'Your Name'
+    assert hdr_dict['Institution'] == 'Siena College'
+    assert hdr_dict['Phone Number'] == '1234567890'
+    assert len(hdr_dict['Other Info']) == 3
+
+################################################################################
+
+def test_write_file():
+
+    # load in the test file and modify that to rewrite it
+    data, bucket = hepfile.load('FOR_TESTS.hdf5')
+
+    hepfile.create_group(data, 'testing', counter='n_testing')
+    hepfile.create_dataset(data, 'test', group='testing', dtype=str)
+
+    bucket = hepfile.create_single_bucket(data)
+    bucket['testing/test'].append('This is a test string')
+    
+    hepfile.pack(data, bucket)
+
+    # test writing with some warnings
+    with pytest.warns(UserWarning):
+        hepfile.write_to_file('FOR_TESTS_OUTPUT.hdf5', data, verbose=True)
+
+    with pytest.warns(UserWarning):
+        hepfile.write_to_file('FOR_TESTS_OUTPUT.hdf5', data, force_single_precision=True)
+
+    # test writing with metadata
+    hepfile.add_meta(data, 'testing', 'This is just for testing')
+    hepfile.add_meta(data, 'testing/test', 'This is just more for testing')
+
+    with pytest.warns(UserWarning):
+        hepfile.write_to_file('FOR_TESTS_OUTPUT.hdf5', data)
+
+    with h5.File('FOR_TESTS_OUTPUT.hdf5', 'r') as f:
+
+        assert f['testing'].attrs['meta'].decode() == 'This is just for testing'
+        assert f['testing/test'].attrs['meta'].decode() == 'This is just more for testing'
