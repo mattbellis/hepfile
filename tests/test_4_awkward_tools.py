@@ -69,12 +69,11 @@ def test_hepfile_to_awkward():
     hf.pack(data, bucket)
 
     a = hf.awkward_tools.hepfile_to_awkward(data)
-    s = ak.behaviors.string.StringBehavior
 
-    assert isinstance(a.x.z[0], s)
-    assert isinstance(a.x.y[0], s)
-    assert isinstance(a.x.w[0], s)
-    assert isinstance(a.x.a[0], s)
+    assert isinstance(ak.to_list(a.x.z)[0][0], str)
+    assert isinstance(ak.to_list(a.x.y)[0][0], str)
+    assert isinstance(ak.to_list(a.x.w)[0][0], str)
+    assert isinstance(ak.to_list(a.x.a)[0][0], str)
     
 def test_awkward_to_hepfile():
     '''
