@@ -5,6 +5,7 @@ import numpy as np
 import pandas as pd
 import awkward as ak
 import hepfile as hf
+import pytest
 
 def io(return_type='dictionary'):
     '''
@@ -56,6 +57,16 @@ def test_hepfile_to_df():
 
     assert len(dfs.event_num.unique()) == 1
     assert dfs.event_num.unique() == 1
+
+    # check the errors
+    with pytest.raises(hf.errors.InputError):
+        dfs = hf.df_tools.hepfile_to_df(data, events=1, groups=1)
+        
+    with pytest.raises(hf.errors.InputError):
+        dfs = hf.df_tools.hepfile_to_df(data, events='1')
+
+    with pytest.raises(hf.errors.InputError):
+        dfs = hf.df_tools.hepfile_to_df(data, groups='foo')
     
 def test_awkward_to_df():
     '''
@@ -93,6 +104,16 @@ def test_awkward_to_df():
     assert len(dfs.event_num.unique()) == 1
     assert dfs.event_num.unique() == 1    
 
+    # test the custom exceptions
+    with pytest.raises(hf.errors.InputError):
+        dfs = hf.df_tools.awkward_to_df(data, events=1, groups=1)
+        
+    with pytest.raises(hf.errors.InputError):
+        dfs = hf.df_tools.awkward_to_df(data, events='1')
+
+    with pytest.raises(hf.errors.InputError):
+        dfs = hf.df_tools.awkward_to_df(data, groups='foo')
+    
 def test_df_to_hepfile():
     '''
     Test df_to_hepfile
@@ -124,8 +145,16 @@ def test_df_to_hepfile():
                       'b':[7,8,9],
                       'e':[10,11,12],
                       'n':[0,1,1]})
+    singles = pd.DataFrame({'foo':['bar','why'],
+                            'n': [0, 1]})
 
-    d = hf.df_tools.df_to_hepfile({'x':x,'y':y}, write_hepfile=False, event_num_col='n')
+    d = hf.df_tools.df_to_hepfile({'x':x,'y':y, '_SINGLETON_VALUES_':singles}, write_hepfile=False, event_num_col='n')
     assert np.all(d['x/a'] == x['a'])
     assert np.all(d['y/a'] == y['a'])
     assert np.all(d['n'] == [0,1])
+
+    # raise some exceptions
+    with pytest.raises(hf.errors.InputError):
+        d = hf.df_tools.df_to_hepfile({'x':x,'y':y}, write_hepfile=False, event_num_col='foo')
+    
+    

@@ -1,5 +1,6 @@
 import hepfile as hf
 import awkward as ak
+import numpy as np
 import pytest
 
 def test_hepfile_to_awkward():
@@ -42,9 +43,38 @@ def test_hepfile_to_awkward():
     with pytest.raises(hf.errors.AwkwardStructureError):
         data = hf.initialize()
         hf.create_dataset(data, 'x')
-        data['x'] = {'w':{'z':{'y':[1]}}}
+        data['x'] = {'y': np.array([b'1']),
+                     'w':{'z':{'y':np.array([b'1']), 'i':[b'2']}}}
         a = hf.awkward_tools.hepfile_to_awkward(data)
-        
+
+    # try just converting a subset of groups and datasets
+    awk_subset = hf.awkward_tools.hepfile_to_awkward(hepfile,
+                                                     groups='jet',
+                                                     datasets=['jet/e', 'jet/px'])
+    assert 'jet' in  awk_subset.fields
+    assert 'muons' not in awk_subset.fields
+    assert 'METpx' not in awk_subset.fields
+    assert 'METpy' not in awk_subset.fields
+    assert ak.all(hepfile['jet/e'] == ak.flatten(awk.jet.e))
+
+    # convert with some weird data types
+    data = hf.initialize()
+    hf.create_group(data, 'x', counter='n_x')
+    hf.create_dataset(data, ['y', 'z', 'w', 'a'], group='x', dtype=str)
+    bucket = hf.create_single_bucket(data)
+    bucket['x/y'] = np.array([b'1'])
+    bucket['x/z'] = [b'1']
+    bucket['x/w'] = ['1']
+    bucket['x/a'] = np.array(['1'])
+    hf.pack(data, bucket)
+
+    a = hf.awkward_tools.hepfile_to_awkward(data)
+
+    assert isinstance(ak.to_list(a.x.z)[0][0], str)
+    assert isinstance(ak.to_list(a.x.y)[0][0], str)
+    assert isinstance(ak.to_list(a.x.w)[0][0], str)
+    assert isinstance(ak.to_list(a.x.a)[0][0], str)
+    
 def test_awkward_to_hepfile():
     '''
     Tests hf.awkward_tools.awkward_to_hepfile
@@ -59,7 +89,7 @@ def test_awkward_to_hepfile():
     
     # now try converting it back to a hepfile
     newdata = hf.awkward_tools.awkward_to_hepfile(awk, write_hepfile=False)
-    print(data['_GROUPS_'], newdata['_GROUPS_'])
+    
     # check that they are the same
     assert ak.all(data['METpy'] == newdata['METpy'])
     assert ak.all(data['METpx'] == newdata['METpx'])
@@ -77,5 +107,18 @@ def test_awkward_to_hepfile():
     with pytest.raises(hf.errors.AwkwardStructureError):
         hf.awkward_tools.awkward_to_hepfile(ak.Array[1])
 
+def test_get_awkward_type():
 
-         
+    with pytest.raises(hf.errors.InputError):
+        hf.awkward_tools._get_awkward_type(ak.Array([]))
+
+    with pytest.raises(hf.errors.InputError):
+        t = hf.awkward_tools._get_awkward_type(ak.Array([np.array(['1']), np.array([1,2])]))
+    
+def test_is_valid_awkward():
+
+    with pytest.raises(hf.errors.AwkwardStructureError):
+        hf.awkward_tools._is_valid_awkward(ak.Array(['x']))
+
+    with pytest.raises(hf.errors.AwkwardStructureError):
+        hf.awkward_tools._is_valid_awkward(np.array([1]))
