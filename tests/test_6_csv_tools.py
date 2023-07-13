@@ -10,10 +10,11 @@ def test_csv_to_hepfile():
     '''
 
     # do the conversion using some example csvs
-    datapath = os.path.join('docs', 'example_nb', '*.csv')
+    filedir = os.path.join('docs', 'example_nb')
+    datapath = os.path.join(filedir, '*.csv')
     files = glob.glob(datapath)
     common_key = 'Household ID'
-
+    
     with pytest.warns(UserWarning):
         filename, data = hf.csv_tools.csv_to_hepfile(files, common_key, outfile='test-csv.h5')
     
@@ -36,4 +37,4 @@ def test_csv_to_hepfile():
     with pytest.warns(UserWarning):
         filename, data = hf.csv_tools.csv_to_hepfile(files, common_key)
 
-    assert files[0].replace('.csv', '.h5') in glob.glob('docs/example_nb/*.h5')
+    assert files[0].replace('.csv', '.h5') in glob.glob(os.path.join(filedir,'*.h5'))
