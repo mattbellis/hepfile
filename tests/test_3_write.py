@@ -161,7 +161,7 @@ def test_pack():
     # Is the mistake propagated?
     bucket['obj/nobj'] = 2
 
-    hepfile.pack(data, bucket, AUTO_SET_COUNTER=False)
+    hepfile.pack(data, bucket, AUTO_SET_COUNTER=False, verbose=True)
     assert data['obj/nobj'][1] == 2
 
     # Fix mistake
@@ -226,8 +226,14 @@ def test_create_dataset():
     # check that datasets that are already in there don't get added again
     with pytest.warns(UserWarning):
         hepfile.create_dataset(
-            data, 'e', group='jet', dtype=float)
-    
+            data, 'e', group='jet', dtype=float, verbose=True)
+
+    with pytest.warns(UserWarning):
+        hepfile.create_dataset(data, 'METpx')
+
+    # try with a group that doesn't exist yet
+    with pytest.warns(UserWarning):
+        hepfile.create_dataset(data, 'test_data', group='test_group')
     
 ################################################################################
 
@@ -251,6 +257,10 @@ def test_add_meta():
     assert meta['jet'] == 'This is one piece of data with units x'
     assert meta['jet/e'] == 123
     assert len(meta['METpx']) == 3
+
+    # catch some warnings
+    with pytest.warns(UserWarning):
+        hepfile.add_meta(data, 'METpx', 1)
     
 ################################################################################
 def test_write_file_metadata():
@@ -312,6 +322,10 @@ def test_write_file_header():
     assert hdr_dict['Institution'] == 'Siena College'
     assert hdr_dict['Phone Number'] == '1234567890'
     assert len(hdr_dict['Other Info']) == 3
+
+    # catch an error
+    with pytest.raises(hepfile.errors.InputError):
+        hepfile.write_file_header(filename, {})
 
 ################################################################################
 

@@ -1,6 +1,7 @@
 import hepfile as hf
 import awkward as ak
 import numpy as np
+import pandas as pd
 import pytest
 
 def test_dictlike_to_hepfile():
@@ -52,6 +53,40 @@ def test_dictlike_to_hepfile():
     test3 = ['this', 'this']
     assert ak.all(ak_dict.other == test3)
 
+    # also test with a dataframe
+    df = [pd.DataFrame(i) for i in d]
+    data = hf.dict_tools.dictlike_to_hepfile(df, out, write_hepfile=False)
+
+    test1 = d[0]['jet']['px'] + d[1]['jet']['px']
+    assert all(data['jet/px'] == t for t in test1)
+
+    test2 = d[0]['muons']['py'] + d[1]['muons']['py']
+    assert all(data['muons/py']== t for t in test2)
+
+    assert all('this' == t for t in test3)
+
+    # check that it prints the right exceptions
+    with pytest.raises(TypeError):
+        hf.dict_tools.dictlike_to_hepfile(d, out, write_hepfile=False, foo='bar')
+
+    with pytest.raises(hf.errors.InputError):
+        hf.dict_tools.dictlike_to_hepfile(d, out, write_hepfile=False, how_to_pack='foo')
+
+    with pytest.raises(hf.errors.InputError):
+        hf.dict_tools.dictlike_to_hepfile(d, write_hepfile=True)
+        
+    del d[0]['other']
+    with pytest.raises(hf.errors.InputError):
+        data = hf.dict_tools.dictlike_to_hepfile(d, out, write_hepfile=False)
+
+    # check that awkward structure error is outputted when it should be
+    d2 = [
+        {'x': {'y': {'z': []}}},
+        {'x': {'y': {'z': [1]}}}
+    ]
+    with pytest.raises(hf.errors.DictStructureError):
+        data = hf.dict_tools.dictlike_to_hepfile(d2, how_to_pack='awkward', write_hepfile=False)
+        
 def test_dict_append():
     '''
     Unit tests for hepfile.dict_tools.append
@@ -110,3 +145,10 @@ def test_dict_append():
 
     test3 = ['this', 'this', 2]
     assert np.all(np.array(ak.to_list(mod.other)) == test3)
+
+    # try to get the input error to be raised
+    new_dict = {'jet': {'px': [10, 100], 'py': [0, 0]},
+                'muons': {'px': [5, 1000], 'py': [0, -1]}
+                }
+    with pytest.raises(hf.errors.InputError):
+        mod = hf.dict_tools.append(ak_dict, new_dict)

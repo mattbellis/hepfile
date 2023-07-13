@@ -34,11 +34,15 @@ def hepfile_to_awkward(
     Args:
         data (dict): Output data dictionary from the `hepfile.read.load` function.
         groups (list): list of groups to pull from data and convert to awkward arrays.
-        datasets (list): list of datasets to pull from data and include in the awkward arrays.
+        datasets (list): list of full dataset paths (ex. 'jet/px' not 'px') to pull
+        from data and include in the awkward arrays.
 
     Returns:
         ak_arrays (dict): dictionary of awkward arrays with the data.
     """
+
+    if isinstance(groups, str):
+        groups = [groups]
 
     if groups is None:
         groups = list(data["_GROUPS_"].keys())
@@ -67,7 +71,7 @@ def hepfile_to_awkward(
 
             if (
                 len(data[dataset]) != 0
-                and isinstance(data[dataset], np.ndarray)
+                and isinstance(data[dataset], (np.ndarray, list))
                 and isinstance(data[dataset][0], bytes)
             ):
                 data[dataset] = np.array([val.decode() for val in data[dataset]])
@@ -82,10 +86,6 @@ def hepfile_to_awkward(
             num = data[nkey]
             vals = data[dataset]
 
-            if len(vals) > 0 and isinstance(vals[0], str):
-                if isinstance(vals, list):
-                    vals = np.array(vals)
-                vals = vals.astype(str)
             ak_array = ak.unflatten(list(vals), list(num))
 
             if group not in ak_arrays:
@@ -101,8 +101,6 @@ def hepfile_to_awkward(
         )
         awk = ak.Record(ak_arrays)
 
-    print(awk.fields)
-    print(awk.fields)
     try:
         _is_valid_awkward(awk)
     except AwkwardStructureError as err:
@@ -117,7 +115,11 @@ def hepfile_to_awkward(
 
 ################################################################################
 def awkward_to_hepfile(
-    ak_array: ak.Record, outfile: str = None, write_hepfile: bool = True
+    ak_array: ak.Record,
+    outfile: str = None,
+    write_hepfile: bool = True,
+    verbose: bool = False,
+    **kwargs,
 ) -> dict:
     """
     Converts a dictionary of awkward arrays to a hepfile
@@ -127,6 +129,7 @@ def awkward_to_hepfile(
         outfile (str): path to write output hdf5 file to
         write_hepfile (bool): if True, writes data to outfile.
                               If False, just converts to hepfile format and returns
+        verbose (bool): if true print some stuff
         **kwargs (None): Passed to `hepfile.write.write_to_file`
 
     Returns:
@@ -180,14 +183,8 @@ def awkward_to_hepfile(
 
     # then write it out to a file
     if write_hepfile:
-        print("Writing the hdf5 file from the awkward array...")
-
-        for key, item in data.items():
-            if isinstance(item, (ak.Record, ak.Array)):
-                try:
-                    data[key] = ak.to_numpy(item)
-                except:
-                    data[key] = ak.to_list(item)
+        if verbose:
+            print("Writing the hdf5 file from the awkward array...")
 
         write_to_file(outfile, data)
 
@@ -223,7 +220,7 @@ def _is_valid_awkward(ak_array: ak.Record):
     if not isinstance(ak_array, (ak.Array, ak.Record)):
         raise AwkwardStructureError("Please input an Awkward Array or Awkward Record")
 
-    if ak_array.fields == 0:
+    if len(ak_array.fields) == 0:
         raise AwkwardStructureError(
             "Your input Awkward Array must be a Record. \
             This means it needs to have fields in it."

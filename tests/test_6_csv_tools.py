@@ -31,3 +31,9 @@ def test_csv_to_hepfile():
 
     assert np.all(np.array(data['People.csv/Height']) == np.array(people['Height']))
     assert np.all(np.array(data['People.csv/Gender ID']) == np.array(people['Gender ID']))
+
+    # try passing it no outfile name to make sure that works too
+    with pytest.warns(UserWarning):
+        filename, data = hf.csv_tools.csv_to_hepfile(files, common_key)
+
+    assert files[0].replace('.csv', '.h5') in glob.glob('docs/example_nb/*.h5')

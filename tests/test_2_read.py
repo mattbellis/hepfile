@@ -199,7 +199,30 @@ def test_get_file_metadata():
     # just test printing the file metadata to make sure it runs
     meta = hepfile.print_file_metadata(filename)
 
+    # new file with no metadata and check some errors
+    newfile = 'FOR_TESTS_NO_META.h5'
+    with h5.File(filename, 'r') as f1:
+        with h5.File(newfile, 'w') as f2:
+            for d in f1:
+                f1.copy(d, f2)
 
+    with pytest.raises(hepfile.errors.MetadataNotFound):
+        metadata = hepfile.get_file_metadata(newfile)
+
+    with pytest.warns(UserWarning):
+        meta = hepfile.print_file_metadata(newfile)
+
+    with pytest.raises(AttributeError):
+        hepfile.get_nbuckets_in_file(newfile)
+    
+    # add some other attributes and test with those
+    with h5.File(filename, 'r+') as f:
+        f.attrs['new_data'] = 1
+
+    meta = hepfile.get_file_metadata(filename)
+    hepfile.print_file_metadata(filename)
+    
+    
 def test_get_file_header():
 
 
@@ -208,7 +231,7 @@ def test_get_file_header():
     # before we add the header check if it throws an error
     with pytest.raises(hepfile.errors.HeaderNotFound):
         h = hepfile.get_file_header(filename)
-    
+        
     # add some header information to the test file
     hdr = {'Author': 'Your Name',
        'Institution': 'Siena College',

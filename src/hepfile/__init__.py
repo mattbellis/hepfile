@@ -44,11 +44,6 @@ __all__ = ("__version__", "__package__", "_AWKWARD", "_PANDAS")
 
 # override getattr
 def __getattr__(name: str) -> bool:
-    if name == "_AWKWARD":
-        return _AWKWARD
-    if name == "_PANDAS":
-        return _PANDAS
-
     if not _AWKWARD and name == "awkward_tools":
         raise MissingOptionalDependency("awkward")
 

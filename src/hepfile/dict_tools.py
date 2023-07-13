@@ -52,9 +52,9 @@ def dictlike_to_hepfile(
     """
 
     # check if it is a list of dictionaries or dataframe
-    if not isinstance(dict_list, list):
+    if not isinstance(dict_list[0], dict):
         try:  # try convert from dataframe to list of dictionaries
-            dict_list = [dict_list[key].to_dict() for key in dict_list.to_dict()]
+            dict_list = [item.to_dict() for item in dict_list]
         except Exception as exc:
             raise InputError(
                 "Please input either a dataframe or list \
@@ -76,22 +76,6 @@ def dictlike_to_hepfile(
         return _awkward(dict_list, outfile, **kwargs)
 
     if how_to_pack == "classic":
-        # check kwargs
-        test = {}
-        test.update(**kwargs)
-        try:
-            test.pop("write_hepfile")
-        except KeyError:
-            pass
-        try:
-            test.pop("ignore_protected")
-        except KeyError:
-            pass
-        if len(test) > 0:
-            warnings.warn(
-                "Since how_to_pack=classic, only write_hepfile will be passed along!"
-            )
-
         return _classic(dict_list, outfile, **kwargs)
 
     raise InputError("how_to_pack should either be 'awkward' or 'classic'")
@@ -127,7 +111,9 @@ def _classic(
         create_group(data, group_name, counter=f"n{group_name}")
         for dataset_name in temp_dict[group_name]:
             if not isinstance(temp_dict[group_name][dataset_name], (list, np.ndarray)):
-                raise DictStructureError("Subdictionaries must be made up of lists!")
+                temp_dict[group_name][dataset_name] = [
+                    temp_dict[group_name][dataset_name]
+                ]
 
             test_list = temp_dict[group_name][dataset_name]
 
