@@ -86,6 +86,10 @@ def test_dictlike_to_hepfile():
     ]
     with pytest.raises(hf.errors.DictStructureError):
         data = hf.dict_tools.dictlike_to_hepfile(d2, how_to_pack='awkward', write_hepfile=False)
+
+    # check with a bad input
+    with pytest.raises(hf.errors.InputError):
+        data = hf.dict_tools.dictlike_to_hepfile([[1]], how_to_pack='awkward', write_hepfile=False)
         
 def test_dict_append():
     '''
