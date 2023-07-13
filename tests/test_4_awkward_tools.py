@@ -88,7 +88,7 @@ def test_awkward_to_hepfile():
     awk = hf.awkward_tools.hepfile_to_awkward(data)
     
     # now try converting it back to a hepfile
-    newdata = hf.awkward_tools.awkward_to_hepfile(awk, write_hepfile=False)
+    newdata = hf.awkward_tools.awkward_to_hepfile(awk, outfile='awk-test.h5', write_hepfile=True, verbose=True)
     
     # check that they are the same
     assert ak.all(data['METpy'] == newdata['METpy'])

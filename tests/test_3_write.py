@@ -172,22 +172,14 @@ def test_pack():
     bucket['obj/myint'].append(2)
     # 1 != 0, strict checking should fail.
 
-    try:
-        test = hepfile.pack(data, bucket, STRICT_CHECKING=True)
-    except hepfile.errors.DatasetSizeDiscrepancy:
-        pass
-    else:
-        assert test == -1
-        # Was nothing packed?
-        assert len(data['obj/myint']) == 6
-        # Is bucket not cleared?
-        assert isEmpty(bucket) == False
-        
+    with pytest.raises(hepfile.errors.DatasetSizeDiscrepancy):
+        test = hepfile.pack(data, bucket, STRICT_CHECKING=True, verbose=True)
+            
     # EMPTY_OUT_BUCKET = False
 
     bucket['obj/mystr'].append('two')
 
-    hepfile.pack(data, bucket, EMPTY_OUT_BUCKET=False)
+    hepfile.pack(data, bucket, EMPTY_OUT_BUCKET=False, verbose=True)
 
     assert isEmpty(bucket) == False
 
@@ -203,7 +195,7 @@ def test_create_dataset():
     data = hepfile.initialize()
     hepfile.create_group(data, 'jet', counter='njet')
     hepfile.create_dataset(
-        data, ['e', 'px', 'py', 'pz'], group='jet', dtype=float)
+        data, ['e', 'px', 'py', 'pz'], group='jet', dtype=float, verbose=True)
     hepfile.create_dataset(data, 'METpx', dtype=int, verbose=True)
 
     assert isEmpty(data['_GROUPS_']) == False
