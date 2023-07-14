@@ -209,7 +209,7 @@ def create_group(
 ################################################################################
 def create_dataset(
     data: dict,
-    datasets: list,
+    dset_name: list,
     group: str = None,
     dtype: type = float,
     verbose=False,
@@ -220,7 +220,7 @@ def create_dataset(
     Args:
         data (dict): Dictionary that contains the group
 
-        datasets (list): Dataset to be added to the group (This doesn't have to be a list)
+        dset_name (list/str): Dataset to be added to the group (This doesn't have to be a list)
 
         group (string): Name of group the dataset will be added to.  None by default
 
@@ -231,11 +231,11 @@ def create_dataset(
 
     """
 
-    if not isinstance(datasets, list):
-        datasets = [datasets]
+    if not isinstance(dset_name, list):
+        dset_name = [dset_name]
 
     # Check for slashes in the dataset name. We can't have them.
-    for i, tempname in enumerate(datasets):
+    for i, tempname in enumerate(dset_name):
         # check that tempname isn't in protected_names
         if not ignore_protected and tempname in constants.protected_names:
             raise InputError(
@@ -254,13 +254,13 @@ def create_dataset(
                 )
             )
             warnings.warn(warning)
-            datasets[i] = new_dataset_name
+            dset_name[i] = new_dataset_name
 
     keys = data.keys()
 
     # These will be entries for the SINGLETON_GROUP, if there is no group passed in
     if group is None:
-        for dataset in datasets:
+        for dataset in dset_name:
             if dataset in data["_GROUPS_"]["_SINGLETONS_GROUP_"]:
                 warnings.warn(
                     f"\033[1m{dataset}\033[0m is already in the dictionary! Skipping!"
@@ -288,7 +288,7 @@ def create_dataset(
         )
         create_group(data, group, counter=counter)
 
-    for dataset in datasets:
+    for dataset in dset_name:
         name = f"{group}/{dataset}"
 
         # check that tempname isn't in protected_names
