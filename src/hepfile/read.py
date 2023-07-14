@@ -40,16 +40,17 @@ def load(
 
         subset (int): Number of buckets to be read from input file
 
-        return_type (str): Type to return. Options are 'dictionary', 'awkward', and 'pandas'.
-                           Default is 'dictionary'. Note: the 'awkward' option requires
-                           hepfile to be installed with the awkward or all option and the
-                           'pandas' option requires hepfile to be installed with the pandas
-                           or all option!
+        return_type (str): Type to return. Options are 'dictionary', 'awkward', and '
+                           'pandas'. Default is 'dictionary'. Note: the 'awkward' option
+                           requires hepfile to be installed with the awkward or all
+                           option and the 'pandas' option requires hepfile to be
+                           installed with the pandas or all option!
 
     Returns:
         data (dict): Selected data from HDF5 file
 
-        bucket (dict): An empty bucket dictionary to be filled by data from select buckets
+        bucket (dict): An empty bucket dictionary to be filled by data from
+                       select buckets
 
     """
 
@@ -88,7 +89,7 @@ def load(
                 if verbose:
                     warning = "\n".join(
                         (
-                            "Single subset value of {subset} being interpreted as a high range",
+                            f"Single subset value ({subset}) being used as high range",
                             f"subset being set to a range of (0,{subset})\n",
                         )
                     )
@@ -127,7 +128,8 @@ def load(
             if verbose:
                 print("Will read in a subset of the file!")
                 print(
-                    f"From bucket {subset[0]} (inclusive) through bucket {subset[1]-1} (inclusive)"
+                    f"From bucket {subset[0]} (inclusive) through bucket"
+                    + f"{subset[1]-1} (inclusive)"
                 )
                 print(f"Bucket {subset[1]} is not read in")
                 print(f"Reading in {nbuckets} buckets\n")
@@ -250,8 +252,8 @@ def load(
                 print(f"full file index: {full_file_index}\n")
 
             if subset is not None:
-                # We tack on +1 to the high range of subset when we pull out the counters
-                # and index because we want to get all of the entries for the last entry.
+                # We tack on +1 to the high range of subset when we get the counters
+                # and index because we want all of the entries for the last entry.
                 data[counter_name] = infile[counter_name][subset[0] : subset[1] + 1]
                 index = full_file_index[subset[0] : subset[1] + 1]
             else:

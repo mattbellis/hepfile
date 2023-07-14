@@ -236,7 +236,6 @@ def _is_valid_awkward(ak_array: ak.Record):
 
 
 def _get_awkward_type(ak_array: ak.Record) -> type:
-    ndim = ak_array.ndim
     try:
         if isinstance(ak_array[0], (ak.Record, ak.Array)):
             arr = ak_array
