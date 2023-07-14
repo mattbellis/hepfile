@@ -113,7 +113,7 @@ def test_create_group():
         hepfile.create_group(data, 'test')
 
     # try adding a key that is already there
-    with pytest.raises(ValueError):
+    with pytest.warns(UserWarning):
         hepfile.create_group(data, 'jet', counter='njet')
 
     
