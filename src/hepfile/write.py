@@ -176,7 +176,9 @@ def create_group(
 
     # Then put the group and any datasets in there next.
     if group_name in data["_GROUPS_"]:
-        raise ValueError(f"\033[1m{group_name}\033[0m is already in the dictionary!")
+        warning = f"\033[1m{group_name}\033[0m is already in the dictionary! Not Adding!")
+        warnings.warn(warning)
+        return
 
     data["_GROUPS_"][group_name] = []
     if verbose:
