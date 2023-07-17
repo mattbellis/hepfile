@@ -114,7 +114,7 @@ def hepfile_to_awkward(
 
 
 ################################################################################
-def awkward_to_hepfile(
+def awkward_to_hepfile_OLD(
     ak_array: ak.Record,
     outfile: str = None,
     write_hepfile: bool = True,
@@ -191,6 +191,177 @@ def awkward_to_hepfile(
     return data
 
 
+def pack_single_awkward_array(
+    d: dict, arr: ak.Array, dset_name: str, group_name: str = None, counter: str = None
+) -> None:
+    """
+    Packs a 1D awkward array as a dataset/singleton depending on if group_name is given
+
+    Args:
+        d [dict]: data dictionary created by hepfile.initialize()
+        arr [ak.Array]: 1D awkward array to pack as either a dataset or a group.
+                        If group_name is None the arr is packed as a singleton
+        dset_name [str]: Full path to the dataset.
+        group_name [str]: name of the group to pack the arr under, default is None
+        counter [str]: name of the counter in the hepfile for this dataset
+    """
+    if group_name is not None:
+        if counter is None:
+            counter = f"{group_name}/n{group_name}"
+
+        # add the counter to the groups dictionary if it is not already in it
+        if group_name not in d["_GROUPS_"]:
+            d["_GROUPS_"][group_name] = [counter.split("/")[1]]
+
+            # We will use this name for the counter later
+            d["_MAP_DATASETS_TO_DATA_TYPES_"][counter] = int
+
+            d["_MAP_DATASETS_TO_COUNTERS_"][group_name] = counter
+            d["_LIST_OF_COUNTERS_"].append(counter)
+
+    else:
+        counter = "_SINGLETONS_GROUP_/COUNTER"
+
+    # Tells us if this is jagged or not
+    if arr.ndim == 1:
+        # Get the datatpe before we flatten it
+        if len(arr) == 0:
+            dtype = None
+        else:
+            dtype = _get_awkward_type(arr)
+
+        num = np.ones(len(arr), dtype=int)
+
+        x = ak.to_numpy(arr)
+
+    else:
+        # Get the datatpe before we flatten it
+        if len(arr[0]) == 0:
+            dtype = None
+        else:
+            dtype = _get_awkward_type(arr)
+
+        # This saves the counter as int64, taking up a bit more space
+        # Probably minimal though.
+        # num = ak.num(x)
+        # This saves the counter as int32
+        num = ak.to_numpy(ak.num(arr)).astype(np.int32)
+
+        x = ak.flatten(arr).to_numpy()
+
+    d[dset_name] = x
+
+    # Not a SINGLETON, the user has passed in a groupname
+    if group_name is not None:
+        d["_MAP_DATASETS_TO_DATA_TYPES_"][dset_name] = dtype
+        d["_MAP_DATASETS_TO_COUNTERS_"][dset_name] = counter
+        d["_GROUPS_"][group_name].append(dset_name.split("/")[1])
+        if counter not in d:
+            d[counter] = num
+
+    # If it is a SINGLETON
+    else:
+        d["_MAP_DATASETS_TO_DATA_TYPES_"][dset_name] = dtype
+        d["_MAP_DATASETS_TO_COUNTERS_"][dset_name] = "_SINGLETONS_GROUP_/COUNTER"
+        d["_GROUPS_"]["_SINGLETONS_GROUP_"].append(dset_name)
+        if len(d[counter]) == 0:
+            d[counter] = num
+
+
+def pack_multiple_awkward_arrays(
+    d: dict, arr: ak.Array, group_name: str = None, group_counter_name: str = None
+) -> None:
+    """
+    Pack an awkward array of arrays into group_name or the singletons group
+
+    Args:
+        d [dict]: hepfile data dictionary that is returned from hepfile.initialize()
+        arr [ak.Array]: Awkward array of the group in a set of data
+        group_name [str]: Name of the group to pack arr into, if None (default) it is
+                          packed into the signletons group
+    """
+
+    # If the user passed in a group, then the datasets will
+    # be under that group
+
+    # check that arr is an awkward array
+    if not isinstance(arr, (ak.Array, ak.Record)):
+        try:
+            arr = ak.Array(arr)
+        except Exception as exc:
+            raise ImportError("Cannot convert your input to an awkward array!") from exc
+
+    if len(arr.fields) == 0:
+        raise ImportError(
+            "The input awkward array must have at least one field value! "
+            + "If this is a singleton just provide the name of the singleton "
+            + "as the field"
+        )
+    # Loop over the dictionary that is passed in
+    for field in arr.fields:
+        # build a name for the hepfile entry
+        if group_name is None:
+            # these are singletons
+            dataset_name = field
+        else:
+            # these are regular groups with datasets
+            dataset_name = f"{group_name}/{field}"
+
+        pack_single_awkward_array(
+            d,
+            arr[field],
+            dataset_name,
+            group_name=group_name,
+            counter=group_counter_name,
+        )
+
+
+def awkward_to_hepfile(
+    ak_array: ak.Array, outfile: str = None, write_hepfile: bool = True, **kwargs
+) -> dict:
+    """
+    Write an awkward array with depth <= 2 to a hepfile
+
+    Args:
+        ak_array [ak.Array]: awkward array with fields of groups/singletons.
+                             Under the group fields are the dataset fields.
+        outfile [str]: path to where the hepfile should be written. Default is None
+                       and can only be None if write_hepfile=False.
+        write_hepfile [bool]: if True, write the hepfile and return the data dictionary.
+                              If False, just return the data dictionary without
+                              returning. Default is True.
+        **kwargs: passed to `hepfile.write_to_file`
+
+    Returns:
+        Data dictionary in the hepfile
+    """
+
+    _is_valid_awkward(ak_array)
+
+    if write_hepfile is True and outfile is None:
+        raise InputError("Please provide an outfile path if write_hepfile=True!")
+
+    if write_hepfile is False and outfile is not None:
+        warnings.warn(
+            "You set write_hepfile to False but provided an output file path. \
+            This output file path will not be used!"
+        )
+
+    data = initialize()
+    for group in ak_array.fields:
+        if len(ak_array[group].fields) == 0:
+            # this is a singleton
+            pack_multiple_awkward_arrays(data, {group: ak_array[group]})
+        else:
+            # these are datasets under group
+            pack_multiple_awkward_arrays(data, ak_array[group], group_name=group)
+
+    if write_hepfile:
+        write_to_file(outfile, data)
+
+    return data
+
+
 def _awkward_depth(ak_array: ak.Record) -> int:
     max_depth = 0
     for item in ak_array.to_list():
@@ -240,6 +411,7 @@ def _get_awkward_type(ak_array: ak.Record) -> type:
         if isinstance(ak_array[0], (ak.Record, ak.Array)):
             arr = ak_array
             type_str = ak_array.type.content
+
             if isinstance(type_str, ak.types.NumpyType):
                 dtype = type_str.primitive
             else:
@@ -256,6 +428,8 @@ def _get_awkward_type(ak_array: ak.Record) -> type:
             np_dtype = str
 
     except Exception as exc:
-        raise InputError("Cannot convert input value to a numpy data type!") from exc
+        raise InputError(
+            "Cannot convert awkward data type to a numpy data type!"
+        ) from exc
 
     return np_dtype

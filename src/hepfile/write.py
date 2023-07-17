@@ -773,10 +773,11 @@ def write_to_file(
                         dtype = x.dtype
                     else:
                         dtype = None
-                        warnings.warn(
-                            "Not a proper data type to convert to single precision, "
-                            + "skipping!"
-                        )
+                        if verbose:
+                            warnings.warn(
+                                "Not a proper data type to convert to single precision,"
+                                + " skipping!"
+                            )
 
                     if dtype == np.float64:
                         if verbose:
