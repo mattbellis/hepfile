@@ -143,18 +143,24 @@ def pack_single_awkward_array(
     else:
         counter = "_SINGLETONS_GROUP_/COUNTER"
 
-    # Get the datatpe before we flatten it
-    if len(arr[0]) == 0:
-        dtype = None
-    else:
-        dtype = _get_awkward_type(arr)
-
     # Tells us if this is jagged or not
     if arr.ndim == 1:
+        # Get the datatpe before we flatten it
+        if len(arr) == 0:
+            dtype = None
+        else:
+            dtype = _get_awkward_type(arr)
+
         num = np.ones(len(arr), dtype=int)
         x = ak.to_numpy(arr)
 
     else:
+        # Get the datatpe before we flatten it
+        if len(arr[0]) == 0:
+            dtype = None
+        else:
+            dtype = _get_awkward_type(arr)
+
         # This saves the counter as int64, taking up a bit more space
         # Probably minimal though.
         # num = ak.num(x)
