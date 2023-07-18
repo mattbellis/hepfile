@@ -9,6 +9,8 @@ You must have installed hepfile with either
 """
 from __future__ import annotations
 
+import time
+
 import warnings
 import awkward as ak
 import numpy as np
@@ -53,6 +55,8 @@ def hepfile_to_awkward(
     list_of_counters = set(data["_LIST_OF_COUNTERS_"])
     singletons_group = set(data["_GROUPS_"]["_SINGLETONS_GROUP_"])
 
+    start = time.time() 
+
     for group in groups:
         for dset in data["_GROUPS_"][group]:
             if dset in singletons_group:
@@ -86,11 +90,17 @@ def hepfile_to_awkward(
             num = data[nkey]
             vals = data[dataset]
 
-            ak_array = ak.unflatten(list(vals), list(num))
+            print(group,dataset)
+            #ak_array = ak.unflatten(list(vals), list(num))
+            ak_array = ak.unflatten(vals, num)
 
             if group not in ak_arrays:
                 ak_arrays[group] = {}
             ak_arrays[group][dset] = ak_array
+
+    print(f"Time to convert the arrays is {time.time() - start} sectonds")
+
+    start = time.time()
 
     try:
         awk = ak.Array(ak_arrays)
@@ -109,6 +119,8 @@ def hepfile_to_awkward(
             "Cannot convert to proper awkward array because of the above \
             error! Check your input hepfile format"
         ) from err
+
+    print(f"Time to pack everything into a bigger awkward array is {time.time() - start} sectonds")
 
     return awk
 
