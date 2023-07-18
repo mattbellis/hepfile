@@ -803,6 +803,9 @@ def write_to_file(
                     #
                     # https://stackoverflow.com/questions/68500454/can-i-use-h5py-to-write-strings-to-an-hdf5-file-in-one-line-rather-than-looping
                     dataset_dtype = h5.special_dtype(vlen=str)
+
+                    if not hasattr(x[0], "__len__"):
+                        x = x.astype(str)
                     longest_word = len(max(x, key=len))
                     arr = np.array(x, dtype="S" + str(longest_word))
                     hdoutfile.create_dataset(

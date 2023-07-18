@@ -21,6 +21,7 @@ from hepfile.write import (
     pack,
 )
 from hepfile.errors import AwkwardStructureError, InputError
+from hepfile.constants import char_codes
 
 
 ################################################################################
@@ -416,7 +417,7 @@ def _get_awkward_type(ak_array: ak.Record) -> type:
             dtype = np.dtype("<U1")
 
         np_dtype = np.dtype(dtype)
-        if np_dtype.char == "U":
+        if np_dtype.kind not in char_codes:
             np_dtype = str
 
     except Exception as exc:

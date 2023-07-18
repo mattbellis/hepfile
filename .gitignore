@@ -152,6 +152,7 @@ dist/
 *.fits
 *.root
 *.ROOT
+*.parquet
 
 # no html files that were generated for testing
 html/
