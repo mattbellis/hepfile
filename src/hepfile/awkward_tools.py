@@ -9,8 +9,6 @@ You must have installed hepfile with either
 """
 from __future__ import annotations
 
-import time
-
 import warnings
 import awkward as ak
 import numpy as np
@@ -55,8 +53,6 @@ def hepfile_to_awkward(
     list_of_counters = set(data["_LIST_OF_COUNTERS_"])
     singletons_group = set(data["_GROUPS_"]["_SINGLETONS_GROUP_"])
 
-    start = time.time() 
-
     for group in groups:
         for dset in data["_GROUPS_"][group]:
             if dset in singletons_group:
@@ -90,17 +86,12 @@ def hepfile_to_awkward(
             num = data[nkey]
             vals = data[dataset]
 
-            print(group,dataset)
-            #ak_array = ak.unflatten(list(vals), list(num))
+            # ak_array = ak.unflatten(list(vals), list(num))
             ak_array = ak.unflatten(vals, num)
 
             if group not in ak_arrays:
                 ak_arrays[group] = {}
             ak_arrays[group][dset] = ak_array
-
-    print(f"Time to convert the arrays is {time.time() - start} sectonds")
-
-    start = time.time()
 
     try:
         awk = ak.Array(ak_arrays)
@@ -119,8 +110,6 @@ def hepfile_to_awkward(
             "Cannot convert to proper awkward array because of the above \
             error! Check your input hepfile format"
         ) from err
-
-    print(f"Time to pack everything into a bigger awkward array is {time.time() - start} sectonds")
 
     return awk
 
@@ -374,21 +363,16 @@ def awkward_to_hepfile(
     return data
 
 
-def _awkward_depth(ak_array: ak.Record) -> int:
-    max_depth = 0
-    for item in ak_array.to_list():
-        item_depth = 0
-        for string in str(item):
-            if string == "{":
-                item_depth += 1
-
-            if item_depth > max_depth:
-                max_depth = item_depth
-
-            if string == "}":
-                item_depth -= 1
-
-    return max_depth
+def _awkward_depth_check(ak_array: ak.Record) -> int:
+    for field in ak_array.fields:
+        if not isinstance(ak_array[field], (ak.Record, ak.Array)):
+            continue
+        for subfield in ak_array[field].fields:
+            if len(ak_array[field][subfield].fields) != 0:
+                raise AwkwardStructureError(
+                    "Hepfile only supports awkward arrays \
+                with a depth <= 2! Please ensure your input follows this guideline"
+                )
 
 
 def _is_valid_awkward(ak_array: ak.Record):
@@ -411,11 +395,7 @@ def _is_valid_awkward(ak_array: ak.Record):
 
     # check input array only has a "depth" of 2
     # this can be removed once hepfiles support unlimited depth of groups!
-    if _awkward_depth(ak_array) > 2:
-        raise AwkwardStructureError(
-            "Hepfile only supports awkward arrays with a depth <= 2! \
-            Please ensure your input follows this guideline."
-        )
+    _awkward_depth_check(ak_array)
 
 
 def _get_awkward_type(ak_array: ak.Record) -> type:
