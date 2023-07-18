@@ -14,11 +14,7 @@ import awkward as ak
 import numpy as np
 from hepfile.write import (
     initialize,
-    create_group,
-    create_dataset,
     write_to_file,
-    create_single_bucket,
-    pack,
 )
 from hepfile.errors import AwkwardStructureError, InputError
 from hepfile.constants import char_codes
@@ -116,83 +112,6 @@ def hepfile_to_awkward(
 
 
 ################################################################################
-def awkward_to_hepfile_OLD(
-    ak_array: ak.Record,
-    outfile: str = None,
-    write_hepfile: bool = True,
-    verbose: bool = False,
-    **kwargs,
-) -> dict:
-    """
-    Converts a dictionary of awkward arrays to a hepfile
-
-    Args:
-        ak_array (Awkward Array): dictionary of Awkward Arrays to write to a hepfile
-        outfile (str): path to write output hdf5 file to
-        write_hepfile (bool): if True, writes data to outfile.
-                              If False, just converts to hepfile format and returns
-        verbose (bool): if true print some stuff
-        **kwargs (None): Passed to `hepfile.write.write_to_file`
-
-    Returns:
-        Dictionary of hepfile data
-    """
-
-    # perform IO checks
-
-    _is_valid_awkward(ak_array)
-
-    if write_hepfile is True and outfile is None:
-        raise InputError("Please provide an outfile path if write_hepfile=True!")
-
-    if write_hepfile is False and outfile is not None:
-        warnings.warn(
-            "You set write_hepfile to False but provided an output file path. \
-            This output file path will not be used!"
-        )
-
-    data = initialize()
-    # first create the named groups and datasets
-    for group in ak_array.fields:
-        counter = f"n{group}"
-
-        # check for singletons
-        if len(ak_array[group].fields) == 0:
-            dtype = _get_awkward_type(ak_array[group])
-            create_dataset(data, group, dtype=dtype)
-            continue
-
-        create_group(data, group, counter=counter)
-        for dataset in ak_array[group].fields:
-            if len(ak_array[group][dataset][0]) == 0:
-                dtype = None
-            else:
-                dtype = _get_awkward_type(ak_array[group][dataset])
-            create_dataset(data, dataset, group=group, dtype=dtype)
-
-    # then pack data from the awkward array
-    for data_dict in ak_array:
-        bucket = create_single_bucket(data)
-        for group in data_dict.fields:
-            if group in bucket["_GROUPS_"]["_SINGLETONS_GROUP_"]:
-                bucket[group] = data_dict[group]
-                continue
-
-            for dataset in data_dict[group].fields:
-                name = f"{group}/{dataset}"
-                bucket[name] = data_dict[group][dataset].to_list()
-        pack(data, bucket)
-
-    # then write it out to a file
-    if write_hepfile:
-        if verbose:
-            print("Writing the hdf5 file from the awkward array...")
-
-        write_to_file(outfile, data)
-
-    return data
-
-
 def pack_single_awkward_array(
     d: dict, arr: ak.Array, dset_name: str, group_name: str = None, counter: str = None
 ) -> None:
@@ -224,31 +143,23 @@ def pack_single_awkward_array(
     else:
         counter = "_SINGLETONS_GROUP_/COUNTER"
 
+    # Get the datatpe before we flatten it
+    if len(arr[0]) == 0:
+        dtype = None
+    else:
+        dtype = _get_awkward_type(arr)
+
     # Tells us if this is jagged or not
     if arr.ndim == 1:
-        # Get the datatpe before we flatten it
-        if len(arr) == 0:
-            dtype = None
-        else:
-            dtype = _get_awkward_type(arr)
-
         num = np.ones(len(arr), dtype=int)
-
         x = ak.to_numpy(arr)
 
     else:
-        # Get the datatpe before we flatten it
-        if len(arr[0]) == 0:
-            dtype = None
-        else:
-            dtype = _get_awkward_type(arr)
-
         # This saves the counter as int64, taking up a bit more space
         # Probably minimal though.
         # num = ak.num(x)
         # This saves the counter as int32
         num = ak.to_numpy(ak.num(arr)).astype(np.int32)
-
         x = ak.flatten(arr).to_numpy()
 
     d[dset_name] = x
