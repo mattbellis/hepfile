@@ -121,8 +121,8 @@ def _classic(
             create_dataset(data, dataset_name, group=group_name, dtype=dtype)
 
     # now pack the data from each data dictionary
+    bucket = create_single_bucket(data)
     for data_dict in dict_list:
-        bucket = create_single_bucket(data)
         for group in data_dict:
             group_name = group.replace("/", "-")
             if group in bucket["_GROUPS_"]["_SINGLETONS_GROUP_"]:
@@ -133,7 +133,7 @@ def _classic(
                 for dataset in data_dict[group]:
                     dataset_name = dataset.replace("/", "-")
                     name = f"{group}/{dataset_name}"
-                    bucket[name] = data_dict[group][dataset]
+                    bucket[name] = list(data_dict[group][dataset])
         pack(data, bucket)
 
     # finally write the data out to a file
