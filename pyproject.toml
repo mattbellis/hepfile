@@ -146,3 +146,7 @@ target-version = "py310"
 # Ignore `E402` (import violations) in all `__init__.py` files, and in `path/to/file.py`.
 [tool.ruff.per-file-ignores]
 "src/hepfile/__init__.py" = ["E402", "F403", "F401"]
+
+# check our docstrings for consistency
+[tool.ruff.pydocstyle]
+convention = "pep257" #"google"
