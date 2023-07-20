@@ -6,7 +6,7 @@ Entries in Parallel-file.
 See hepfile.readthedocs.io for detailed documentation!
 """
 from __future__ import annotations
-import importlib
+from importlib.util import find_spec
 
 from ._version import __version__
 from .errors import MissingOptionalDependency
@@ -23,12 +23,12 @@ from hepfile.read import *
 from hepfile.write import *
 import hepfile.dict_tools
 
-if importlib.util.find_spec("awkward") is not None:
+if find_spec("awkward") is not None:
     import hepfile.awkward_tools
 
     _AWKWARD = True
 
-if importlib.util.find_spec("pandas") is not None:
+if find_spec("pandas") is not None:
     import hepfile.df_tools
     import hepfile.csv_tools
 
