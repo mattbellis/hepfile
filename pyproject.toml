@@ -37,7 +37,7 @@ Home = "https://github.com/mattbellis/hepfile"
 
 [project.optional-dependencies]
 pandas = ["pandas"]
-awkward = ["awkward"]
+awkward = ["awkward>2"]
 learn = [
       "hepfile[pandas,awkward]",
       "astropy"
