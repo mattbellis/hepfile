@@ -2,9 +2,9 @@
 Tools to help with managing csvs with hepfile
 
 Note: The base installation package does not contain these tools!
-You must have installed hepfile with either
-1) 'python -m pip install hepfile[pandas]', or
-2) 'python -m pip install hepfile[all]'
+You must have installed hepfile with either \n
+1) :code:`python -m pip install hepfile[pandas]`, or \n
+2) :code:`python -m pip install hepfile[all]`
 """
 from __future__ import annotations
 
@@ -39,7 +39,10 @@ def csv_to_hepfile(
         write_hepfile: (bool): if True, write the hepfile. Default is True.
 
     Returns:
-        Dictionary of hepfile data
+        Tuple(str, dict): path to the output hepfile, Dictionary of hepfile data
+
+    Raises:
+        InputError: If something is wrong with the specific input.
     """
 
     if outfile is None:

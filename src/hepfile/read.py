@@ -47,10 +47,17 @@ def load(
                            installed with the pandas or all option!
 
     Returns:
-        data (dict): Selected data from HDF5 file
+        tuple(dict, dict): Selected data from HDF5, An empty bucket dictionary to be
+                           filled by data from select buckets
 
-        bucket (dict): An empty bucket dictionary to be filled by data from
-                       select buckets
+    Raises:
+        InputError: If something is wrong with the specified input.
+        MissingOptionalDependency: If return_type='awkward' and awkward isn't installed
+                                   or return_type='pandas' and pandas isn't installed.
+        RangeSubsetError: Something is wrong with the input subset range (like the max
+                          is greater than the min)
+        Warning: Usually because something is unexpected in the way the hepfile is
+                 stored
 
     """
 
@@ -245,7 +252,7 @@ def load(
                 print(f"counter name: ------------ {counter_name}\n")
 
             full_file_counters = infile[counter_name]
-            full_file_index = calculate_index_from_counters(full_file_counters)
+            full_file_index = _calculate_index_from_counters(full_file_counters)
 
             if verbose:
                 print(f"full file counters: {full_file_counters}\n")
@@ -384,7 +391,7 @@ def load(
 
 
 ################################################################################
-def calculate_index_from_counters(counters: int) -> int:
+def _calculate_index_from_counters(counters: int) -> int:
     """
     Calculates an index array from the counters
     """
@@ -408,7 +415,6 @@ def unpack(bucket: dict, data: dict, entry_num: int = 0):
 
         entry_num (integer): 0 by default. Which entry should be pulled out of the data
                      dictionary and inserted into the bucket dictionary.
-
     """
 
     keys = bucket.keys()
@@ -439,7 +445,18 @@ def unpack(bucket: dict, data: dict, entry_num: int = 0):
 
 ################################################################################
 def get_nbuckets_in_file(filename: str) -> int:
-    """Get the number of buckets in the file."""
+    """
+    Get the number of buckets in the file.
+
+    Args:
+        filename (str): filename to count the number of buckets in
+
+    Returns:
+        int: number of buckets in filename
+
+    Raises:
+        InputError: if something is wrong with the input filename
+    """
 
     # f = h5.File(filename, "r+")
     # a = f.attrs
@@ -464,6 +481,19 @@ def get_nbuckets_in_data(data: dict) -> int:
 
     This is useful in case you've only pulled out subsets of the data
 
+    Args:
+        data (dict): data dictionary of hepfile data to get the number of buckets in
+
+    Returns:
+        int: number of buckets in data
+
+    Raises:
+        InputError: If data is not a dictionary
+        AttributeError: If the _NUMBER_OF_BUCKETS_ key is not in data, this can happen
+                        if the hepfile data was read from was corrupted or if you are
+                        passing in a data dictionary before packing the bucket properly.
+                        This is because the number of buckets is not calculated until
+                        the hepfile data dictionary is actually packed.
     """
 
     if not isinstance(data, dict):
@@ -479,7 +509,18 @@ def get_nbuckets_in_data(data: dict) -> int:
 
 ################################################################################
 def get_file_metadata(filename: str) -> dict:
-    """Get the file metadata and return it as a dictionary"""
+    """
+    Get the file metadata and return it as a dictionary
+
+    Args:
+        filename (str): The hepfile to open and read the metadata from.
+
+    Returns:
+        dict: Dictionary of the hepfile's metadata.
+
+    Raises:
+        MetadataNotFound: If there is not metadata in filename
+    """
 
     with h5.File(filename, "r+") as infile:
         attrs = infile.attrs
@@ -504,12 +545,19 @@ def get_file_header(filename: str, return_type: str = "dict") -> dict:
     """Get the file header and return it as a dictionary or dataframe
 
     Args:
-    filename(string): HDF5 file to open and read the header information
+        filename (string): HDF5 file to open and read the header information.
+        return_type (string): If 'dict' return the header information as a dictionary.
+                             If 'df' or 'dataframe', return the information as a
+                             pandas dataframe.
 
-    return_type(string): If 'dict' return the header information as a dictionary.
-                         If 'df' or 'dataframe', return the information as a
-                         pandas dataframe.
+    Returns:
+        dict: Dictionary with the header information.
 
+    Raises:
+        MissingOptionalDependency: If return_type is df or dataframe and pandas isn't
+                                   installed.
+        InputError: If something is wrong with the return_type variable
+        HeaderNotFound: If there is not header in filename
     """
 
     if return_type in {"df", "dataframe"}:
@@ -547,8 +595,18 @@ def get_file_header(filename: str, return_type: str = "dict") -> dict:
 
 ################################################################################
 ################################################################################
-def print_file_metadata(filename: str):
-    """Pretty print the file metadata"""
+def print_file_metadata(filename: str) -> str:
+    """Pretty print the file metadata
+
+    Args:
+        filename (str): hepfile to read and pring the metadata from.
+
+    Returns:
+        str: String representation of the hepfile's metadata.
+
+    Raises:
+        MetadataNotFound: If there is not metadata in filename
+    """
 
     output = ""
 
@@ -605,7 +663,13 @@ def print_file_header(filename: str) -> str:
         filename (str): filename to retrieve the header from.
 
     Returns:
-        String representation of the header information, if it exists.
+        str: String representation of the header information, if it exists.
+
+    Raises:
+        MissingOptionalDependency: If return_type is df or dataframe and pandas isn't
+                                   installed.
+        InputError: If something is wrong with the return_type variable
+        HeaderNotFound: If there is not header in filename
     """
 
     hdr = get_file_header(filename, return_type="dict")

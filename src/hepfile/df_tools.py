@@ -2,9 +2,9 @@
 Tools to work with Pandas DataFrames and Hepfile data
 
 Note: The base installation package does not contain these tools!
-You must have installed hepfile with either
-1) 'python -m pip install hepfile[pandas]', or
-2) 'python -m pip install hepfile[all]'
+You must have installed hepfile with either \n
+1) :code:`python -m pip install hepfile[pandas]`, or \n
+2) :code:`python -m pip install hepfile[all]`
 """
 from __future__ import annotations
 
@@ -24,14 +24,19 @@ def hepfile_to_df(
     and we add an extra column called 'event_num'. Singletons have its own df
 
     Args:
-        data [dict]: data object either loaded from a hepfile or about to be
+        data (dict): data object either loaded from a hepfile or about to be
                      written to a hepfile.
-        groups [list]: groups to include, None (default) means include all groups
-        events [list]: list of event indexes to include
+        groups (list): groups to include, None (default) means include all groups
+        events (list): list of event indexes to include
 
     Returns:
-        Dictionary of requested groups as dataframes where the keys are the group names.
-        If only one group is requested then it just returns a dataframe of that group.
+        dict[pd.DataFrame]: Dictionary of requested groups as dataframes where
+                            the keys are the group names. If only one group is
+                            requested then it just returns a dataframe of that
+                            group.
+
+    Raises:
+        InputError: Something is wrong with the specified input
     """
 
     dfs = {}  # list to of dataframes to return
@@ -105,17 +110,24 @@ def awkward_to_df(
     Converts an awkward array of hepfile data to a dataframe. Does the same thing
     as hepfile_to_df but given an awkward array.
 
-    Note: You must have installed with 'python -m pip install hepfile[all]'
+    Note: You must have installed with :code:`python -m pip install hepfile[all]`
           to use this tool!
 
     Args:
-        ak_array [ak.Array]: awkward array in the format of a hepfile
-        groups [list]: groups to include, None (default) means include all groups
-        events [list]: list of event indexes to include
+        ak_array (ak.Array): awkward array in the format of a hepfile
+        groups (list): groups to include, None (default) means include all groups
+        events (list): list of event indexes to include
 
     Returns:
-        Dictionary of requested groups as dataframes where the keys are the group names.
-        If only one group is requested then it just returns a dataframe of that group.
+        dict[pd.DataFrame]: Dictionary of requested groups as dataframes where the
+                            keys are the group names. If only one group is
+                            requested then it just returns a dataframe of that
+                            group.
+
+    Raises:
+        MissingOptionalDependency: If you do not have the optional dependency awkward
+                                   installed.
+        InputError: If something is wrong with the specified input values.
     """
 
     if not hf._AWKWARD:
@@ -184,13 +196,16 @@ def df_to_hepfile(
     hepfile_to_df. Must have an event_num column!
 
     Args:
-        df_dict [dict]: dictionary of pandas DataFrame groups to write to a hepfile
-        outfile [str]: output file name, required if write_hepfile is True
-        event_num_col [str]: name of a column in the pd.DataFrame to group by
-        write_hepfile [bool]: should we write the hepfile data to a hepfile?
+        df_dict (dict): dictionary of pandas DataFrame groups to write to a hepfile
+        outfile (str): output file name, required if write_hepfile is True
+        event_num_col (str): name of a column in the pd.DataFrame to group by
+        write_hepfile (bool): should we write the hepfile data to a hepfile?
 
     Returns:
-        hepfile data dictionary
+        dict: hepfile data dictionary
+
+    Raises:
+        InputError: If something is wrong with the specific input.
     """
 
     out = groups_to_events(df_dict, event_num_col)
@@ -212,6 +227,12 @@ def groups_to_events(
     Args:
         df_dict [dict] : dictionary of groups to convert to a dictionary of events
         event_num_col [str] : column to group each group by
+
+    Returns:
+        dict[pd.DataFrame]: dictionary of pandas dataframes organized by events
+
+    Raises:
+        InputError: Something is wrong with the input dictionary
     """
 
     out = {}

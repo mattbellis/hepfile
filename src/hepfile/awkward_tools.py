@@ -3,9 +3,9 @@ These are tools to make working with and translating between awkward arrays
 and hepfile data objects easier.
 
 Note: The base installation package does not contain these tools!
-You must have installed hepfile with either
-1) 'python -m pip install hepfile[awkward]', or
-2) 'python -m pip install hepfile[all]'
+You must have installed hepfile with either \n
+1) :code:`python -m pip install hepfile[awkward]`, or \n
+2) :code:`python -m pip install hepfile[all]`
 """
 from __future__ import annotations
 
@@ -32,10 +32,15 @@ def hepfile_to_awkward(
         data (dict): Output data dictionary from the `hepfile.read.load` function.
         groups (list): list of groups to pull from data and convert to awkward arrays.
         datasets (list): list of full dataset paths (ex. 'jet/px' not 'px') to pull
-        from data and include in the awkward arrays.
+                         from data and include in the awkward arrays.
 
     Returns:
-        ak_arrays (dict): dictionary of awkward arrays with the data.
+        dict: dictionary of awkward arrays with the data.
+
+    Raises:
+        AwkwardStructureError: If something is wrong with the awkward array being
+                               outputted
+        Warning: If it is returning an awkward Record rather than and awkward Array
     """
 
     if isinstance(groups, str):
@@ -123,12 +128,15 @@ def pack_single_awkward_array(
     Packs a 1D awkward array as a dataset/singleton depending on if group_name is given
 
     Args:
-        data [dict]: data dictionary created by hepfile.initialize()
-        arr [ak.Array]: 1D awkward array to pack as either a dataset or a group.
+        data (dict): data dictionary created by hepfile.initialize()
+        arr (ak.Array): 1D awkward array to pack as either a dataset or a group.
                         If group_name is None the arr is packed as a singleton
-        dset_name [str]: Full path to the dataset.
-        group_name [str]: name of the group to pack the arr under, default is None
-        counter [str]: name of the counter in the hepfile for this dataset
+        dset_name (str): Full path to the dataset.
+        group_name (str): name of the group to pack the arr under, default is None
+        counter (str): name of the counter in the hepfile for this dataset
+
+    Raises:
+        InputError: If it can not extract the datatype of the values in `arr`
     """
     if group_name is not None:
         if counter is None:
@@ -198,10 +206,15 @@ def pack_multiple_awkward_arrays(
     Pack an awkward array of arrays into group_name or the singletons group
 
     Args:
-        data [dict]: hepfile data dictionary that is returned from hepfile.initialize()
-        arr [ak.Array]: Awkward array of the group in a set of data
-        group_name [str]: Name of the group to pack arr into, if None (default) it is
+        data (dict): hepfile data dictionary that is returned from hepfile.initialize()
+        arr (ak.Array): Awkward array of the group in a set of data
+        group_name (str): Name of the group to pack arr into, if None (default) it is
                           packed into the signletons group
+
+    Raises:
+        InputError: If input awkward array doesn't have any fields, if this happens
+                     consider using pack_single_awkward_array. Also happens if the input
+                     is not an awkward array and can not be converted.
     """
 
     # If the user passed in a group, then the datasets will
@@ -212,10 +225,10 @@ def pack_multiple_awkward_arrays(
         try:
             arr = ak.Array(arr)
         except Exception as exc:
-            raise ImportError("Cannot convert your input to an awkward array!") from exc
+            raise InputError("Cannot convert your input to an awkward array!") from exc
 
     if len(arr.fields) == 0:
-        raise ImportError(
+        raise InputError(
             "The input awkward array must have at least one field value! "
             + "If this is a singleton just provide the name of the singleton "
             + "as the field"
@@ -246,17 +259,22 @@ def awkward_to_hepfile(
     Write an awkward array with depth <= 2 to a hepfile
 
     Args:
-        ak_array [ak.Array]: awkward array with fields of groups/singletons.
+        ak_array (ak.Array): awkward array with fields of groups/singletons.
                              Under the group fields are the dataset fields.
-        outfile [str]: path to where the hepfile should be written. Default is None
+        outfile (str): path to where the hepfile should be written. Default is None
                        and can only be None if write_hepfile=False.
-        write_hepfile [bool]: if True, write the hepfile and return the data dictionary.
+        write_hepfile (bool): if True, write the hepfile and return the data dictionary.
                               If False, just return the data dictionary without
                               returning. Default is True.
         **kwargs: passed to `hepfile.write_to_file`
 
     Returns:
-        Data dictionary in the hepfile
+        dict: Data dictionary in the hepfile
+
+    Raises:
+        AwkwardStructureError: If the input awkward array is not formatted properly.
+        InputError: If something is wrong with the specified input
+        Warning: If write_hepfile is false but you still give an output path
     """
 
     _is_valid_awkward(ak_array)
@@ -321,22 +339,27 @@ def _is_valid_awkward(ak_array: ak.Record):
 
 
 def _get_awkward_type(ak_array: ak.Record) -> type:
-    try:
-        if isinstance(ak_array[0], (ak.Record, ak.Array)):
-            arr = ak_array
-            type_str = ak_array.type.content
+    """
+    Private method to switch from awkward types to numpy types
+    This is necessary because h5py does not understand awkward types
+    """
 
-            if isinstance(type_str, ak.types.NumpyType):
-                dtype = type_str.primitive
-            else:
-                dtype = str(type_str).rsplit("*", maxsplit=1)[-1].strip()
+    if isinstance(ak_array[0], (ak.Record, ak.Array)):
+        arr = ak_array
+        type_str = ak_array.type.content
+
+        if isinstance(type_str, ak.types.NumpyType):
+            dtype = type_str.primitive
         else:
-            arr = np.array(ak_array)
-            dtype = arr.dtype
+            dtype = str(type_str).rsplit("*", maxsplit=1)[-1].strip()
+    else:
+        arr = np.array(ak_array)
+        dtype = arr.dtype
 
-        if dtype == "string":
-            dtype = np.dtype("<U1")
+    if dtype == "string":
+        dtype = np.dtype("<U1")
 
+    try:
         np_dtype = np.dtype(dtype)
         if np_dtype.kind not in char_codes:
             np_dtype = str

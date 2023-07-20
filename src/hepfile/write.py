@@ -21,8 +21,7 @@ def initialize() -> dict:
     """Creates an empty data dictionary
 
     Returns:
-
-        data (dict): An empty data dictionary
+        dict: An empty data dictionary
 
     """
 
@@ -50,10 +49,10 @@ def initialize() -> dict:
 ################################################################################
 def clear_bucket(bucket: dict) -> None:
     """
-    Clears the data from the bucket dictionary - should the name of the function change?
+    Clears the data from the bucket dictionary
 
     Args:
-        bucket (dict): The dictionary to be cleared. This is designed to clear the
+        dict: The dictionary to be cleared. This is designed to clear the
                       data from the lists in the bucket dictionary, but theoretically,
                       it would clear out the lists from any dictionary.
 
@@ -81,14 +80,14 @@ def clear_bucket(bucket: dict) -> None:
 # the overall dataset
 ################################################################################
 def create_single_bucket(data: dict) -> dict:
-    """Creates an bucket dictionary that will be used to collect data and then
+    """Creates a bucket dictionary that will be used to collect data and then
     packed into the the master data dictionary.
 
     Args:
         data (dict): Data dictionary that will hold all the data from the bucket.
 
     Returns:
-        bucket (dict): The new bucket dictionary with keys and no bucket information
+        dict: The new bucket dictionary with keys and no bucket information
 
     """
 
@@ -114,11 +113,13 @@ def create_group(
 
     Args:
         data (dict): Dictionary to which the group will be added
-
         group_name (string): Name of the group to be added
-
         counter (string): Name of the counter key. None by default
 
+    Raises:
+        InputError: If the group_name is protected
+        Warning: Usually if the code is doing something to the hepfile the user
+                 won't expect
     """
     # check that group_name isn't in protected_names
     if not ignore_protected and group_name in constants.protected_names:
@@ -235,9 +236,9 @@ def create_dataset(
 
         dtype (type): The data type. None by default - I don't think this is every used
 
-    Returns:
-        -1: If the group is None
-
+    Raises:
+        InputError: If the dataset name is protected
+        Warning: If the code is doing something the user won't expect (see the message)
     """
 
     if not isinstance(dset_name, list):
@@ -332,7 +333,7 @@ def create_dataset(
 ###############################################################################
 def add_meta(data: dict, name: str, meta_data: list):
     """
-    Create metadata for a group (or singleton) and add it to data
+    Create metadata for a group, singleton, or dataset and add it to data
 
     Args:
         data (dict): a data object returned by hf.initialize()
@@ -340,6 +341,9 @@ def add_meta(data: dict, name: str, meta_data: list):
                     corresponds to. if passing a dataset name, make sure it is the full
                     path (group/dataset)!
         meta_data (list): list of metadata to write to that group/dataset/singleton
+
+    Raises:
+       Warning: If the metadata is already in the hepfile data
     """
 
     if name in data["_META_"].keys():
@@ -360,7 +364,7 @@ def pack(
     STRICT_CHECKING: bool = False,
     verbose: bool = False,
 ):
-    """Takes the data from an bucket and packs it into the data dictionary,
+    """Takes the data from n bucket and packs it into the data dictionary,
     intelligently, so that it can be stored and extracted efficiently.
     (This is analagous to the ROOT TTree::Fill() member function).
 
@@ -375,6 +379,12 @@ def pack(
                                 now do it automatically by default. We allow the user to
                                 not do this, if they are running some sort of debugging.
 
+    Raises:
+        DatasetSizeDiscrepancy: If STRICT_CHECKING is True and two datasets in a single
+                                group have different lengths
+        MissingSingletonValue: If the bucket is missing a singleton value for data.
+                               Because of the nature of singletons, every event is
+                               expected to have a row in the singleton dataset.
     """
 
     # Calculate the number of entries for each group and set the
@@ -490,6 +500,8 @@ def pack(
 
 
 def _append(data, bucket):
+    """Custom append function to differentiate between numpy and lists"""
+
     if isinstance(data, np.ndarray):
         return np.append(data, bucket)
     elif isinstance(data, list):
@@ -571,20 +583,20 @@ def write_file_metadata(
     """Writes file metadata in the attributes of an HDF5 file
 
     Args:
-    filename (string): Name of output file
+        filename (string): Name of output file
 
-    mydict (dictionary): Metadata desired by user
+        mydict (dictionary): Metadata desired by user
 
-    write_default_values (boolean): True if user wants to write/update the
+        write_default_values (boolean): True if user wants to write/update the
                                         default metadata: date, hepfile version,
                                         h5py version, numpy version, and Python
                                         version, false if otherwise.
 
-    append (boolean): True if user wants to keep older metadata, false otherwise.
-    verbose (boolean): True to print out statements as it goes
+        append (boolean): True if user wants to keep older metadata, false otherwise.
+        verbose (boolean): True to print out statements as it goes
 
     Returns:
-    hdoutfile (HDF5): File with new metadata
+        h5py.File: HDF5 File with new metadata
 
     """
 
@@ -635,8 +647,11 @@ def write_file_header(filename: str, mydict: dict, verbose: bool = False) -> h5.
         verbose (bool): True to print out info as it runs
 
     Returns:
-        hdoutfile (HDF5): Returns the file with new metadata
+        h5py.File: Returns the HDF5 file with new metadata
 
+    Raises:
+        InputError: If the header data in mydict is nonexistent or the header data
+                    can not be converted to a numpy array.
     """
 
     if len(mydict.keys()) == 0:
@@ -713,8 +728,11 @@ def write_to_file(
                                           precision
 
     Returns:
-        hdoutfile (HDF5): File to which the data has been written
+        h5py.File: HDF5 File to which the data has been written
 
+    Raises:
+        Warning: If two counters have a different number of entries. This usually means
+                 something is wrong with the data dictionary you are trying to write.
     """
 
     # hdoutfile = h5.File(filename, "w")

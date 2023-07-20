@@ -29,11 +29,11 @@ def dictlike_to_hepfile(
     This wraps on `hepfile.awkward_tools.awkward_to_hepfile`
     and writes a list of dictionaries to a hepfile.
 
-    Writes a list of dictlike object to a hepfile. Must have a specific format:
-    - each dictlike object is a "event"
-    - first level of dict keys are the groups
-    - second level of dict keys are the datasets
-    - entries in second level of dict object is the data (awkward array or list)
+    Writes a list of dictlike object to a hepfile. Must have a specific format: \n
+    - each dictlike object is a "event" \n
+    - first level of dict keys are the groups \n
+    - second level of dict keys are the datasets \n
+    - entries in second level of dict object is the data (awkward array or list) \n
     - data entries in the first level of the dict are singleton objects
 
     Args:
@@ -48,7 +48,14 @@ def dictlike_to_hepfile(
         **kwargs: passed to `hepfile.write.write_to_file` if 'awkward'. Can only be
                   'write_to_hepfile' and 'ignore_protected' if 'classic'.
     Returns:
-        Dictionary of Awkward Arrays with the data stored in outfile
+        ak.Array or dict : if how_to_pack='awkward' it is an ak.Array, if instead
+                           how_to_pack='classic' if is a hepfile style dictionary
+
+    Raises:
+        InputError: If something is wrong with the specific input.
+        MissingOptionalDependency: If how_to_pack='awkward' and awkward isn't installed
+        DictStructureError: something with the output doesn't look right,
+                            check your input!
     """
 
     # check if it is a list of dictionaries or dataframe
@@ -168,16 +175,21 @@ def append(ak_dict: ak.Record, new_dict: dict) -> ak.Record:  # noqa: F821
     Append a new event to an existing awkward dictionary with events
 
     Note: This tool requires awkward to be installed. Make sure you installed with
-    either
-    1) 'python -m pip install hepfile[awkward]' or,
-    2) 'python -m pip install hepfile[all]'
+    either: \n
+    1) :code:`python -m pip install hepfile[awkward]` or, \n
+    2) :code:`python -m pip install hepfile[all]`
 
     Args:
         ak_dict (ak.Record): awkward Record of data
         new_dict (dict): Dictionary of value to append to ak_dict.
                          All keys must match ak_dict!
     Return:
-        Awkward Record of awkward arrays with the new_dict appended
+        ak.Record: Awkward Record of awkward arrays with the new_dict appended
+
+    Raises:
+        MissingOptionalDependency: If awkward isn't installed
+        AwkwardStructureError: If something is wrong with the input array
+        InputError: If keys of the new and old arrays don't match
     """
     if not hf._AWKWARD:
         raise MissingOptionalDependency("awkward")
