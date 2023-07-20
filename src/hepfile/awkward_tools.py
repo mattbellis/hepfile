@@ -113,13 +113,17 @@ def hepfile_to_awkward(
 
 ################################################################################
 def pack_single_awkward_array(
-    d: dict, arr: ak.Array, dset_name: str, group_name: str = None, counter: str = None
+    data: dict,
+    arr: ak.Array,
+    dset_name: str,
+    group_name: str = None,
+    counter: str = None,
 ) -> None:
     """
     Packs a 1D awkward array as a dataset/singleton depending on if group_name is given
 
     Args:
-        d [dict]: data dictionary created by hepfile.initialize()
+        data [dict]: data dictionary created by hepfile.initialize()
         arr [ak.Array]: 1D awkward array to pack as either a dataset or a group.
                         If group_name is None the arr is packed as a singleton
         dset_name [str]: Full path to the dataset.
@@ -131,14 +135,14 @@ def pack_single_awkward_array(
             counter = f"{group_name}/n{group_name}"
 
         # add the counter to the groups dictionary if it is not already in it
-        if group_name not in d["_GROUPS_"]:
-            d["_GROUPS_"][group_name] = [counter.split("/")[1]]
+        if group_name not in data["_GROUPS_"]:
+            data["_GROUPS_"][group_name] = [counter.split("/")[1]]
 
             # We will use this name for the counter later
-            d["_MAP_DATASETS_TO_DATA_TYPES_"][counter] = int
+            data["_MAP_DATASETS_TO_DATA_TYPES_"][counter] = int
 
-            d["_MAP_DATASETS_TO_COUNTERS_"][group_name] = counter
-            d["_LIST_OF_COUNTERS_"].append(counter)
+            data["_MAP_DATASETS_TO_COUNTERS_"][group_name] = counter
+            data["_LIST_OF_COUNTERS_"].append(counter)
 
     else:
         counter = "_SINGLETONS_GROUP_/COUNTER"
@@ -152,7 +156,7 @@ def pack_single_awkward_array(
             dtype = _get_awkward_type(arr)
 
         num = np.ones(len(arr), dtype=int)
-        x = ak.to_numpy(arr)
+        np_arr = ak.to_numpy(arr)
 
     else:
         # Get the datatpe before we flatten it
@@ -166,35 +170,35 @@ def pack_single_awkward_array(
         # num = ak.num(x)
         # This saves the counter as int32
         num = ak.to_numpy(ak.num(arr)).astype(np.int32)
-        x = ak.flatten(arr).to_numpy()
+        np_arr = ak.flatten(arr).to_numpy()
 
-    d[dset_name] = x
+    data[dset_name] = np_arr
 
     # Not a SINGLETON, the user has passed in a groupname
     if group_name is not None:
-        d["_MAP_DATASETS_TO_DATA_TYPES_"][dset_name] = dtype
-        d["_MAP_DATASETS_TO_COUNTERS_"][dset_name] = counter
-        d["_GROUPS_"][group_name].append(dset_name.split("/")[1])
-        if counter not in d:
-            d[counter] = num
+        data["_MAP_DATASETS_TO_DATA_TYPES_"][dset_name] = dtype
+        data["_MAP_DATASETS_TO_COUNTERS_"][dset_name] = counter
+        data["_GROUPS_"][group_name].append(dset_name.split("/")[1])
+        if counter not in data:
+            data[counter] = num
 
     # If it is a SINGLETON
     else:
-        d["_MAP_DATASETS_TO_DATA_TYPES_"][dset_name] = dtype
-        d["_MAP_DATASETS_TO_COUNTERS_"][dset_name] = "_SINGLETONS_GROUP_/COUNTER"
-        d["_GROUPS_"]["_SINGLETONS_GROUP_"].append(dset_name)
-        if len(d[counter]) == 0:
-            d[counter] = num
+        data["_MAP_DATASETS_TO_DATA_TYPES_"][dset_name] = dtype
+        data["_MAP_DATASETS_TO_COUNTERS_"][dset_name] = "_SINGLETONS_GROUP_/COUNTER"
+        data["_GROUPS_"]["_SINGLETONS_GROUP_"].append(dset_name)
+        if len(data[counter]) == 0:
+            data[counter] = num
 
 
 def pack_multiple_awkward_arrays(
-    d: dict, arr: ak.Array, group_name: str = None, group_counter_name: str = None
+    data: dict, arr: ak.Array, group_name: str = None, group_counter_name: str = None
 ) -> None:
     """
     Pack an awkward array of arrays into group_name or the singletons group
 
     Args:
-        d [dict]: hepfile data dictionary that is returned from hepfile.initialize()
+        data [dict]: hepfile data dictionary that is returned from hepfile.initialize()
         arr [ak.Array]: Awkward array of the group in a set of data
         group_name [str]: Name of the group to pack arr into, if None (default) it is
                           packed into the signletons group
@@ -227,7 +231,7 @@ def pack_multiple_awkward_arrays(
             dataset_name = f"{group_name}/{field}"
 
         pack_single_awkward_array(
-            d,
+            data,
             arr[field],
             dataset_name,
             group_name=group_name,

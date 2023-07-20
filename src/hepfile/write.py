@@ -771,20 +771,20 @@ def write_to_file(
                 if verbose:
                     print(f"Writing {name} to file")
 
-                x = data[name]
+                dset = data[name]
 
                 dataset_dtype = data["_MAP_DATASETS_TO_DATA_TYPES_"][name]
 
-                if isinstance(x, list):
+                if isinstance(dset, list):
                     if verbose:
                         print("\tConverting list to array...")
-                    x = np.array(x)
+                    dset = np.array(dset)
 
                 # Do single precision only, unless specified
                 if force_single_precision:
                     # different type calls depending on input datastructure
-                    if isinstance(x, np.ndarray):
-                        dtype = x.dtype
+                    if isinstance(dset, np.ndarray):
+                        dtype = dset.dtype
                     else:
                         dtype = None
                         if verbose:
@@ -796,7 +796,7 @@ def write_to_file(
                     if dtype == np.float64:
                         if verbose:
                             print("\tConverting array to single precision...")
-                        x = x.astype(np.float32)
+                        dset = dset.astype(np.float32)
                         dataset_dtype = np.float32
 
                 if dataset_dtype is not str:
@@ -804,7 +804,7 @@ def write_to_file(
                         print("\tWriting to file...")
                     hdoutfile.create_dataset(
                         name,
-                        data=x,
+                        data=dset,
                         compression=comp_type,
                         compression_opts=comp_opts,
                         dtype=dataset_dtype,
@@ -818,10 +818,10 @@ def write_to_file(
                     # https://stackoverflow.com/questions/68500454/can-i-use-h5py-to-write-strings-to-an-hdf5-file-in-one-line-rather-than-looping
                     dataset_dtype = h5.special_dtype(vlen=str)
 
-                    if not hasattr(x[0], "__len__"):
-                        x = x.astype(str)
-                    longest_word = len(max(x, key=len))
-                    arr = np.array(x, dtype="S" + str(longest_word))
+                    if not hasattr(dset[0], "__len__"):
+                        dset = dset.astype(str)
+                    longest_word = len(max(dset, key=len))
+                    arr = np.array(dset, dtype="S" + str(longest_word))
                     hdoutfile.create_dataset(
                         name,
                         data=arr,

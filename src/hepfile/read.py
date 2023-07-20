@@ -303,14 +303,14 @@ def load(
                     if is_counter:
                         # If this is a counter, then the subset indices
                         # map on to the same locations for any counters
-                        lo = subset[0]
-                        hi = subset[1]
+                        low = subset[0]
+                        high = subset[1]
                     else:
-                        lo = full_file_indices[index_name][0]
-                        hi = full_file_indices[index_name][-1]
+                        low = full_file_indices[index_name][0]
+                        high = full_file_indices[index_name][-1]
                     if verbose:
-                        print(f"dataset name/lo/hi: {dataset_name},{lo},{hi}\n")
-                    data[dataset_name] = dataset[int(lo) : int(hi)]
+                        print(f"dataset name/low/high: {dataset_name},{low},{high}\n")
+                    data[dataset_name] = dataset[int(low) : int(high)]
                 else:
                     data[dataset_name] = dataset[:]
 
@@ -397,7 +397,7 @@ def calculate_index_from_counters(counters: int) -> int:
 
 
 ################################################################################
-def unpack(bucket: dict, data: dict, n: int = 0):
+def unpack(bucket: dict, data: dict, entry_num: int = 0):
     """Fills the bucket dictionary with selected rows from the data dictionary.
 
     Args:
@@ -406,7 +406,7 @@ def unpack(bucket: dict, data: dict, n: int = 0):
 
         data (dict): Data dictionary used to fill the bucket dictionary
 
-        n (integer): 0 by default. Which entry should be pulled out of the data
+        entry_num (integer): 0 by default. Which entry should be pulled out of the data
                      dictionary and inserted into the bucket dictionary.
 
     """
@@ -414,27 +414,26 @@ def unpack(bucket: dict, data: dict, n: int = 0):
     keys = bucket.keys()
 
     for key in keys:
-
         # BELLIS EDITS TRYING SOMETHING OUT
-        if key == '_GROUPS_' or key == '_MAP_DATASETS_TO_COUNTERS_':
+        if key == "_GROUPS_" or key == "_MAP_DATASETS_TO_COUNTERS_":
             continue
 
         # IS THERE A WAY THAT THIS COULD BE FASTER?
         # print(data['_LIST_OF_COUNTERS_'],key)
-        # unpack the singletons and the counters (which are themselves 
+        # unpack the singletons and the counters (which are themselves
         # singletons, effectively)
         if key in data["_LIST_OF_COUNTERS_"] or key in data["_SINGLETONS_GROUP_"]:
-            bucket[key] = data[key][n]
+            bucket[key] = data[key][entry_num]
 
         elif "INDEX" not in key:
             indexkey = data["_MAP_DATASETS_TO_INDEX_"][key]
             numkey = data["_MAP_DATASETS_TO_COUNTERS_"][key]
 
             if len(data[indexkey]) > 0:
-                index = data[indexkey][n]
+                index = data[indexkey][entry_num]
 
             if len(data[numkey]) > 0:
-                nobjs = data[numkey][n]
+                nobjs = data[numkey][entry_num]
                 bucket[key] = data[key][index : index + nobjs]
 
 

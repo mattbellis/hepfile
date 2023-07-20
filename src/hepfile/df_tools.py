@@ -193,7 +193,7 @@ def df_to_hepfile(
         hepfile data dictionary
     """
 
-    out = groupDF_to_eventDF(df_dict, event_num_col)
+    out = groups_to_events(df_dict, event_num_col)
     return dictlike_to_hepfile(
         out,
         outfile=outfile,
@@ -203,7 +203,7 @@ def df_to_hepfile(
     )
 
 
-def groupDF_to_eventDF(
+def groups_to_events(
     df_dict: dict[pd.DataFrame], event_num_col: str = "event_num"
 ) -> dict:
     """
