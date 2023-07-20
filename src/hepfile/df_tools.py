@@ -1,12 +1,17 @@
 """
 Tools to work with Pandas DataFrames and Hepfile data
+
+Note: The base installation package does not contain these tools!
+You must have installed hepfile with either
+1) 'python -m pip install hepfile[pandas]', or
+2) 'python -m pip install hepfile[all]'
 """
 from __future__ import annotations
 
 import pandas as pd
-import awkward as ak
-from .errors import InputError
-from .dict_tools import dictlike_to_hepfile
+import hepfile as hf
+from hepfile.errors import InputError, MissingOptionalDependency
+from hepfile.dict_tools import dictlike_to_hepfile
 
 
 def hepfile_to_df(
@@ -32,10 +37,10 @@ def hepfile_to_df(
     dfs = {}  # list to of dataframes to return
 
     # check inputs
-    if not groups is None and not isinstance(groups, (list, str)):
+    if groups is not None and not isinstance(groups, (list, str)):
         raise InputError("groups must be either a list or a string")
 
-    if not events is None and not isinstance(events, (list, int)):
+    if events is not None and not isinstance(events, (list, int)):
         raise InputError("events must be either a list or int")
 
     if isinstance(groups, str):
@@ -92,13 +97,16 @@ def hepfile_to_df(
 
 
 def awkward_to_df(
-    ak_array: ak.Array,
+    ak_array: ak.Array,  # noqa: F821
     groups: list[str] = None,
     events: list[int] = None,
 ) -> dict[pd.DataFrame]:
     """
     Converts an awkward array of hepfile data to a dataframe. Does the same thing
     as hepfile_to_df but given an awkward array.
+
+    Note: You must have installed with 'python -m pip install hepfile[all]'
+          to use this tool!
 
     Args:
         ak_array [ak.Array]: awkward array in the format of a hepfile
@@ -110,13 +118,18 @@ def awkward_to_df(
         If only one group is requested then it just returns a dataframe of that group.
     """
 
+    if not hf._AWKWARD:
+        raise MissingOptionalDependency("awkward")
+
+    import awkward as ak
+
     dfs = {}  # list to of dataframes to return
 
     # check inputs
-    if not groups is None and not isinstance(groups, (list, str)):
+    if groups is not None and not isinstance(groups, (list, str)):
         raise InputError("groups must be either a list or a string")
 
-    if not events is None and not isinstance(events, (list, int)):
+    if events is not None and not isinstance(events, (list, int)):
         raise InputError("events must be either a list or int")
 
     if isinstance(groups, str):

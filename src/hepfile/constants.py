@@ -15,3 +15,6 @@ protected_names = {
     "_HEADER_",
     "_SINGLETONSGROUPFORSTORAGE_",
 }
+
+# NumPy Character Codes that can be stored in HDF5 files
+char_codes = {"i", "u", "f", "c"}

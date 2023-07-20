@@ -1,16 +1,15 @@
 [build-system]
-requires = ["flit_core >=2,<4"]
-build-backend = "flit_core.buildapi"
+requires = ['setuptools>=42']
+build-backend = "setuptools.build_meta"
 
+[project]
+name = "hepfile"
+authors = [{name = "Matt Bellis", email = "mbellis@siena.edu"}]
+readme = "README.md"
+license = {file = "LICENSE"}
+dynamic = ["version"] #, "description"]
 
-[tool.flit.metadata]
-module = "hepfile"
-author = "Matt Bellis"
-author-email = "matthew.bellis@gmail.com"
-home-page = "https://github.com/mattbellis/hepfile"
-maintainer = "Matt Bellis"
-maintainer-email = "matthew.bellis@gmail.com"
-description-file = "README.md"
+requires-python = ">=3.9"
 
 classifiers = [
   "License :: OSI Approved :: BSD License",
@@ -24,43 +23,54 @@ classifiers = [
   "Programming Language :: Python :: 3.9",
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
-  "Development Status :: 1 - Planning",
+  "Development Status :: 1 - Planning"
 ]
 
-requires-python = ">=3.9"
+dependencies = [
+  "numpy>=1.13.3",
+  "h5py"
+  ]
 
-requires = [
-  "numpy >=1.13.3",
-  "pandas",
-  "h5py",
-  "awkward >= 2.1.2",
-  "pre-commit",
-  "jupyter",
-  "mistune"
-]
+[project.urls]
+Documentation = "https://hepfile.github.io"
+Home = "https://github.com/mattbellis/hepfile"
 
-[tool.flit.metadata.requires-extra]
-test = [
-    "pytest >=6",
-]
+[project.optional-dependencies]
+pandas = ["pandas"]
+awkward = ["awkward"]
+learn = [
+      "hepfile[pandas,awkward]",
+      "astropy"
+      ]
+all = ["hepfile[pandas,awkward]"]
+
+# for developers
 dev = [
-  "pytest >=6",
-]
+    "hepfile[all]",
+    "pre-commit",
+    "jupyter",
+    "mistune",
+    "pytest",
+    "ruff"
+    ]
+
 docs = [
-  "Sphinx >=3.0.0",
+  "hepfile[all]",
+  "Sphinx>=3.0.0",
   "myst_parser>=0.13",
   "nbsphinx>=0.9.1",
   "sphinx-book-theme>=0.0.33",
   "sphinx_copybutton",
+  "autodoc",
+  "ipykernel"
 ]
-awkward = [
-  "awkward >= 1.4",
-]
+
+[tool.setuptools.dynamic]
+version = {attr = 'hepfile._version.__version__'}
 
 [tool.pytest.ini_options]
 addopts = "-ra -Wd"
 testpaths = ["tests"]
-
 
 [tool.mypy]
 files = "src"
@@ -81,4 +91,58 @@ warn_return_any = true
 no_implicit_reexport = true
 strict_equality = true
 
+[tool.ruff]
+# Enable the pycodestyle (`E`) and Pyflakes (`F`) rules by default.
+# Unlike Flake8, Ruff doesn't enable pycodestyle warnings (`W`) or
+# McCabe complexity (`C901`) by default.
+select = ["E", "F"]
+ignore = []
 
+# Allow autofix for all enabled rules (when `--fix`) is provided.
+fixable = ["ALL"]
+unfixable = []
+
+# Exclude a variety of commonly ignored directories.
+exclude = [
+    ".bzr",
+    ".direnv",
+    ".eggs",
+    ".git",
+    ".git-rewrite",
+    ".hg",
+    ".mypy_cache",
+    ".nox",
+    ".pants.d",
+    ".pytype",
+    ".ruff_cache",
+    ".svn",
+    ".tox",
+    ".venv",
+    "__pypackages__",
+    "_build",
+    "buck-out",
+    "build",
+    "dist",
+    "node_modules",
+    "venv",
+    ".github",
+    ".ipynb_checkpoints",
+    "docs",
+    "tests",
+    "paper",
+    "sandbox",
+    ".binder",
+]
+
+# set to the same as black
+line-length = 88
+
+# Allow unused variables when underscore-prefixed.
+dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
+
+# Assume Python 3.10.
+target-version = "py310"
+
+# Ignore `E402` (import violations) in all `__init__.py` files, and in `path/to/file.py`.
+[tool.ruff.per-file-ignores]
+"src/hepfile/__init__.py" = ["E402", "F403", "F401"]

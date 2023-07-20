@@ -1,5 +1,10 @@
 """
 Tools to help with managing csvs with hepfile
+
+Note: The base installation package does not contain these tools!
+You must have installed hepfile with either
+1) 'python -m pip install hepfile[pandas]', or
+2) 'python -m pip install hepfile[all]'
 """
 from __future__ import annotations
 
@@ -7,7 +12,7 @@ import os
 from typing import Optional
 
 import pandas as pd
-from .df_tools import df_to_hepfile
+from hepfile.df_tools import df_to_hepfile
 
 
 def csv_to_hepfile(

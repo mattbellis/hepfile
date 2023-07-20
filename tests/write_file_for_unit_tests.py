@@ -43,7 +43,6 @@ def write_file_for_unit_tests():
     # hdfile = write_to_file('output.hdf5',data)
     hdfile = hepfile.write_to_file("FOR_TESTS.hdf5", data, comp_type="gzip", comp_opts=9)
     #'''
-
-
+        
 if __name__ == "__main__":
     write_file_for_unit_tests()

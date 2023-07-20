@@ -11,6 +11,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        numpy-version:
+        - 1.22
+        - 1.25
         python-version: 
         - 3.9
         - 3.11
@@ -18,6 +21,10 @@ jobs:
         - ubuntu-latest
         - windows-latest
         - macos-latest
+        exclude:
+        # numpy 1.22 doesn't support python 3.11
+        - python-version: 3.11
+          numpy-version: 1.22
     
     runs-on: ${{ matrix.os }}
     
@@ -36,10 +43,10 @@ jobs:
     - name: Install dependences
       run: |
           python -m pip install --upgrade pip
-          python -m pip install pytest-cov numpy h5py
+          python -m pip install pytest-cov numpy==${{ matrix.numpy-version }} h5py
 
     - name: Build hepfile
-      run: pip install -e . 
+      run: pip install -e .[dev] 
 
     - name: Test package
       run: python -m pytest --cov=hepfile --cov-report=xml

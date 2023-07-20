@@ -7,11 +7,16 @@ from __future__ import annotations
 import warnings
 import h5py as h5
 import numpy as np
-import pandas as pd
-from . import constants
-from .errors import RangeSubsetError, InputError, MetadataNotFound, HeaderNotFound
-from .awkward_tools import hepfile_to_awkward
-from .df_tools import hepfile_to_df
+
+import hepfile as hf
+from hepfile import constants
+from hepfile.errors import (
+    RangeSubsetError,
+    InputError,
+    MetadataNotFound,
+    HeaderNotFound,
+    MissingOptionalDependency,
+)
 
 
 ################################################################################
@@ -35,18 +40,28 @@ def load(
 
         subset (int): Number of buckets to be read from input file
 
-        return_type (str): Type to return. Options are 'dictionary', 'awkward', and 'pandas'.
-                           Default is 'dictionary'.
+        return_type (str): Type to return. Options are 'dictionary', 'awkward', and '
+                           'pandas'. Default is 'dictionary'. Note: the 'awkward' option
+                           requires hepfile to be installed with the awkward or all
+                           option and the 'pandas' option requires hepfile to be
+                           installed with the pandas or all option!
 
     Returns:
         data (dict): Selected data from HDF5 file
 
-        bucket (dict): An empty bucket dictionary to be filled by data from select buckets
+        bucket (dict): An empty bucket dictionary to be filled by data from
+                       select buckets
 
     """
 
     if return_type not in {"dictionary", "awkward", "pandas"}:
         raise InputError("return_type must be dictionary, awkward, or pandas")
+
+    if return_type == "awkward" and not hf._AWKWARD:
+        raise MissingOptionalDependency(return_type)
+
+    if return_type == "pandas" and not hf._PANDAS:
+        raise MissingOptionalDependency(return_type)
 
     with h5.File(filename, "r+") as infile:
         # Create the initial data and bucket dictionary to hold the data
@@ -71,10 +86,15 @@ def load(
                 subset = list(subset)
 
             if isinstance(subset, int):
-                print(
-                    "Single subset value of {subset} being interpreted as a high range"
-                )
-                print(f"subset being set to a range of (0,{subset})\n")
+                if verbose:
+                    warning = "\n".join(
+                        (
+                            f"Single subset value ({subset}) being used as high range",
+                            f"subset being set to a range of (0,{subset})\n",
+                        )
+                    )
+                    warnings.warn(warning)
+
                 subset = [0, subset]
 
             # If the user has specified `subset` incorrectly, then let's return
@@ -105,12 +125,14 @@ def load(
             data["_NUMBER_OF_BUCKETS_"] = subset[1] - subset[0]
             nbuckets = data["_NUMBER_OF_BUCKETS_"]
 
-            print("Will read in a subset of the file!")
-            print(
-                f"From bucket {subset[0]} (inclusive) through bucket {subset[1]-1} (inclusive)"
-            )
-            print(f"Bucket {subset[1]} is not read in")
-            print(f"Reading in {nbuckets} buckets\n")
+            if verbose:
+                print("Will read in a subset of the file!")
+                print(
+                    f"From bucket {subset[0]} (inclusive) through bucket"
+                    + f"{subset[1]-1} (inclusive)"
+                )
+                print(f"Bucket {subset[1]} is not read in")
+                print(f"Reading in {nbuckets} buckets\n")
 
         ############################################################################
         # Get the datasets and counters
@@ -180,7 +202,8 @@ def load(
                         break
 
                 if is_dropped is True:
-                    print(f"Not reading out {entry} from the file....")
+                    if verbose:
+                        print(f"Not reading out {entry} from the file....")
                     all_datasets.remove(entry)
 
                 i -= 1
@@ -205,9 +228,9 @@ def load(
         ############################################################################
         # Pull out the counters and build the indices
         ############################################################################
-        print("Building the indices...\n")
 
         if verbose:
+            print("Building the indices...\n")
             print("data.keys()")
             print(data.keys())
             print("\n")
@@ -228,16 +251,9 @@ def load(
                 print(f"full file counters: {full_file_counters}\n")
                 print(f"full file index: {full_file_index}\n")
 
-            # If we passed in subset, grab that slice of the data from the file
-            if subset is not None and subset[1] <= subset[0]:
-                raise RangeSubsetError(
-                    f"Unable to read anything in! High range of {subset[1]} is \
-                    less than or equal to low range of {subset[0]}"
-                )
-
             if subset is not None:
-                # We tack on +1 to the high range of subset when we pull out the counters
-                # and index because we want to get all of the entries for the last entry.
+                # We tack on +1 to the high range of subset when we get the counters
+                # and index because we want all of the entries for the last entry.
                 data[counter_name] = infile[counter_name][subset[0] : subset[1] + 1]
                 index = full_file_index[subset[0] : subset[1] + 1]
             else:
@@ -255,9 +271,8 @@ def load(
             data[index_name] = subset_index
             full_file_indices[index_name] = index
 
-        print("Built the indices!")
-
         if verbose:
+            print("Built the indices!")
             print("full_file_index: ")
             print(f"{full_file_indices}\n")
 
@@ -295,7 +310,7 @@ def load(
                         hi = full_file_indices[index_name][-1]
                     if verbose:
                         print(f"dataset name/lo/hi: {dataset_name},{lo},{hi}\n")
-                    data[dataset_name] = dataset[lo:hi]
+                    data[dataset_name] = dataset[int(lo) : int(hi)]
                 else:
                     data[dataset_name] = dataset[:]
 
@@ -307,7 +322,12 @@ def load(
             if name not in constants.protected_names and "meta" in dataset.attrs.keys():
                 data["_META_"][name] = dataset.attrs["meta"]
 
-    print("Data is read in and input file is closed.")
+        # Add the GROUPS field to the bucket. It's a bit of extra data
+        # that most of the time is not needed, but can be helpful for
+        # if we want to convert the bucket to a dataframe.
+
+    if verbose:
+        print("Data is read in and input file is closed.")
 
     # edit data so it matches the format of the data dict that was saved to the file
     # this makes it so that data can be directly passed to write_to_file
@@ -348,9 +368,13 @@ def load(
     data["_PROTECTED_NAMES_"] = constants.protected_names
 
     if return_type == "awkward":
+        from hepfile.awkward_tools import hepfile_to_awkward
+
         return hepfile_to_awkward(data), bucket
 
     if return_type == "pandas":
+        from hepfile.df_tools import hepfile_to_df
+
         return hepfile_to_df(data), bucket
 
     return data, bucket
@@ -390,13 +414,19 @@ def unpack(bucket: dict, data: dict, n: int = 0):
     keys = bucket.keys()
 
     for key in keys:
-        # if "num" in key:
+
+        # BELLIS EDITS TRYING SOMETHING OUT
+        if key == '_GROUPS_' or key == '_MAP_DATASETS_TO_COUNTERS_':
+            continue
+
         # IS THERE A WAY THAT THIS COULD BE FASTER?
         # print(data['_LIST_OF_COUNTERS_'],key)
+        # unpack the singletons and the counters (which are themselves 
+        # singletons, effectively)
         if key in data["_LIST_OF_COUNTERS_"] or key in data["_SINGLETONS_GROUP_"]:
             bucket[key] = data[key][n]
 
-        elif "INDEX" not in key:  # and 'Jets' in key:
+        elif "INDEX" not in key:
             indexkey = data["_MAP_DATASETS_TO_INDEX_"][key]
             numkey = data["_MAP_DATASETS_TO_COUNTERS_"][key]
 
@@ -483,10 +513,13 @@ def get_file_header(filename: str, return_type: str = "dict") -> dict:
 
     """
 
+    if return_type in {"df", "dataframe"}:
+        if not hf._PANDAS:
+            raise MissingOptionalDependency("pandas")
+        import pandas as pd
+
     if return_type is not None and return_type not in ["dict", "df", "dataframe"]:
-        print("'return_type' must be 'dict', 'df', or 'dataframe'")
-        print("Not returning any header information")
-        return None
+        raise InputError("'return_type' must be 'dict', 'df', or 'dataframe!")
 
     with h5.File(filename, "r+") as infile:
         if "_HEADER_" not in infile:
@@ -523,7 +556,7 @@ def print_file_metadata(filename: str):
     try:
         metadata = get_file_metadata(filename)
     except MetadataNotFound:
-        print(f"No Metadata in {filename}!")
+        warnings.warn(f"No Metadata in {filename}!")
         return output
 
     keys = list(metadata.keys())
@@ -559,7 +592,6 @@ def print_file_metadata(filename: str):
         keys_already_printed.append(key)
 
     print(output)
-
     return output
 
 
