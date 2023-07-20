@@ -451,18 +451,18 @@ def pack(
         }:
             continue
 
-        if isinstance(bucket[key], np.ndarray):
-            bucket[key] = bucket[key].tolist()
-
         # The singletons will only have 1 entry per bucket
         if key == "_SINGLETONS_GROUP_/COUNTER":
-            data[key] = np.append(data[key], 1).astype(int)
+            # import pdb; pdb.set_trace()
+            data[key] = _append(data[key], 1)  # np.append(data[key], 1).astype(int)
             continue
 
-        if isinstance(bucket[key], list):
+        if isinstance(bucket[key], (list, np.ndarray)):
             value = bucket[key]
             if len(value) > 0:
-                data[key] = np.append(data[key], value)  # += value
+                data[key] = _append(
+                    data[key], value
+                )  # np.append(data[key], value)  # += value
         else:
             # This is for counters and SINGLETONS
             if key in data["_GROUPS_"]["_SINGLETONS_GROUP_"]:
@@ -474,10 +474,12 @@ def pack(
                     )
 
                 # Append the single value from the singletons
-                data[key] = np.append(data[key], bucket[key])
+                data[key] = _append(
+                    data[key], bucket[key]
+                )  # np.append(data[key], bucket[key])
             # Append the values to the counters
             else:
-                data[key] = np.append(data[key], bucket[key]).astype(int)
+                data[key] = _append(data[key], bucket[key])  # .astype(int)
 
     # Clear out the bucket after it's been packed if that's what we want
     if EMPTY_OUT_BUCKET:
@@ -485,6 +487,21 @@ def pack(
 
 
 ################################################################################
+
+
+def _append(data, bucket):
+    if isinstance(data, np.ndarray):
+        return np.append(data, bucket)
+    elif isinstance(data, list):
+        if isinstance(bucket, np.ndarray):
+            return np.append(data, bucket)
+        elif isinstance(bucket, list):
+            return data + bucket
+        else:  # these are values like counters or singletons
+            data.append(bucket)
+            return data
+    else:
+        raise ValueError("data should be a list or numpy array!")
 
 
 def _convert_list_and_key_to_string_data(datalist: list[any], key: str) -> str:
