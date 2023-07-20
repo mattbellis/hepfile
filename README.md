@@ -156,7 +156,7 @@ python -m pip install -e .[dev]
 4. Then, run the following command to setup the pre-commit git hook
 to automatically run our code standard tests before committing!
 ```
-python -m pip install pre-commit
+pip install pre-commit
 pre-commit install
 ```
 
