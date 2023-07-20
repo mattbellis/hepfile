@@ -322,6 +322,10 @@ def load(
             if name not in constants.protected_names and "meta" in dataset.attrs.keys():
                 data["_META_"][name] = dataset.attrs["meta"]
 
+        # Add the GROUPS field to the bucket. It's a bit of extra data
+        # that most of the time is not needed, but can be helpful for
+        # if we want to convert the bucket to a dataframe.
+
     if verbose:
         print("Data is read in and input file is closed.")
 
@@ -410,13 +414,19 @@ def unpack(bucket: dict, data: dict, n: int = 0):
     keys = bucket.keys()
 
     for key in keys:
-        # if "num" in key:
+
+        # BELLIS EDITS TRYING SOMETHING OUT
+        if key == '_GROUPS_' or key == '_MAP_DATASETS_TO_COUNTERS_':
+            continue
+
         # IS THERE A WAY THAT THIS COULD BE FASTER?
         # print(data['_LIST_OF_COUNTERS_'],key)
+        # unpack the singletons and the counters (which are themselves 
+        # singletons, effectively)
         if key in data["_LIST_OF_COUNTERS_"] or key in data["_SINGLETONS_GROUP_"]:
             bucket[key] = data[key][n]
 
-        elif "INDEX" not in key:  # and 'Jets' in key:
+        elif "INDEX" not in key:
             indexkey = data["_MAP_DATASETS_TO_INDEX_"][key]
             numkey = data["_MAP_DATASETS_TO_COUNTERS_"][key]
 
