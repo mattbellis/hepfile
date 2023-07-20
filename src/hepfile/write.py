@@ -451,21 +451,18 @@ def pack(
         }:
             continue
 
-        if isinstance(data[key], np.ndarray):
-            data[key] = data[key].tolist()
-
         if isinstance(bucket[key], np.ndarray):
             bucket[key] = bucket[key].tolist()
 
         # The singletons will only have 1 entry per bucket
         if key == "_SINGLETONS_GROUP_/COUNTER":
-            data[key].append(1)
+            data[key] = np.append(data[key], 1).astype(int)
             continue
 
         if isinstance(bucket[key], list):
             value = bucket[key]
             if len(value) > 0:
-                data[key] += value
+                data[key] = np.append(data[key], value)  # += value
         else:
             # This is for counters and SINGLETONS
             if key in data["_GROUPS_"]["_SINGLETONS_GROUP_"]:
@@ -477,10 +474,10 @@ def pack(
                     )
 
                 # Append the single value from the singletons
-                data[key].append(bucket[key])
+                data[key] = np.append(data[key], bucket[key])
             # Append the values to the counters
             else:
-                data[key].append(bucket[key])
+                data[key] = np.append(data[key], bucket[key]).astype(int)
 
     # Clear out the bucket after it's been packed if that's what we want
     if EMPTY_OUT_BUCKET:

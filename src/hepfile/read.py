@@ -310,7 +310,7 @@ def load(
                         hi = full_file_indices[index_name][-1]
                     if verbose:
                         print(f"dataset name/lo/hi: {dataset_name},{lo},{hi}\n")
-                    data[dataset_name] = dataset[lo:hi]
+                    data[dataset_name] = dataset[int(lo) : int(hi)]
                 else:
                     data[dataset_name] = dataset[:]
 
