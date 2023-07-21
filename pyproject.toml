@@ -40,7 +40,9 @@ pandas = ["pandas"]
 awkward = ["awkward>2"]
 learn = [
       "hepfile[pandas,awkward]",
-      "astropy"
+      "astropy",
+      "matplotlib",
+      "tabulate"
       ]
 all = ["hepfile[pandas,awkward]"]
 
