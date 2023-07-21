@@ -49,12 +49,13 @@ def initialize() -> dict:
 
 ################################################################################
 def clear_bucket(bucket: dict) -> None:
-    """Clears the data from the bucket dictionary - should the name of the function change?
+    """
+    Clears the data from the bucket dictionary - should the name of the function change?
 
     Args:
-        bucket (dict): The dictionary to be cleared. This is designed to clear the data from
-                      the lists in the bucket dictionary, but theoretically, it would
-                      clear out the lists from any dictionary.
+        bucket (dict): The dictionary to be cleared. This is designed to clear the
+                      data from the lists in the bucket dictionary, but theoretically,
+                      it would clear out the lists from any dictionary.
 
     """
 
@@ -172,11 +173,15 @@ def create_group(
         warnings.warn(warning)
         counter_name = new_counter_name
 
-    keys = data.keys()
+    data.keys()
 
     # Then put the group and any datasets in there next.
     if group_name in data["_GROUPS_"]:
-        raise ValueError(f"\033[1m{group_name}\033[0m is already in the dictionary!")
+        warning = (
+            f"\033[1m{group_name}\033[0m is already in the dictionary! Not Adding!"
+        )
+        warnings.warn(warning)
+        return
 
     data["_GROUPS_"][group_name] = []
     if verbose:
@@ -194,7 +199,8 @@ def create_group(
     data[full_counter_name] = []
     if verbose:
         print(
-            f"Adding a counter for \033[1m{group_name}\033[0m as \033[1m{counter_name}\033[0m"
+            f"Adding a counter for \033[1m{group_name}\033[0m "
+            + "as \033[1m{counter_name}\033[0m"
         )
 
 
@@ -209,18 +215,21 @@ def create_group(
 ################################################################################
 def create_dataset(
     data: dict,
-    datasets: list,
+    dset_name: list,
     group: str = None,
     dtype: type = float,
     verbose=False,
     ignore_protected=False,
 ):
-    """Adds a dataset to a group in a dictionary. If the group does not exist, it will be created.
+    """
+    Adds a dataset to a group in a dictionary.
+    If the group does not exist, it will be created.
 
     Args:
         data (dict): Dictionary that contains the group
 
-        datasets (list): Dataset to be added to the group (This doesn't have to be a list)
+        dset_name (list/str): Dataset to be added to the group
+                              (This doesn't have to be a list)
 
         group (string): Name of group the dataset will be added to.  None by default
 
@@ -231,11 +240,11 @@ def create_dataset(
 
     """
 
-    if not isinstance(datasets, list):
-        datasets = [datasets]
+    if not isinstance(dset_name, list):
+        dset_name = [dset_name]
 
     # Check for slashes in the dataset name. We can't have them.
-    for i, tempname in enumerate(datasets):
+    for i, tempname in enumerate(dset_name):
         # check that tempname isn't in protected_names
         if not ignore_protected and tempname in constants.protected_names:
             raise InputError(
@@ -254,13 +263,13 @@ def create_dataset(
                 )
             )
             warnings.warn(warning)
-            datasets[i] = new_dataset_name
+            dset_name[i] = new_dataset_name
 
     keys = data.keys()
 
     # These will be entries for the SINGLETON_GROUP, if there is no group passed in
     if group is None:
-        for dataset in datasets:
+        for dataset in dset_name:
             if dataset in data["_GROUPS_"]["_SINGLETONS_GROUP_"]:
                 warnings.warn(
                     f"\033[1m{dataset}\033[0m is already in the dictionary! Skipping!"
@@ -269,7 +278,8 @@ def create_dataset(
 
             if verbose:
                 print(
-                    f"Adding dataset \033[1m{dataset}\033[0m to the dictionary as a SINGLETON."
+                    f"Adding dataset \033[1m{dataset}\033[0m to the dictionary "
+                    + "as a SINGLETON."
                 )
             data["_GROUPS_"]["_SINGLETONS_GROUP_"].append(dataset)
             data[dataset] = []
@@ -288,7 +298,7 @@ def create_dataset(
         )
         create_group(data, group, counter=counter)
 
-    for dataset in datasets:
+    for dataset in dset_name:
         name = f"{group}/{dataset}"
 
         # check that tempname isn't in protected_names
@@ -326,8 +336,9 @@ def add_meta(data: dict, name: str, meta_data: list):
 
     Args:
         data (dict): a data object returned by hf.initialize()
-        name (str): name of either a group, singleton, or dataset the metadata corresponds to.
-                    if passing a dataset name, make sure it is the full path (group/dataset)!
+        name (str): name of either a group, singleton, or dataset the metadata
+                    corresponds to. if passing a dataset name, make sure it is the full
+                    path (group/dataset)!
         meta_data (list): list of metadata to write to that group/dataset/singleton
     """
 
@@ -417,7 +428,8 @@ def pack(
 
                     # Raise an exception for the external program to catch.
                     raise DatasetSizeDiscrepancy(
-                        f"Oh no!!!! Two datasets in group {group} have different sizes! {err}"
+                        f"Oh no!!!! Two datasets in group {group} "
+                        + f"have different sizes! {err}"
                     )
 
     # Then pack the bucket into the data
@@ -439,35 +451,35 @@ def pack(
         }:
             continue
 
-        if isinstance(data[key], np.ndarray):
-            data[key] = data[key].tolist()
-
-        if isinstance(bucket[key], np.ndarray):
-            bucket[key] = bucket[key].tolist()
-
         # The singletons will only have 1 entry per bucket
         if key == "_SINGLETONS_GROUP_/COUNTER":
-            data[key].append(1)
+            # import pdb; pdb.set_trace()
+            data[key] = _append(data[key], 1)  # np.append(data[key], 1).astype(int)
             continue
 
-        if isinstance(bucket[key], list):
+        if isinstance(bucket[key], (list, np.ndarray)):
             value = bucket[key]
             if len(value) > 0:
-                data[key] += value
+                data[key] = _append(
+                    data[key], value
+                )  # np.append(data[key], value)  # += value
         else:
             # This is for counters and SINGLETONS
             if key in data["_GROUPS_"]["_SINGLETONS_GROUP_"]:
                 if bucket[key] is None:
                     raise MissingSingletonValue(
-                        f"\n\033[1m{key}\033[0m is part of the SINGLETON group \
-                        and is expected to have a value for each bucket. However it is None!"
+                        f"\n\033[1m{key}\033[0m is part of the SINGLETON group "
+                        + "and is expected to have a value for each bucket. "
+                        + "However it is None!"
                     )
 
                 # Append the single value from the singletons
-                data[key].append(bucket[key])
+                data[key] = _append(
+                    data[key], bucket[key]
+                )  # np.append(data[key], bucket[key])
             # Append the values to the counters
             else:
-                data[key].append(bucket[key])
+                data[key] = _append(data[key], bucket[key])  # .astype(int)
 
     # Clear out the bucket after it's been packed if that's what we want
     if EMPTY_OUT_BUCKET:
@@ -475,6 +487,21 @@ def pack(
 
 
 ################################################################################
+
+
+def _append(data, bucket):
+    if isinstance(data, np.ndarray):
+        return np.append(data, bucket)
+    elif isinstance(data, list):
+        if isinstance(bucket, np.ndarray):
+            return np.append(data, bucket)
+        elif isinstance(bucket, list):
+            return data + bucket
+        else:  # these are values like counters or singletons
+            data.append(bucket)
+            return data
+    else:
+        raise ValueError("data should be a list or numpy array!")
 
 
 def _convert_list_and_key_to_string_data(datalist: list[any], key: str) -> str:
@@ -682,7 +709,8 @@ def write_to_file(
 
         comp_type (string): Type of compression
 
-        force_single_precision (boolean): True if data should be written in single precision
+        force_single_precision (boolean): True if data should be written in single
+                                          precision
 
     Returns:
         hdoutfile (HDF5): File to which the data has been written
@@ -759,9 +787,11 @@ def write_to_file(
                         dtype = x.dtype
                     else:
                         dtype = None
-                        warnings.warn(
-                            "Not a proper data type to convert to single precision, skipping!"
-                        )
+                        if verbose:
+                            warnings.warn(
+                                "Not a proper data type to convert to single precision,"
+                                + " skipping!"
+                            )
 
                     if dtype == np.float64:
                         if verbose:
@@ -787,6 +817,9 @@ def write_to_file(
                     #
                     # https://stackoverflow.com/questions/68500454/can-i-use-h5py-to-write-strings-to-an-hdf5-file-in-one-line-rather-than-looping
                     dataset_dtype = h5.special_dtype(vlen=str)
+
+                    if not hasattr(x[0], "__len__"):
+                        x = x.astype(str)
                     longest_word = len(max(x, key=len))
                     arr = np.array(x, dtype="S" + str(longest_word))
                     hdoutfile.create_dataset(
@@ -816,7 +849,7 @@ def write_to_file(
 
             if i > 0 and ncounter != num_buckets:
                 warnings.warn(
-                    f"{countername} and {prevcounter} have differing numbers of entries!"
+                    f"{countername} and {prevcounter} have differing number of entries!"
                 )
                 # SHOULD WE EXIT ON THIS?
 

@@ -3,7 +3,6 @@ Functions to help convert dictionaries into hepfiles
 """
 from __future__ import annotations
 
-import warnings
 import numpy as np
 
 import hepfile as hf
@@ -34,17 +33,18 @@ def dictlike_to_hepfile(
     - each dictlike object is a "event"
     - first level of dict keys are the groups
     - second level of dict keys are the datasets
-    - entries in second level of dict object is the data and can be either awkward arrays or lists
+    - entries in second level of dict object is the data (awkward array or list)
     - data entries in the first level of the dict are singleton objects
 
     Args:
         dict_list (list): list of dictionaries or dataframes where each dictionary/df
                           holds information on an event
         outfile (str): path to write output hepfile to
-        how_to_pack (str): how to pack the input dataset. Options are 'awkward' or 'classic'.
-                      'awkward' called awkward_to_hepfile, 'classic' does it more traditional.
-                      default is 'classic'. To use how_to_pack='awkward', make sure you
-                      installed hepfile with the 'awkward' or 'all' optional dependency!
+        how_to_pack (str): how to pack the input dataset. Options are 'awkward'
+                           or 'classic'. 'awkward' called awkward_to_hepfile,
+                           'classic' does it more traditional. default is 'classic'.
+                           To use how_to_pack='awkward', make sure you installed
+                           hepfile with the 'awkward' or 'all' optional dependency!
         **kwargs: passed to `hepfile.write.write_to_file` if 'awkward'. Can only be
                   'write_to_hepfile' and 'ignore_protected' if 'classic'.
     Returns:
@@ -84,7 +84,7 @@ def dictlike_to_hepfile(
 def _classic(
     dict_list: dict, outfile: str = None, write_hepfile=True, ignore_protected=False
 ) -> dict:
-    """Private method to convert a list of events to a hepfile using the traditional method"""
+    """Private method to convert a list of events to a hepfile using loop+pack method"""
 
     if outfile is None and write_hepfile:
         raise InputError("if write_hepfile is True, and outfile name must be provided")
@@ -121,8 +121,8 @@ def _classic(
             create_dataset(data, dataset_name, group=group_name, dtype=dtype)
 
     # now pack the data from each data dictionary
+    bucket = create_single_bucket(data)
     for data_dict in dict_list:
-        bucket = create_single_bucket(data)
         for group in data_dict:
             group_name = group.replace("/", "-")
             if group in bucket["_GROUPS_"]["_SINGLETONS_GROUP_"]:
@@ -133,7 +133,7 @@ def _classic(
                 for dataset in data_dict[group]:
                     dataset_name = dataset.replace("/", "-")
                     name = f"{group}/{dataset_name}"
-                    bucket[name] = data_dict[group][dataset]
+                    bucket[name] = list(data_dict[group][dataset])
         pack(data, bucket)
 
     # finally write the data out to a file
@@ -149,7 +149,7 @@ def _awkward(dict_list: list[dict], outfile: str = None, **kwargs):
         raise MissingOptionalDependency("awkward")
 
     import awkward as ak
-    from hepfile.awkward_tools import awkward_to_hepfile, _is_valid_awkward
+    from hepfile.awkward_tools import awkward_to_hepfile
 
     # convert dictionary list to  an awkward array and write to hepfile
     out_ak = ak.Array(dict_list)
@@ -163,7 +163,7 @@ def _awkward(dict_list: list[dict], outfile: str = None, **kwargs):
     return out_ak
 
 
-def append(ak_dict: ak.Record, new_dict: dict) -> ak.Record:
+def append(ak_dict: ak.Record, new_dict: dict) -> ak.Record:  # noqa: F821
     """
     Append a new event to an existing awkward dictionary with events
 
@@ -174,7 +174,8 @@ def append(ak_dict: ak.Record, new_dict: dict) -> ak.Record:
 
     Args:
         ak_dict (ak.Record): awkward Record of data
-        new_dict (dict): Dictionary of value to append to ak_dict. All keys must match ak_dict!
+        new_dict (dict): Dictionary of value to append to ak_dict.
+                         All keys must match ak_dict!
     Return:
         Awkward Record of awkward arrays with the new_dict appended
     """
@@ -182,7 +183,7 @@ def append(ak_dict: ak.Record, new_dict: dict) -> ak.Record:
         raise MissingOptionalDependency("awkward")
 
     import awkward as ak
-    from hepfile.awkward_tools import awkward_to_hepfile, _is_valid_awkward
+    from hepfile.awkward_tools import _is_valid_awkward
 
     _is_valid_awkward(ak_dict)
 

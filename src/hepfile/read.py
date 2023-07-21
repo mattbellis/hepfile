@@ -40,16 +40,17 @@ def load(
 
         subset (int): Number of buckets to be read from input file
 
-        return_type (str): Type to return. Options are 'dictionary', 'awkward', and 'pandas'.
-                           Default is 'dictionary'. Note: the 'awkward' option requires
-                           hepfile to be installed with the awkward or all option and the
-                           'pandas' option requires hepfile to be installed with the pandas
-                           or all option!
+        return_type (str): Type to return. Options are 'dictionary', 'awkward', and '
+                           'pandas'. Default is 'dictionary'. Note: the 'awkward' option
+                           requires hepfile to be installed with the awkward or all
+                           option and the 'pandas' option requires hepfile to be
+                           installed with the pandas or all option!
 
     Returns:
         data (dict): Selected data from HDF5 file
 
-        bucket (dict): An empty bucket dictionary to be filled by data from select buckets
+        bucket (dict): An empty bucket dictionary to be filled by data from
+                       select buckets
 
     """
 
@@ -88,7 +89,7 @@ def load(
                 if verbose:
                     warning = "\n".join(
                         (
-                            "Single subset value of {subset} being interpreted as a high range",
+                            f"Single subset value ({subset}) being used as high range",
                             f"subset being set to a range of (0,{subset})\n",
                         )
                     )
@@ -127,7 +128,8 @@ def load(
             if verbose:
                 print("Will read in a subset of the file!")
                 print(
-                    f"From bucket {subset[0]} (inclusive) through bucket {subset[1]-1} (inclusive)"
+                    f"From bucket {subset[0]} (inclusive) through bucket"
+                    + f"{subset[1]-1} (inclusive)"
                 )
                 print(f"Bucket {subset[1]} is not read in")
                 print(f"Reading in {nbuckets} buckets\n")
@@ -250,8 +252,8 @@ def load(
                 print(f"full file index: {full_file_index}\n")
 
             if subset is not None:
-                # We tack on +1 to the high range of subset when we pull out the counters
-                # and index because we want to get all of the entries for the last entry.
+                # We tack on +1 to the high range of subset when we get the counters
+                # and index because we want all of the entries for the last entry.
                 data[counter_name] = infile[counter_name][subset[0] : subset[1] + 1]
                 index = full_file_index[subset[0] : subset[1] + 1]
             else:
@@ -308,7 +310,7 @@ def load(
                         hi = full_file_indices[index_name][-1]
                     if verbose:
                         print(f"dataset name/lo/hi: {dataset_name},{lo},{hi}\n")
-                    data[dataset_name] = dataset[lo:hi]
+                    data[dataset_name] = dataset[int(lo) : int(hi)]
                 else:
                     data[dataset_name] = dataset[:]
 
@@ -319,6 +321,10 @@ def load(
             # write the metadata for that group to data if it exists
             if name not in constants.protected_names and "meta" in dataset.attrs.keys():
                 data["_META_"][name] = dataset.attrs["meta"]
+
+        # Add the GROUPS field to the bucket. It's a bit of extra data
+        # that most of the time is not needed, but can be helpful for
+        # if we want to convert the bucket to a dataframe.
 
     if verbose:
         print("Data is read in and input file is closed.")
@@ -408,13 +414,19 @@ def unpack(bucket: dict, data: dict, n: int = 0):
     keys = bucket.keys()
 
     for key in keys:
-        # if "num" in key:
+
+        # BELLIS EDITS TRYING SOMETHING OUT
+        if key == '_GROUPS_' or key == '_MAP_DATASETS_TO_COUNTERS_':
+            continue
+
         # IS THERE A WAY THAT THIS COULD BE FASTER?
         # print(data['_LIST_OF_COUNTERS_'],key)
+        # unpack the singletons and the counters (which are themselves 
+        # singletons, effectively)
         if key in data["_LIST_OF_COUNTERS_"] or key in data["_SINGLETONS_GROUP_"]:
             bucket[key] = data[key][n]
 
-        elif "INDEX" not in key:  # and 'Jets' in key:
+        elif "INDEX" not in key:
             indexkey = data["_MAP_DATASETS_TO_INDEX_"][key]
             numkey = data["_MAP_DATASETS_TO_COUNTERS_"][key]
 

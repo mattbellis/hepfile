@@ -1,13 +1,13 @@
 [build-system]
-requires = ["flit_core >=3.2,<4"]
-build-backend = "flit_core.buildapi"
+requires = ['setuptools>=42']
+build-backend = "setuptools.build_meta"
 
 [project]
 name = "hepfile"
 authors = [{name = "Matt Bellis", email = "mbellis@siena.edu"}]
 readme = "README.md"
 license = {file = "LICENSE"}
-dynamic = ["version", "description"]
+dynamic = ["version"] #, "description"]
 
 requires-python = ">=3.9"
 
@@ -37,7 +37,7 @@ Home = "https://github.com/mattbellis/hepfile"
 
 [project.optional-dependencies]
 pandas = ["pandas"]
-awkward = ["awkward"]
+awkward = ["awkward>2"]
 learn = [
       "hepfile[pandas,awkward]",
       "astropy"
@@ -50,7 +50,8 @@ dev = [
     "pre-commit",
     "jupyter",
     "mistune",
-    "pytest"
+    "pytest",
+    "ruff"
     ]
 
 docs = [
@@ -63,6 +64,9 @@ docs = [
   "autodoc",
   "ipykernel"
 ]
+
+[tool.setuptools.dynamic]
+version = {attr = 'hepfile._version.__version__'}
 
 [tool.pytest.ini_options]
 addopts = "-ra -Wd"
@@ -86,3 +90,59 @@ warn_unused_ignores = true
 warn_return_any = true
 no_implicit_reexport = true
 strict_equality = true
+
+[tool.ruff]
+# Enable the pycodestyle (`E`) and Pyflakes (`F`) rules by default.
+# Unlike Flake8, Ruff doesn't enable pycodestyle warnings (`W`) or
+# McCabe complexity (`C901`) by default.
+select = ["E", "F"]
+ignore = []
+
+# Allow autofix for all enabled rules (when `--fix`) is provided.
+fixable = ["ALL"]
+unfixable = []
+
+# Exclude a variety of commonly ignored directories.
+exclude = [
+    ".bzr",
+    ".direnv",
+    ".eggs",
+    ".git",
+    ".git-rewrite",
+    ".hg",
+    ".mypy_cache",
+    ".nox",
+    ".pants.d",
+    ".pytype",
+    ".ruff_cache",
+    ".svn",
+    ".tox",
+    ".venv",
+    "__pypackages__",
+    "_build",
+    "buck-out",
+    "build",
+    "dist",
+    "node_modules",
+    "venv",
+    ".github",
+    ".ipynb_checkpoints",
+    "docs",
+    "tests",
+    "paper",
+    "sandbox",
+    ".binder",
+]
+
+# set to the same as black
+line-length = 88
+
+# Allow unused variables when underscore-prefixed.
+dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
+
+# Assume Python 3.10.
+target-version = "py310"
+
+# Ignore `E402` (import violations) in all `__init__.py` files, and in `path/to/file.py`.
+[tool.ruff.per-file-ignores]
+"src/hepfile/__init__.py" = ["E402", "F403", "F401"]

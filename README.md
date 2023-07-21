@@ -35,12 +35,12 @@
 
 # Heterogeneous Files in Parallel File (hepfile)
 
-In high energy physics, experiments require file formats that can accomodate 
+In high energy physics, experiments require file formats that can accomodate
 heterogeneity (each collection event can have differing amounts of data collected)
 and size (since HEP experiments can generate petabytes of data). Although the current
 file format of choice is ROOT, a file format developed by CERN, we believe that
 HDF5, which is a portable and more commonly used file format outside of HEP,
-has promise in being a new standard. 
+has promise in being a new standard.
 
 The only issue is that HDF5 works best with homogenous data formats, where each
 dataset occupies an n by m chunk of memory. This is not necessarily the case
@@ -49,23 +49,23 @@ in our schema.
 
 # Schema
 
-### Heterogenous Data ... 
+### Heterogenous Data ...
 
-We assume that data that we collect is composed of (insert some term for particle, 
-chair, etc.) each carrying a certain number of attributes. Each ___ is associated 
+We assume that data that we collect is composed of (insert some term for particle,
+chair, etc.) each carrying a certain number of attributes. Each ___ is associated
 with some increasing counter. In HEP, this counter is events. Each event can
-have an arbitrary number of particles of any type, making this data heterogenous. 
+have an arbitrary number of particles of any type, making this data heterogenous.
 
-### ... to Homogenous File 
+### ... to Homogenous File
 
-To make this data homogenous, we can create n by m chunks of data for each type 
-of particle, where n is the total number of this particle in all of the events, 
-and the specific row for each of the particles contains all of the attributes 
+To make this data homogenous, we can create n by m chunks of data for each type
+of particle, where n is the total number of this particle in all of the events,
+and the specific row for each of the particles contains all of the attributes
 for that particle in the original data.
 
 We also create a list for each type of particle whose length is the total number
 of events. At position *i*, we have the data for how many particles of said type
-appeared in event *i*. 
+appeared in event *i*.
 
 # Overview of use case
 
@@ -80,14 +80,14 @@ has a different number of values. For example:
 ```
 This can not simply be converted to most common data structures, like a Pandas DataFrame,
 or written to a simple homogeneous file structure, like a CSV file. In a more complex case
-Let's have an image of a town, with cartoon people here. 
+Let's have an image of a town, with cartoon people here.
 
-To illustrate how to use hepfile with this example, we imagine a researcher conducting 
+To illustrate how to use hepfile with this example, we imagine a researcher conducting
 a census on a town. Each household in the town has some variable number of people
 in it, some variable number of vehicles, and only one residence. The people, vehicles,
-and residence all have different data associated with them. How would we record 
-these data? Well, to first order, we might decide to record them in multiple spreadsheets or 
-multiple .csv files. 
+and residence all have different data associated with them. How would we record
+these data? Well, to first order, we might decide to record them in multiple spreadsheets or
+multiple .csv files.
 
 ![](docs/images/household_example_spreadsheet_00_smaller.png)
 ![](docs/images/household_example_spreadsheet_01_smaller.png)
@@ -153,9 +153,15 @@ For local builds for testing follow these steps:
 ```
 python -m pip install -e .[dev]
 ```
-4. Then, run the following commands to setup the pre-commit git hook
-to automatically run our tests before committing!
+4. Then, run the following command to setup the pre-commit git hook
+to automatically run our code standard tests before committing!
 ```
-chmod a+x pre-commit-tests.sh
-ln -s ../../pre-commit-tests.sh .git/hooks/pre-commit
+pip install pre-commit
+pre-commit install
+```
+
+As a side note, to test developments to the code use the following command in the top-level directory of
+the project:
+```
+pytest
 ```
