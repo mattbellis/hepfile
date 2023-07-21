@@ -463,7 +463,6 @@ def pack(
 
         # The singletons will only have 1 entry per bucket
         if key == "_SINGLETONS_GROUP_/COUNTER":
-            # import pdb; pdb.set_trace()
             data[key] = _append(data[key], 1)  # np.append(data[key], 1).astype(int)
             continue
 

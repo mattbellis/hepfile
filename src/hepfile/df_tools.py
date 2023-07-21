@@ -8,6 +8,7 @@ You must have installed hepfile with either \n
 """
 from __future__ import annotations
 
+import numpy as np
 import pandas as pd
 import hepfile as hf
 from hepfile.errors import InputError, MissingOptionalDependency
@@ -156,22 +157,26 @@ def awkward_to_df(
     if not all(group in ak_array.fields for group in groups):
         raise InputError("Groups must be a subset of the group names in data!")
 
+    singletons = {}
     for group in groups:
         # convert the record
+
+        if len(ak_array[group].fields) == 0:  # singleton
+            singletons[group] = ak_array[group].to_numpy()
+            continue
+
         group_df = ak.to_dataframe(ak_array[group])
 
         # caluclate the indexes
-        num = []
-        for i, awk in enumerate(ak_array[group]):
-            if isinstance(awk, (ak.Array, ak.Record)):
-                record_len = len(awk.to_list()[awk.fields[0]])
-                for _ in range(record_len):
-                    num.append(i)
-            else:
-                num.append(i)
-
+        nums_record = ak.num(ak_array[group])
+        nums = nums_record[
+            nums_record.fields[0]
+        ]  # make the assumption that all datasets are the same length
+        idx = np.concatenate(
+            np.array([np.array([i] * num) for i, num in enumerate(nums)])
+        )
         # put event number in the dataframe
-        group_df["event_num"] = num
+        group_df["event_num"] = idx
 
         # only take events with event numbers in events
         if events is None:
@@ -179,6 +184,13 @@ def awkward_to_df(
         group_df = group_df[group_df.event_num.isin(events)]
 
         dfs[group] = group_df
+
+    if len(singletons) > 0:  # check if there are any keys in singletons
+        singletons_df = pd.DataFrame(singletons)
+        singletons_df["event_num"] = np.linspace(
+            0, len(singletons_df), num=len(singletons_df), endpoint=False, dtype=int
+        )
+        dfs["_SINGLETONS_GROUP_"] = singletons_df
 
     if len(dfs) == 1:
         return dfs[list(dfs.keys())[0]]
