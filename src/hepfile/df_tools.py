@@ -172,9 +172,9 @@ def awkward_to_df(
         nums = nums_record[
             nums_record.fields[0]
         ]  # make the assumption that all datasets are the same length
-        idx = np.concatenate(
-            np.array([np.array([i] * num) for i, num in enumerate(nums)])
-        )
+        idx = ak.flatten(
+            ak.Array([ak.Array([i] * num) for i, num in enumerate(nums)])
+        ).to_numpy()
         # put event number in the dataframe
         group_df["event_num"] = idx
 
