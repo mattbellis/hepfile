@@ -88,7 +88,7 @@ class MissingOptionalDependency(ImportError):
     """
 
     def __init__(self, module):
-        self.err = f"{module} is not supported with this distribution of hepfile. \
+        self.err = f"{module} is not supported with this distribution of hepfile. \n\
         Please reinstall with one of the following options \n \
         1) pip install hepfile[{module}]  \n\
         2) pip install hepfile[all]"

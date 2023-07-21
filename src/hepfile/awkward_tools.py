@@ -109,8 +109,8 @@ def hepfile_to_awkward(
     except AwkwardStructureError as err:
         print(err)
         raise AwkwardStructureError(
-            "Cannot convert to proper awkward array because of the above \
-            error! Check your input hepfile format"
+            "Cannot convert to proper awkward array because of the above "
+            + "error! Check your input hepfile format"
         ) from err
 
     return awk
@@ -284,8 +284,8 @@ def awkward_to_hepfile(
 
     if write_hepfile is False and outfile is not None:
         warnings.warn(
-            "You set write_hepfile to False but provided an output file path. \
-            This output file path will not be used!"
+            "You set write_hepfile to False but provided an output file path. "
+            + "This output file path will not be used!"
         )
 
     data = initialize()
@@ -310,8 +310,9 @@ def _awkward_depth_check(ak_array: ak.Record) -> int:
         for subfield in ak_array[field].fields:
             if len(ak_array[field][subfield].fields) != 0:
                 raise AwkwardStructureError(
-                    "Hepfile only supports awkward arrays \
-                with a depth <= 2! Please ensure your input follows this guideline"
+                    "Hepfile only supports awkward arrays "
+                    + "with a depth <= 2! Please ensure your input follows "
+                    + "this guideline"
                 )
 
 
@@ -329,8 +330,8 @@ def _is_valid_awkward(ak_array: ak.Record):
 
     if len(ak_array.fields) == 0:
         raise AwkwardStructureError(
-            "Your input Awkward Array must be a Record. \
-            This means it needs to have fields in it."
+            "Your input Awkward Array must be a Record. "
+            "This means it needs to have fields in it."
         )
 
     # check input array only has a "depth" of 2

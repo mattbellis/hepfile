@@ -294,8 +294,8 @@ def create_dataset(
     if group not in data["_GROUPS_"]:
         counter = f"N_{group}"
         warnings.warn(
-            f"Your group, \033[1m{group}\033[0m is not in the dictionary yet! \
-            Adding it, along with a counter of \033[1m{counter}\033[0m"
+            f"Your group, \033[1m{group}\033[0m is not in the dictionary yet! "
+            + f"Adding it, along with a counter of \033[1m{counter}\033[0m"
         )
         create_group(data, group, counter=counter)
 
@@ -316,8 +316,8 @@ def create_dataset(
 
         if verbose:
             print(
-                f"Adding dataset \033[1m{dataset}\033[0m to the dictionary \
-                under group \033[1m{group}\033[0m."
+                f"Adding dataset \033[1m{dataset}\033[0m to the dictionary "
+                + f"under group \033[1m{group}\033[0m."
             )
         data[name] = []
         data["_GROUPS_"][group].append(dataset)

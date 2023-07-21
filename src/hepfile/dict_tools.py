@@ -64,8 +64,7 @@ def dictlike_to_hepfile(
             dict_list = [item.to_dict() for item in dict_list]
         except Exception as exc:
             raise InputError(
-                "Please input either a dataframe or list \
-            of dictionaries"
+                "Please input either a dataframe or list of dictionaries"
             ) from exc
 
     if how_to_pack == "awkward" and not hf._AWKWARD:
@@ -201,8 +200,8 @@ def append(ak_dict: ak.Record, new_dict: dict) -> ak.Record:  # noqa: F821
 
     if sorted(list(new_dict.keys())) != sorted(ak_dict.fields):
         raise InputError(
-            f"Keys of new array do not match keys of existing array!\nExisting \
-            Array Keys: {ak_dict.fields}\nNew Dictionary Keys: {new_dict.keys()}"
+            "Keys of new array do not match keys of existing array!\nExisting "
+            + "Array Keys: {ak_dict.fields}\nNew Dictionary Keys: {new_dict.keys()}"
         )
 
     ak_list = ak.to_list(ak_dict)

@@ -108,8 +108,8 @@ def load(
             # an empty data and bucket
             if subset[1] - subset[0] <= 0:
                 raise RangeSubsetError(
-                    f"The range in subset is either 0 or negative! \
-                    {subset[1]} - {subset[0]} = {subset[1] - subset[0]}"
+                    "The range in subset is either 0 or negative! "
+                    + f"{subset[1]} - {subset[0]} = {subset[1] - subset[0]}"
                 )
 
             # Make sure the user is not asking for something bigger than the file!
@@ -117,15 +117,15 @@ def load(
 
             if subset[0] > nbuckets:
                 raise RangeSubsetError(
-                    f"Range for subset starts greater than number of buckets \
-                    in file! {subset[0]} > {nbuckets}"
+                    "Range for subset starts greater than number of buckets "
+                    + f"in file! {subset[0]} > {nbuckets}"
                 )
 
             if subset[1] > nbuckets:
                 warnings.warn(
-                    f"Range for subset is greater than number of buckets in \
-                    file!\n{subset[1]} > {nbuckets}\nHigh range of subset will \
-                    be set to {nbuckets}\n"
+                    "Range for subset is greater than number of buckets in "
+                    + f"file!\n{subset[1]} > {nbuckets}\nHigh range of subset will "
+                    + f"be set to {nbuckets}\n"
                 )
                 subset[1] = nbuckets
 
