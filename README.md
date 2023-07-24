@@ -157,7 +157,7 @@ For local builds for testing follow these steps:
 2. Navigate to the top-level directory of this project (probably called hepfile)
 3. We then recommend installing with the developer dependencies. To do this run:
 ```
-python -m pip install -e .[dev]
+python -m pip install -e '.[dev]'
 ```
 4. Then, run the following command to setup the pre-commit git hook
 to automatically run our code standard tests before committing!
