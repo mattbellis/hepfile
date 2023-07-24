@@ -1,6 +1,8 @@
+astropy
+awkward>=2.1.2
+h5py
+hepfile[learn]
+matplotlib
 numpy>=1.13.3
 pandas
-h5py
-awkward>=2.1.2
-astropy
-hepfile[learn]
+tabulate
