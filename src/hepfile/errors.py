@@ -7,6 +7,8 @@ class InputError(Exception):
     """
     General error to describe when the input value of a function
     in the module is either the wrong type or incorrectly formatted.
+    Note: This replaced pythons builtin IOError that is now deprecated and replaced
+    with the more general and less informative OSError.
     """
 
     pass
@@ -79,10 +81,14 @@ class MissingOptionalDependency(ImportError):
     """
     Thrown when the user tries to use an optional part of the package that was
     not installed when they installed.
+
+    Args:
+        module (str): name of the missing optional dependency that needs to be installed
+                      by the user.
     """
 
     def __init__(self, module):
-        self.err = f"{module} is not supported with this distribution of hepfile. \
+        self.err = f"{module} is not supported with this distribution of hepfile. \n\
         Please reinstall with one of the following options \n \
         1) pip install hepfile[{module}]  \n\
         2) pip install hepfile[all]"

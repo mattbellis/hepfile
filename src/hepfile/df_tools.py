@@ -2,12 +2,13 @@
 Tools to work with Pandas DataFrames and Hepfile data
 
 Note: The base installation package does not contain these tools!
-You must have installed hepfile with either
-1) 'python -m pip install hepfile[pandas]', or
-2) 'python -m pip install hepfile[all]'
+You must have installed hepfile with either \n
+1) :code:`python -m pip install hepfile[pandas]`, or \n
+2) :code:`python -m pip install hepfile[all]`
 """
 from __future__ import annotations
 
+import numpy as np
 import pandas as pd
 import hepfile as hf
 from hepfile.errors import InputError, MissingOptionalDependency
@@ -24,14 +25,19 @@ def hepfile_to_df(
     and we add an extra column called 'event_num'. Singletons have its own df
 
     Args:
-        data [dict]: data object either loaded from a hepfile or about to be
+        data (dict): data object either loaded from a hepfile or about to be
                      written to a hepfile.
-        groups [list]: groups to include, None (default) means include all groups
-        events [list]: list of event indexes to include
+        groups (list): groups to include, None (default) means include all groups
+        events (list): list of event indexes to include
 
     Returns:
-        Dictionary of requested groups as dataframes where the keys are the group names.
-        If only one group is requested then it just returns a dataframe of that group.
+        dict[pd.DataFrame]: Dictionary of requested groups as dataframes where
+                            the keys are the group names. If only one group is
+                            requested then it just returns a dataframe of that
+                            group.
+
+    Raises:
+        InputError: Something is wrong with the specified input
     """
 
     dfs = {}  # list to of dataframes to return
@@ -105,17 +111,24 @@ def awkward_to_df(
     Converts an awkward array of hepfile data to a dataframe. Does the same thing
     as hepfile_to_df but given an awkward array.
 
-    Note: You must have installed with 'python -m pip install hepfile[all]'
+    Note: You must have installed with :code:`python -m pip install hepfile[all]`
           to use this tool!
 
     Args:
-        ak_array [ak.Array]: awkward array in the format of a hepfile
-        groups [list]: groups to include, None (default) means include all groups
-        events [list]: list of event indexes to include
+        ak_array (ak.Array): awkward array in the format of a hepfile
+        groups (list): groups to include, None (default) means include all groups
+        events (list): list of event indexes to include
 
     Returns:
-        Dictionary of requested groups as dataframes where the keys are the group names.
-        If only one group is requested then it just returns a dataframe of that group.
+        dict[pd.DataFrame]: Dictionary of requested groups as dataframes where the
+                            keys are the group names. If only one group is
+                            requested then it just returns a dataframe of that
+                            group.
+
+    Raises:
+        MissingOptionalDependency: If you do not have the optional dependency awkward
+                                   installed.
+        InputError: If something is wrong with the specified input values.
     """
 
     if not hf._AWKWARD:
@@ -144,22 +157,26 @@ def awkward_to_df(
     if not all(group in ak_array.fields for group in groups):
         raise InputError("Groups must be a subset of the group names in data!")
 
+    singletons = {}
     for group in groups:
         # convert the record
+
+        if len(ak_array[group].fields) == 0:  # singleton
+            singletons[group] = ak_array[group].to_numpy()
+            continue
+
         group_df = ak.to_dataframe(ak_array[group])
 
         # caluclate the indexes
-        num = []
-        for i, awk in enumerate(ak_array[group]):
-            if isinstance(awk, (ak.Array, ak.Record)):
-                record_len = len(awk.to_list()[awk.fields[0]])
-                for _ in range(record_len):
-                    num.append(i)
-            else:
-                num.append(i)
-
+        nums_record = ak.num(ak_array[group])
+        nums = nums_record[
+            nums_record.fields[0]
+        ]  # make the assumption that all datasets are the same length
+        idx = ak.flatten(
+            ak.Array([ak.Array([i] * num) for i, num in enumerate(nums)])
+        ).to_numpy()
         # put event number in the dataframe
-        group_df["event_num"] = num
+        group_df["event_num"] = idx
 
         # only take events with event numbers in events
         if events is None:
@@ -167,6 +184,13 @@ def awkward_to_df(
         group_df = group_df[group_df.event_num.isin(events)]
 
         dfs[group] = group_df
+
+    if len(singletons) > 0:  # check if there are any keys in singletons
+        singletons_df = pd.DataFrame(singletons)
+        singletons_df["event_num"] = np.linspace(
+            0, len(singletons_df), num=len(singletons_df), endpoint=False, dtype=int
+        )
+        dfs["_SINGLETONS_GROUP_"] = singletons_df
 
     if len(dfs) == 1:
         return dfs[list(dfs.keys())[0]]
@@ -184,16 +208,19 @@ def df_to_hepfile(
     hepfile_to_df. Must have an event_num column!
 
     Args:
-        df_dict [dict]: dictionary of pandas DataFrame groups to write to a hepfile
-        outfile [str]: output file name, required if write_hepfile is True
-        event_num_col [str]: name of a column in the pd.DataFrame to group by
-        write_hepfile [bool]: should we write the hepfile data to a hepfile?
+        df_dict (dict): dictionary of pandas DataFrame groups to write to a hepfile
+        outfile (str): output file name, required if write_hepfile is True
+        event_num_col (str): name of a column in the pd.DataFrame to group by
+        write_hepfile (bool): should we write the hepfile data to a hepfile?
 
     Returns:
-        hepfile data dictionary
+        dict: hepfile data dictionary
+
+    Raises:
+        InputError: If something is wrong with the specific input.
     """
 
-    out = groupDF_to_eventDF(df_dict, event_num_col)
+    out = groups_to_events(df_dict, event_num_col)
     return dictlike_to_hepfile(
         out,
         outfile=outfile,
@@ -203,7 +230,7 @@ def df_to_hepfile(
     )
 
 
-def groupDF_to_eventDF(
+def groups_to_events(
     df_dict: dict[pd.DataFrame], event_num_col: str = "event_num"
 ) -> dict:
     """
@@ -212,6 +239,12 @@ def groupDF_to_eventDF(
     Args:
         df_dict [dict] : dictionary of groups to convert to a dictionary of events
         event_num_col [str] : column to group each group by
+
+    Returns:
+        dict[pd.DataFrame]: dictionary of pandas dataframes organized by events
+
+    Raises:
+        InputError: Something is wrong with the input dictionary
     """
 
     out = {}

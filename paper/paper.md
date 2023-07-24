@@ -40,6 +40,7 @@ by the experiences of HEP analyses, we believe that the *hepfile* file format co
 across many disciplines, particularly those who work with irregularly shaped datasets that might normally
 be analyzed with multiple files or stored in a database.
 
+
 *hepfile* (Heterogeneous Entries in Parallel - file) is a data description for organizing heterogeneous datasets such that they can be stored and extracted in an HDF5 [@HDF5] file. *hepfile* is the successor to an earlier software, named *h5hep* [@h5hep], which was used in an outreach website, the Particle Physics Playground [@ppp]. *hepfile* has now replaced *h5hep* for that outreach website. Additionally, one of the authors of this package uses *hepfile* for their analysis with the BaBar and CMS particle physics experiments at SLAC and CERN, respectively.
 
 *hepfile* provides the structure and python functionality to work with heterogeneous ROOT-like data stored in the more flexible HDF5 file format. In *hepfile*,e provide methods to pack and unpack heterogeneous data into / out of an HDF5 file making use of standard python packages [@numpy; @h5py], as well as some optional helper tools to interface with other python-based analysis packages [@pandas; @awkward]. This gives users access to a ROOT-file-like functionality without touching the independent ROOT ecosystem using native python tools. Additionally, HDF5 is particularly advantageous because the file format is accessible across a variety of programming languages allowing for *hepfile* files to be accessed in any language that supports HDF5.
@@ -50,7 +51,7 @@ To store and analyze the heterogeneous datasets that come out of particle physic
 *hepfile* solves some of these problems by utilizing a widely-used file format, HDF5 [@HDF5], and defining a way to pack/unpack the data that looks and feels familiar to ROOT-users while remaining straightforward to someone who has never used ROOT before. This makes *hepfile* not only useful in HEP but also in other areas of data science that include heterogeneous datasets, where the solution instead requires a database.
 In addition, because the underlying file is HDF5, a user can interact with and inspect the file with any other HDF5-based tools, including those provided by the HDF5 group or other languages that have HDF5-APIs implemented in them like C++ and Julia. This language-independent nature of the *hepfile* structure enables it to be used alongside new software packages and languages as they come along in the future.
 
-Acknowledgements
+# Acknowledgements
 We acknowledge contributions from Siena College student Ryan Mikulec in the earliest stages of this project, as well as helpful discussions with many, many colleagues including, but not limited to Jim Pivarski and John Cummings.
 
 Matt Bellis, Noah Franz, and Willow Hagen have received support for work related to *hepfile* provided by NSF grants EPP-1913923 and / or EPP-1608779. Matt Dreyer received support for work related to *hepfile* from NSF grants EPP-1913923 and OAC-1450377 (DIANA/HEP).

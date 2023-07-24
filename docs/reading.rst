@@ -8,7 +8,7 @@ To load the data in from the file ``my_file.hdf5``, run ::
 
     data, bucket = hepfile.load('my_file.hdf5')
 
-``data`` is a dictionary with all the data from the file (organized in 
+``data`` is a dictionary with all the data from the file (organized in
 the hepfile schema), and ``bucket`` is an empty dictionary with the same
 structure ready to be filled with specific buckets from ``data``.
 
@@ -36,7 +36,4 @@ Additionally, if you want to load in the first *N* buckets, you could run ::
     data, bucket = hepfile.load('my_file.hdf5', subset = N)
 
 If *N* is greater than the total number of buckets, the upper range will be set at
-the last bucket in the data file. 
-
-Loop over the data and unpack each bucket
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+the last bucket in the data file.

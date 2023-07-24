@@ -15,7 +15,7 @@ To create groups, run ::
 
     hepfile.create_group(my_data, 'my_group', counter = 'my_counter')
 
-Be aware that if nothing is set for ``counter =`` , hepfile will set ``'N_' + '{group_name}'`` 
+Be aware that if nothing is set for ``counter =`` , hepfile will set ``'N_' + '{group_name}'``
 (or its replacement) as the counter.
 
 
@@ -26,7 +26,7 @@ To create a dataset inside of ``'my_group'``, run ::
 
     hepfile.create_dataset(my_data, 'my_dataset', group = 'my_group', dtype = str)
 
-If nothing is set for ``group =``, then the dataset created will be put into the 
+If nothing is set for ``group =``, then the dataset created will be put into the
 _SINGLETONS_GROUP_, as shown below ::
 
     hepfile.create_dataset(my_data, 'my_unique', dtype = int)
@@ -50,7 +50,7 @@ run ::
 
     my_bucket = hepfile.create_single_bucket(my_data)
 
-Note that the entire structure of the data dictionary must be finalized, since 
+Note that the entire structure of the data dictionary must be finalized, since
 any additional datasets or groups created in ``my_data`` will not be reflected
 in ``my_bucket``.
 
@@ -58,21 +58,22 @@ Loop over data and pack the buckets as you go
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 An example of writing data into a bucket and then packing it into a data dictionary
-is shown below ::
-    
+is shown below. Note that ``hepfile.pack`` can handle numpy arrays and python lists
+but python lists are more time and space efficient. ::
+
     for i in range(5)
         my_bucket['my_group/my_dataset'] = 'yes'
         my_bucket['my_group/data1'] = 1.0
         my_bucket['my_group/data2'] = 2.0
-        
+
     my_bucket['my_unique'] = 3
 
     hepfile.pack(my_data, my_bucket)
 
 Unlike in ROOT, there is no need to set the group counter at all! hepfile does so
-automatically, looking at the first non-counter dataset in each group and setting the 
+automatically, looking at the first non-counter dataset in each group and setting the
 group counter for that bucket to be the length of the bucket's dataset. This is unlike
-ROOT, and would take some cycles, so this can be turned off by setting 
+ROOT, and would take some cycles, so this can be turned off by setting
 ``AUTO_SET_COUNTER`` to ``False``. Simply replace the last line of the previous codeblock
 with the following to demonstrate: ::
 
@@ -80,7 +81,7 @@ with the following to demonstrate: ::
     hepfile.pack(my_data, my_bucket, AUTO_SET_COUNTER = False)
 
 Note that the flag must be set to false, or anything you put for the counter will
-be overwritten. 
+be overwritten.
 
 If for debugging/peace of mind, you want to make sure that all datasets
 belonging to one group in the bucket are the same length, simply set the ``STRICT_CHECKING``
@@ -93,7 +94,7 @@ about their mistake: ::
         my_bucket['my_group/data1'].append(1.0)
         my_bucket['my_group/data1'].append(1.5)
         my_bucket['my_group/data2'].append(2.0)
-        
+
     my_bucket['my_unique'] = 3
 
     hepfile.pack(my_data, my_bucket, STRICT_CHECKING = True)
@@ -109,6 +110,15 @@ Finally, if you want to look at the structure of the bucket dictionary while pac
 you can set the ``verbose`` flag to ``True``. Note that this will have no effect
 unless ``AUTO_SET_COUNTER`` is left untouched or is set to ``True``.
 
+Adding metadata to groups and datasets
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+To add metadata to the groups and datasets you can use ``hepfile.add_meta``. This function
+takes the data dictionary, the full path to the group or dataset, and a list of the metadata
+to add to that group or dataset. Here is an example:
+::
+
+   hepfile.add_meta(data, 'my_group', ['Some data description'])
+   hepfile.add_meta(data, 'my_group/data1', ['Some unit for the data'])
 
 Write the data to file
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -119,8 +129,6 @@ To write the data dictionary to a file, run ::
 
 Note that the data dictionary must be complete, as you cannot edit the file
 once it has been created.
-
-MORE FLAGS?
 
 Write metadata to file
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -150,3 +158,13 @@ it unchanged. An example is shown below: ::
 
     hepfile.write_file_metadata('my_file.hdf5', mydict = {'author': 'John Doe'}, append = False)
     hepfile.write_file_metadata('my_file.hdf5')
+
+Adding header information to a file
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Many other file formats (ROOT, FITS, etc.) store information about the file, experiment, or
+observation in a header. hepfile provides this functionality with the ``hepfile.write_file_header``
+method. Just like ``hepfile.write_file_metadata`` this takes a filename and a dictionary of
+data to store in the header:
+::
+
+   hepfile.write_file_header('my_file.hdf5', mydict={'Observer': 'John Doe', 'Observation Time': '00:00:01'})

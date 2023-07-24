@@ -118,7 +118,7 @@ def test_awkward_to_hepfile():
 
 
 def test_get_awkward_type():
-    with pytest.raises(hf.errors.InputError):
+    with pytest.raises(IndexError):
         hf.awkward_tools._get_awkward_type(ak.Array([]))
 
     with pytest.raises(hf.errors.InputError):
