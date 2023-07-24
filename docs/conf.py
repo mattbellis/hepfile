@@ -12,10 +12,11 @@ from typing import List
 
 import sys
 import os
+
 sys.path.append(os.path.abspath(os.pardir))
 sys.path.insert(0, os.path.abspath("."))
 sys.path.insert(0, os.path.abspath("../"))
-sys.path.insert(0, os.path.abspath("../src/hepfile")) # needed for autodocs
+sys.path.insert(0, os.path.abspath("../src/hepfile"))  # needed for autodocs
 
 # -- Project information -----------------------------------------------------
 
@@ -31,7 +32,7 @@ version = package.__version__
 release = package.__version__
 
 # The master toctree document.
-master_doc = 'index'
+master_doc = "index"
 
 # -- General configuration ---------------------------------------------------
 
@@ -62,20 +63,20 @@ exclude_patterns = ["_build", "**.ipynb_checkpoints", "Thumbs.db", ".DS_Store", 
 # a list of builtin themes.
 #
 html_theme = "sphinx_book_theme"
-#html_theme = "sphinx_rtd_theme"
+# html_theme = "sphinx_rtd_theme"
 html_logo = "./images/hepfile-logo.png"
 html_title = f"hepfile {version}"
 html_theme_options = {
-    'show_toc_level' : 2,
-    'repository_url' : 'https://github.com/mattbellis/hepfile',
-    'use_repository_button': True,
+    "show_toc_level": 2,
+    "repository_url": "https://github.com/mattbellis/hepfile",
+    "use_repository_button": True,
     "use_issues_button": True,
-    "use_edit_page_button": True
+    "use_edit_page_button": True,
 }
 
 html_baseurl = "https://hepfile.readthedocs.io/en/latest/"
 
-'''
+"""
 # For sphinx-book-theme
 html_theme_options = {
     "home_page_in_toc": True,
@@ -84,9 +85,14 @@ html_theme_options = {
     "use_issues_button": True,
     "use_edit_page_button": True,
 }
-'''
+"""
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path: List[str] = []
+
+# define the rst epilog to access variables elsewhere
+rst_epilog = f"""
+.. |version| replace:: v{version}
+"""
