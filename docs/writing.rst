@@ -110,6 +110,15 @@ Finally, if you want to look at the structure of the bucket dictionary while pac
 you can set the ``verbose`` flag to ``True``. Note that this will have no effect
 unless ``AUTO_SET_COUNTER`` is left untouched or is set to ``True``.
 
+Adding metadata to groups and datasets
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+To add metadata to the groups and datasets you can use ``hepfile.add_meta``. This function
+takes the data dictionary, the full path to the group or dataset, and a list of the metadata
+to add to that group or dataset. Here is an example:
+::
+
+   hepfile.add_meta(data, 'my_group', ['Some data description'])
+   hepfile.add_meta(data, 'my_group/data1', ['Some unit for the data'])
 
 Write the data to file
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -120,8 +129,6 @@ To write the data dictionary to a file, run ::
 
 Note that the data dictionary must be complete, as you cannot edit the file
 once it has been created.
-
-MORE FLAGS?
 
 Write metadata to file
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -151,3 +158,13 @@ it unchanged. An example is shown below: ::
 
     hepfile.write_file_metadata('my_file.hdf5', mydict = {'author': 'John Doe'}, append = False)
     hepfile.write_file_metadata('my_file.hdf5')
+
+Adding header information to a file
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Many other file formats (ROOT, FITS, etc.) store information about the file, experiment, or
+observation in a header. hepfile provides this functionality with the ``hepfile.write_file_header``
+method. Just like ``hepfile.write_file_metadata`` this takes a filename and a dictionary of
+data to store in the header:
+::
+
+   hepfile.write_file_header('my_file.hdf5', mydict={'Observer': 'John Doe', 'Observation Time': '00:00:01'})

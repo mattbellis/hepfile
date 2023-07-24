@@ -1,6 +1,8 @@
 Installation quickstart
 -----------------------
 
+User Installation
+^^^^^^^^^^^^^^^^^
 For non-developers, :code:`hepfile` can be installed using :code:`pip`.
 `hepfile` includes some optional features that include optional dependencies so there are multiple
 different options for installation.
@@ -27,13 +29,21 @@ distribution use:
 
    python -m pip install hepfile[pandas]
 
-Finally, to get both the awkward and pandas integration with hepfile (which adds pandas and awkward
+To get both the awkward and pandas integration with hepfile (which adds pandas and awkward
 to the base installation dependencies) use:
 ::
 
    python -m pip install hepfile[all]
 
+Finally, for those running the `example notebooks <https://github.com/mattbellis/hepfile/tree/main/docs/example_nb>`_ locally,
+you should install with the learn optional dependency because some of the tutorials rely on dependencies
+like ``matplotlib`` and ``astropy``:
+::
 
+   python -m pip install hepfile[learn]
+
+Developer Installation
+^^^^^^^^^^^^^^^^^^^^^^
 For a local installations, typically for developers, follow these steps:
 
 1. Clone this repo
@@ -52,4 +62,5 @@ For a local installations, typically for developers, follow these steps:
 As a side note, to test developments to this code use the following command in
 the top-level directory of this project:
 ::
+
    pytest

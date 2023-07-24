@@ -42,7 +42,8 @@ learn = [
       "hepfile[pandas,awkward]",
       "astropy",
       "matplotlib",
-      "tabulate"
+      "tabulate",
+      "uproot"
       ]
 all = ["hepfile[pandas,awkward]"]
 
