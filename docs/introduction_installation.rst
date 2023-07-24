@@ -51,7 +51,7 @@ For a local installations, typically for developers, follow these steps:
 3. We then recommend installing with the developer dependencies. To do this run:
    ::
 
-      python -m pip install -e .[dev]
+      python -m pip install -e '.[dev]'
 
 4. Then, run the following commands to setup the pre-commit git hook
    to automatically run our tests before committing!
