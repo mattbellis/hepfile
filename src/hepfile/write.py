@@ -368,6 +368,10 @@ def pack(
     intelligently, so that it can be stored and extracted efficiently.
     (This is analagous to the ROOT TTree::Fill() member function).
 
+    Note: The data and bucket dictionaries can be made up of either lists or
+    NumPy arrays but because of the nature of how NumPy arrays are saved this pack
+    function is more time and space efficient with python lists.
+
     Args:
         data (dict): Data dictionary to hold the entire dataset EDIT.
 
