@@ -78,9 +78,9 @@ has a different number of values. For example:
    }
 ```
 This can not simply be converted to most common data structures, like a Pandas DataFrame,
-or written to a simple homogeneous file structure, like a CSV file. In a more complex case
-Let's have an image of a town, with cartoon people here.
+or written to a simple homogeneous file structure, like a CSV file.
 
+In a more complex case let's have an image of a town, with cartoon people here.
 To illustrate how to use hepfile with this example, we imagine a researcher conducting
 a census on a town. Each household in the town has some variable number of people
 in it, some variable number of vehicles, and only one residence. The people, vehicles,
@@ -103,9 +103,9 @@ To do this, we need some way to count the number of people or vehicles in any ho
 as well as keep track of what data fields will always have one entry per household (e.g. data
 about the residence itself).
 
-One could imagine building a very large [`pandas`](https://pandas.pydata.org/]) dataframe to do this
+One could imagine building a very large [`pandas`](https://pandas.pydata.org/) dataframe to do this
 with a lot of join statements and then use `.groupby()` approach or to store this in a database and
-then use a lot of SQL join statements. But we want to store this in a single file so. instead, we will
+then use a lot of SQL join statements. But, we want to store this in a single file so, instead, we will
 take our cue from ROOT and particle physicists, who are used to looping over subsets of their data.
 
 # Installation
@@ -121,9 +121,9 @@ on `numpy` and `h5py`. To install the base package use:
 python -m pip install hepfile
 ```
 
-You can also get the `awkward_tools` which is the hepfile integration with the awkward package. This is
+You can also get the `awkward_tools` which is the hepfile integration with the [`awkward` package](https://awkward-array.org/doc/main/). This is
 especially recommended for High Energy Physicists who are used to working with awkward arrays. The only
-dependency this add is `awkward`. To install this version of the package use:
+dependency this adds is `awkward`. To install this version of the package use:
 ```
 python -m pip install hepfile[awkward]
 ```
@@ -136,10 +136,17 @@ distribution use:
 python -m pip install hepfile[pandas]
 ```
 
-Finally, to get both the awkward and pandas integration with hepfile (which adds pandas and awkward
+To get both the awkward and pandas integration with hepfile (which adds pandas and awkward
 to the base installation dependencies) use:
 ```
 python -m pip install hepfile[all]
+```
+
+Finally, for those running the [example notebooks](https://github.com/mattbellis/hepfile/tree/main/docs/example_nb) locally, you should install with the
+`learn` optional dependency because some of the tutorials rely on dependencies like matplotlib
+and astropy:
+```
+python -m pip install hepfile[learn]
 ```
 
 The documentation for hepfile can be found at hepfile.readthedocs.io.
